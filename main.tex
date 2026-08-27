@@ -1,0 +1,602 @@
+\documentclass{article}
+
+\usepackage{amsmath, amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+
+\title{Self similar diffusion}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Navier--Stokes}
+We begin with the dimensional, incompressible Navier--Stokes equations,
+\begin{equation}\label{eq:ns-momentum}
+  \frac{\partial u_i^*}{\partial t^*} + u_j^* \frac{\partial u_i^*}{\partial x_j^*}= -\frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*} + \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*},
+\end{equation}
+together with the continuity equation,
+\begin{equation}\label{eq:ns-continuity}
+  \frac{\partial u_i^*}{\partial x_i^*} = 0.
+\end{equation}
+We introduce the following nondimensionalization, with velocity and length
+scales $U$ and $L$ taken to be functions of $t$:
+\begin{align}
+  u_i &= \frac{u_i^*}{U}, \\
+  x_i &= \frac{x_i^*}{L}, \\
+  p &= \frac{p^*}{\rho U^2}, \\
+  \frac{\mathrm{d}t}{\mathrm{d}t^*} &= \frac{U^2}{\nu}. \label{eq:ns-dtdtstar}
+\end{align}
+We will also need, for each component $j$,
+\begin{equation}\label{eq:ns-dxdt}
+  \frac{\mathrm{d} x_j}{\mathrm{d} t} = -x_j^*\frac{L^\prime}{L^2} = - x_j \frac{L^\prime}{L},
+\end{equation}
+where prime denotes differentiation with respect to $t$.
+Substituting this nondimensionalization and proceeding term by term, the
+time-derivative term becomes
+\begin{equation}\label{eq:ns-chainrule}
+  \frac{\partial u_i^*}{\partial t^*} = \left(\frac{\mathrm{d} U}{\mathrm{d} t}\frac{\mathrm{d} t}{\mathrm{d}t^*}\right)u_i + U \left(\frac{\partial u_i}{\partial t}\frac{\mathrm{d}t}{\mathrm{d}t^*}
+  + \frac{\partial u_i}{\partial x_j}\frac{\mathrm{d} x_j}{\mathrm{d} t} \frac{\mathrm{d} t}{\mathrm{d}t^*}\right),
+\end{equation}
+where the spatial-derivative term is summed over the dummy index $j$, distinct
+from the free index $i$ of $u_i$. Substituting \eqref{eq:ns-dtdtstar} and
+\eqref{eq:ns-dxdt}, this becomes
+\begin{equation}\label{eq:ns-final}
+   \frac{\partial u_i^*}{\partial t^*} = U^\prime \frac{U^2}{\nu}u_i + U \left(\frac{\partial u_i}{\partial t}\frac{U^2}{\nu} - \frac{\partial u_i}{\partial x_j} x_j \frac{L^\prime}{L} \frac{U^2}{\nu}\right).
+\end{equation}
+
+The convection term is
+\begin{equation}\label{eq:ns-convection}
+  u_j^* \frac{\partial u_i^*}{\partial x_j^*} = \frac{U^2}{L} u_j \frac{\partial u_i}{\partial x_j}.
+\end{equation}
+The pressure term is
+\begin{equation}\label{eq:ns-pressure}
+  \frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*} = \frac{U^2}{L} \frac{\partial p}{\partial x_i}.
+\end{equation}
+The viscous term is
+\begin{equation}\label{eq:ns-viscous}
+  \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*} = \frac{\nu U}{L^2}\frac{\partial^2 u_i}{\partial x_j \partial x_j}.
+\end{equation}
+
+Substituting \eqref{eq:ns-final}, \eqref{eq:ns-convection}, \eqref{eq:ns-pressure},
+and \eqref{eq:ns-viscous} into \eqref{eq:ns-momentum} gives
+\begin{equation}\label{eq:ns-assembled}
+  \frac{U^2 U^\prime}{\nu} u_i
+  + \frac{U^3}{\nu}\frac{\partial u_i}{\partial t}
+  - \frac{U^3}{\nu}\frac{L^\prime}{L} x_j \frac{\partial u_i}{\partial x_j}
+  + \frac{U^2}{L} u_j \frac{\partial u_i}{\partial x_j}
+  = -\frac{U^2}{L} \frac{\partial p}{\partial x_i}
+  + \frac{\nu U}{L^2} \frac{\partial^2 u_i}{\partial x_j \partial x_j}.
+\end{equation}
+Dividing through by $U^3/\nu$ and introducing the instantaneous Reynolds number
+\begin{equation}\label{eq:ns-reynolds}
+  Re = \frac{UL}{\nu}, \qquad \text{so that} \qquad \frac{\nu}{UL} = \frac{1}{Re},
+\end{equation}
+gives the nondimensional momentum equation
+\begin{equation}\label{eq:ns-nondim-momentum}
+  \frac{\partial u_i}{\partial t}
+  = \frac{L^\prime}{L} x_j \frac{\partial u_i}{\partial x_j}
+  - \frac{U^\prime}{U} u_i
+  - \frac{1}{Re} u_j \frac{\partial u_i}{\partial x_j}
+  - \frac{1}{Re} \frac{\partial p}{\partial x_i}
+  + \frac{1}{Re^2} \frac{\partial^2 u_i}{\partial x_j \partial x_j}.
+\end{equation}
+Because $x_i$ and $u_i$ are each nondimensionalized by a single,
+direction-independent factor ($L$ and $U$, respectively), the continuity
+equation \eqref{eq:ns-continuity} carries through unchanged,
+\begin{equation}\label{eq:ns-nondim-continuity}
+  \frac{\partial u_i}{\partial x_i} = 0.
+\end{equation}
+
+Equations \eqref{eq:ns-nondim-momentum} and \eqref{eq:ns-nondim-continuity} are
+the nondimensional momentum and continuity equations. The stretching terms
+$(L^\prime/L)\, x_j\, \partial u_i/\partial x_j$ and $-(U^\prime/U)\, u_i$ have
+exactly the structure of the terms $\alpha x\, \partial u/\partial x$ and
+$-\beta u$ in the model equation \eqref{eq:transformed} derived below for scalar
+diffusion, which uses the same length and velocity scales $L$ and $U$; the
+remaining terms are the usual advection and pressure terms (each carrying a
+factor $1/Re$) and the viscous term (carrying $1/Re^2$).
+
+\subsection{Fourier-Space Formulation}
+
+We take the spatial Fourier transform in the nondimensional coordinate $x_i$
+introduced above, with convention
+\begin{equation}\label{eq:fourier-def}
+  \hat u_i(k,t) = \int u_i(x,t)\, e^{-i k\cdot x} \, \mathrm{d}x,
+  \qquad
+  u_i(x,t) = \frac{1}{(2\pi)^d}\int \hat u_i(k,t)\, e^{i k \cdot x} \, \mathrm{d}k,
+\end{equation}
+where $d$ is the number of spatial dimensions and $k$ is the wavevector
+conjugate to $x$. Two standard properties of the transform are used
+repeatedly below: differentiation becomes multiplication,
+$\mathcal{F}[\partial u/\partial x_j] = i k_j \hat u$, and multiplication by
+$x_j$ becomes differentiation, $\mathcal{F}[x_j u] = i\, \partial \hat u/\partial k_j$.
+
+Applying \eqref{eq:fourier-def} to the continuity equation
+\eqref{eq:ns-nondim-continuity} gives
+\begin{equation}\label{eq:fourier-continuity}
+  k_i \, \hat u_i(k,t) = 0,
+\end{equation}
+so that $\hat u(k,t)$ is, at every wavevector, orthogonal to $k$.
+
+We now transform each term of the momentum equation
+\eqref{eq:ns-nondim-momentum} in turn. The time-derivative and decay terms
+transform directly,
+\begin{equation}\label{eq:fourier-time-decay}
+  \frac{\partial u_i}{\partial t} \; \longrightarrow \; \frac{\partial \hat u_i}{\partial t},
+  \qquad
+  -\frac{U^\prime}{U} u_i \; \longrightarrow \; -\frac{U^\prime}{U}\hat u_i.
+\end{equation}
+The viscous term transforms using the differentiation rule twice,
+\begin{equation}\label{eq:fourier-viscous}
+  \frac{1}{Re^2}\frac{\partial^2 u_i}{\partial x_j \partial x_j}
+  \; \longrightarrow \;
+  -\frac{k^2}{Re^2}\hat u_i, \qquad k^2 = k_jk_j.
+\end{equation}
+The convective term transforms, using continuity to write
+$u_j\partial u_i/\partial x_j = \partial(u_iu_j)/\partial x_j$, into a
+convolution,
+\begin{equation}\label{eq:fourier-convection}
+  \frac{1}{Re} u_j\frac{\partial u_i}{\partial x_j}
+  \; \longrightarrow \;
+  \frac{i k_j}{Re} \, \widehat{u_iu_j}(k,t),
+  \qquad
+  \widehat{u_iu_j}(k,t) = \frac{1}{(2\pi)^d}\int \hat u_i(k^\prime,t)\, \hat u_j(k-k^\prime,t)\, \mathrm{d}k^\prime,
+\end{equation}
+and the pressure term transforms into
+\begin{equation}\label{eq:fourier-pressure}
+  \frac{1}{Re}\frac{\partial p}{\partial x_i} \; \longrightarrow \; \frac{i k_i}{Re}\hat p(k,t).
+\end{equation}
+The stretching term requires both rules together: writing
+$\partial u_i/\partial x_j \to ik_j\hat u_i$ and then applying the
+multiplication rule to the result, with $j$ summed as usual,
+\begin{equation}\label{eq:fourier-stretch}
+  \frac{L^\prime}{L} x_j \frac{\partial u_i}{\partial x_j}
+  \; \longrightarrow \;
+  \frac{L^\prime}{L}\, i \frac{\partial}{\partial k_j}\bigl(ik_j\hat u_i\bigr)
+  = -\frac{L^\prime}{L}\left( d\, \hat u_i + k_j \frac{\partial \hat u_i}{\partial k_j} \right)
+  = -\frac{L^\prime}{L}\frac{\partial}{\partial k_j}\bigl(k_j\hat u_i\bigr),
+\end{equation}
+which is a dilation operator in wavevector space: the domain stretching in
+physical space appears in Fourier space as a corresponding rescaling of $k$.
+
+Collecting \eqref{eq:fourier-time-decay}--\eqref{eq:fourier-stretch}, the
+momentum equation \eqref{eq:ns-nondim-momentum} becomes
+\begin{equation}\label{eq:fourier-momentum}
+  \frac{\partial \hat u_i}{\partial t}
+  = -\frac{L^\prime}{L}\frac{\partial}{\partial k_j}\bigl(k_j\hat u_i\bigr)
+  - \frac{U^\prime}{U}\hat u_i
+  - \frac{ik_j}{Re}\widehat{u_iu_j}(k,t)
+  - \frac{ik_i}{Re}\hat p(k,t)
+  - \frac{k^2}{Re^2}\hat u_i,
+\end{equation}
+together with the incompressibility constraint \eqref{eq:fourier-continuity}.
+
+\subsection{Leray Projection and the Pressure Equation}
+
+Because \eqref{eq:fourier-continuity} holds at every wavevector and for all
+time, its time derivative vanishes as well, $k_i\, \partial \hat u_i/\partial t = 0$.
+Contracting \eqref{eq:fourier-momentum} with $k_i$ therefore isolates a
+constraint that determines $\hat p$, provided the other terms are known once
+contracted with $k_i$. Three of them vanish identically. The decay and
+viscous terms are proportional to $\hat u_i$ itself, so
+$k_i(-U^\prime/U\, \hat u_i) = -(U^\prime/U)\,k_i\hat u_i = 0$ and
+$k_i(-k^2\hat u_i/Re^2) = 0$ by \eqref{eq:fourier-continuity}. The stretching
+term also vanishes on contraction: differentiating the identity
+$k_i\hat u_i(k,t) = 0$ with respect to $k_j$ gives
+\begin{equation}\label{eq:fourier-continuity-diff}
+  \hat u_j + k_i\frac{\partial \hat u_i}{\partial k_j} = 0,
+\end{equation}
+and using \eqref{eq:fourier-continuity} and \eqref{eq:fourier-continuity-diff}
+together shows
+\begin{equation}\label{eq:fourier-stretch-contraction}
+  k_i\frac{\partial}{\partial k_j}\bigl(k_j\hat u_i\bigr) = 0,
+\end{equation}
+so the stretching term, like the decay and viscous terms, is already
+orthogonal to $k$ and contributes nothing to the pressure. This is the
+Fourier-space counterpart of the fact, checked directly in physical space,
+that the divergence of each of these terms vanishes identically once
+\eqref{eq:ns-nondim-continuity} holds: the self-similar stretching and decay
+of the frame are purely kinematic and do not disturb the incompressibility
+constraint.
+
+Only the convective and pressure terms survive the contraction, giving
+\begin{equation}\label{eq:pressure-contraction}
+  0 = -\frac{ik_ik_j}{Re}\widehat{u_iu_j}(k,t) - \frac{ik^2}{Re}\hat p(k,t),
+\end{equation}
+so that, for $k \neq 0$,
+\begin{equation}\label{eq:pressure-fourier}
+  \hat p(k,t) = -\frac{k_ik_j}{k^2}\, \widehat{u_iu_j}(k,t).
+\end{equation}
+This is the Fourier-space pressure Poisson equation: the Reynolds number
+cancels out of it, and the self-similar terms drop out entirely, so $\hat p$
+retains exactly the classical incompressible form, evaluated on the
+instantaneous velocity field in the self-similar frame. (The $k=0$ mode is
+undetermined by \eqref{eq:pressure-contraction}, but also does not appear in
+\eqref{eq:fourier-momentum} at $k=0$, so no information is lost.)
+
+\subsection{The Pressure-Free Momentum Equation}
+
+Substituting \eqref{eq:pressure-fourier} into the pressure term of
+\eqref{eq:fourier-momentum} and combining it with the convective term gives
+\begin{equation}\label{eq:leray-combine}
+  -\frac{ik_j}{Re}\widehat{u_iu_j} - \frac{ik_i}{Re}\hat p
+  = -\frac{i}{Re}\left( \delta_{ij} - \frac{k_ik_j}{k^2} \right) k_l\, \widehat{u_ju_l}(k,t)
+  = -\frac{i}{Re}P_{ij}(k)\, k_l\, \widehat{u_ju_l}(k,t),
+\end{equation}
+where
+\begin{equation}\label{eq:leray-projector}
+  P_{ij}(k) = \delta_{ij} - \frac{k_ik_j}{k^2}
+\end{equation}
+is the Leray projector onto the subspace orthogonal to $k$; it is symmetric,
+idempotent ($P_{ij}P_{jl} = P_{il}$), and satisfies $k_iP_{ij} = 0$,
+consistent with \eqref{eq:fourier-continuity}. Substituting
+\eqref{eq:leray-combine} into \eqref{eq:fourier-momentum} eliminates the
+pressure entirely and leaves a single closed equation for $\hat u_i(k,t)$,
+\begin{equation}\label{eq:fourier-final}
+  \frac{\partial \hat u_i}{\partial t}
+  = -\frac{L^\prime}{L}\frac{\partial}{\partial k_j}\bigl(k_j\hat u_i\bigr)
+  - \frac{U^\prime}{U}\hat u_i
+  - \frac{i}{Re}P_{ij}(k)\, k_l\, \widehat{u_ju_l}(k,t)
+  - \frac{k^2}{Re^2}\hat u_i,
+\end{equation}
+subject to $k_i\hat u_i(k,t) = 0$, which \eqref{eq:fourier-final} preserves
+automatically since every term on the right is orthogonal to $k$. Equation
+\eqref{eq:fourier-final} is the Fourier-space, pressure-free form of the
+nondimensional, self-similar Navier--Stokes equations: it is identical to the
+standard projected spectral Navier--Stokes equation, with the classical
+viscous term $-k^2\hat u_i/Re^2$ and Leray-projected convective term, together
+with the two additional terms $-\dfrac{L^\prime}{L}\dfrac{\partial}{\partial k_j}(k_j\hat u_i)$
+and $-\dfrac{U^\prime}{U}\hat u_i$ that encode, respectively, the rescaling of
+the wavevector and the decay of the velocity scale associated with the
+self-similar frame.
+
+\subsection{The Stretching and Decay Terms Alone}
+
+Consider the two terms of \eqref{eq:fourier-final} that arise from the
+self-similar frame itself, rather than from the Navier--Stokes physics,
+isolated as a standalone linear PDE for $\hat u_i(k,t)$,
+\begin{equation}\label{eq:fourier-stretch-decay}
+  \frac{\partial \hat u_i}{\partial t}
+  = -\frac{L^\prime}{L}\frac{\partial}{\partial k_j}\bigl(k_j\hat u_i\bigr)
+  - \frac{U^\prime}{U}\hat u_i.
+\end{equation}
+Unlike the convective and pressure terms, the coefficients $L^\prime/L$ and
+$U^\prime/U$ depend only on $t$, not on $k$ or $x$, so no convolution or
+projection is needed to move between representations:
+\eqref{eq:fourier-stretch-decay} is exactly the Fourier transform, term by
+term, of the two terms of \eqref{eq:ns-nondim-momentum} that produced it in
+the first place,
+\begin{equation}\label{eq:stretch-decay-physical}
+  \frac{\partial u_i}{\partial t}
+  = \frac{L^\prime}{L} x_j \frac{\partial u_i}{\partial x_j} - \frac{U^\prime}{U} u_i.
+\end{equation}
+So \eqref{eq:fourier-stretch-decay} does transform cleanly back to physical
+space, with none of the nonlocality that pressure elimination required.
+
+It is worth confirming this by solving each equation independently with the
+method of characteristics and checking that the resulting solutions are
+Fourier transforms of one another. In physical space,
+\eqref{eq:stretch-decay-physical} is carried along the same characteristic
+already found in \eqref{eq:ns-dxdt}, $\mathrm{d}x_j/\mathrm{d}t = -x_j\,L^\prime/L$,
+along which $\mathrm{d}u_i/\mathrm{d}t = -(U^\prime/U)\,u_i$. Writing
+$\mu = \mu(t;t_0) \equiv L(t)/L(t_0)$, the characteristic gives
+$x_j(t_0) = \mu\, x_j(t)$ and the amplitude equation integrates to
+$u_i(t) = \bigl[U(t_0)/U(t)\bigr]\, u_i(t_0)$, so that
+\begin{equation}\label{eq:stretch-decay-usol}
+  u_i(x,t) = \frac{U(t_0)}{U(t)}\, u_i\bigl(\mu\, x,\, t_0\bigr).
+\end{equation}
+In wavevector space, \eqref{eq:fourier-stretch-decay} expands by the product
+rule, as in \eqref{eq:fourier-stretch}, to
+\begin{equation}
+  \frac{\partial \hat u_i}{\partial t}
+  + \frac{L^\prime}{L} k_j \frac{\partial \hat u_i}{\partial k_j}
+  = -\left( d\,\frac{L^\prime}{L} + \frac{U^\prime}{U} \right) \hat u_i.
+\end{equation}
+Its characteristics, $\mathrm{d}k_j/\mathrm{d}t = (L^\prime/L)\,k_j$, scale by
+$\mu$ in $k$-space, $k_j(t_0) = k_j(t)/\mu$, the reciprocal of the $1/\mu$
+scaling found in physical space -- exactly the inverse relationship that
+Fourier duality imposes between conjugate variables. Integrating the
+amplitude equation along this characteristic gives
+\begin{equation}\label{eq:stretch-decay-ksol}
+  \hat u_i(k,t) = \mu^{-d}\, \frac{U(t_0)}{U(t)}\, \hat u_i\!\left(\frac{k}{\mu}, t_0\right).
+\end{equation}
+Fourier transforming \eqref{eq:stretch-decay-usol} directly, using
+$\mathcal{F}[f(\mu x)](k) = \mu^{-d}\hat f(k/\mu)$ for $\mu>0$, reproduces
+\eqref{eq:stretch-decay-ksol} exactly. The two solutions agree term for term,
+confirming that \eqref{eq:fourier-stretch-decay} transforms cleanly back to
+\eqref{eq:stretch-decay-physical}. This isolated sub-equation is the vector
+counterpart, for the velocity field, of the pair of scalar sub-problems
+\eqref{eq:advection} and \eqref{eq:reaction} solved by characteristics
+further below for the model diffusion equation; here the stretching and
+decay act jointly on each velocity component, rather than being split into
+separate fractional steps.
+
+\section{1D Diffusion equation}
+\subsection{Governing equations}
+The 1D diffusion equation is given by
+\begin{equation}\label{eq:dim-diffusion}
+  \frac{\partial u^*}{\partial t^*} = D \frac{\partial^2 u^*}{\partial (x^*)^2}.
+\end{equation}
+We use the following non-dimensionalization
+\begin{equation}\label{eq:u-nondim}
+  u = \frac{u^*}{U},
+\end{equation}
+\begin{equation}\label{eq:x-nondim}
+  x = \frac{x^*}{L_k},
+\end{equation}
+where $U$ and $L_k$ are functions of time. For the temporal coordinate, we define
+\begin{equation}\label{eq:tstar-def}
+  t^* = s(t),
+\end{equation}
+such that
+\begin{equation}\label{eq:sprime}
+  \frac{\mathrm{d} s}{\mathrm{d} t} = s' = \frac{L_k^2}{D}.
+\end{equation}
+Because
+\begin{equation}\label{eq:tstar-identity}
+  \frac{\mathrm{d} t^*}{\mathrm{d} t^*} = 1 = \frac{\mathrm{d} s}{\mathrm{d} t} \frac{\mathrm{d} t}{\mathrm{d} t^*}
+\end{equation}
+it follows that
+\begin{equation}\label{eq:dtdtstar}
+  \frac{\mathrm{d} t}{\mathrm{d} t^*} = \frac{D}{L_k^2}.
+\end{equation}
+
+Using the chain rule, the left-hand side of \eqref{eq:dim-diffusion} becomes
+\begin{equation}\label{eq:lhs-chain}
+  \frac{\partial (uU)}{\partial t^*}
+  = \frac{\partial (uU)}{\partial t} \frac{\mathrm{d}t}{\mathrm{d}t^*}
+  + U \frac{\partial u}{\partial x} \frac{\partial x}{\partial t} \frac{\mathrm{d}t}{\mathrm{d}t^*}.
+\end{equation}
+Differentiating \eqref{eq:x-nondim} with respect to $t$ at fixed $x^*$ yields
+\begin{equation}\label{eq:dxdt}
+  \frac{\mathrm{d}x}{\mathrm{d}t} = -\frac{x^* L_k'}{L_k^2} = -\frac{L_k'}{L_k} x.
+\end{equation}
+Substituting \eqref{eq:dxdt} and \eqref{eq:dtdtstar} into \eqref{eq:lhs-chain} gives
+\begin{equation}\label{eq:lhs-transformed}
+  \begin{aligned}
+  \frac{\partial (uU)}{\partial t^*}
+  &= \left( U \frac{\partial u}{\partial t} + u U' - U \frac{L_k'}{L_k} x \frac{\partial u}{\partial x} \right) \frac{D}{L_k^2} \\
+  &= U \left( \frac{\partial u}{\partial t} + u \frac{U'}{U} - \frac{L_k'}{L_k} x \frac{\partial u}{\partial x} \right) \frac{D}{L_k^2}.
+  \end{aligned}
+\end{equation}
+We now transform the right-hand side of \eqref{eq:dim-diffusion}:
+\begin{equation}\label{eq:rhs-chain}
+  D \frac{\partial^2 (uU)}{\partial (x^*)^2}
+  = D U \frac{\partial^2 u}{\partial (x^*)^2}
+  = D U \frac{\partial}{\partial x^*}\left( \frac{\partial u}{\partial x} \frac{\partial x}{\partial x^*} \right).
+\end{equation}
+Substituting the spatial derivative scale
+\begin{equation}\label{eq:dxdxstar}
+  \frac{\mathrm{d}x}{\mathrm{d}x^*} = \frac{1}{L_k},
+\end{equation}
+and simplifying, we obtain
+\begin{equation}\label{eq:rhs-transformed}
+  D \frac{\partial^2 (uU)}{\partial (x^*)^2}
+  = D U \frac{\partial}{\partial x}\left( \frac{\partial u}{\partial x} \frac{1}{L_k} \right) \frac{1}{L_k}
+  = \frac{DU}{L_k^2} \frac{\partial^2 u}{\partial x^2}.
+\end{equation}
+Equating \eqref{eq:lhs-transformed} and \eqref{eq:rhs-transformed} and dividing by
+common factors, we arrive at the transformed equation:
+\begin{equation}\label{eq:transformed}
+  \frac{\partial u}{\partial t}
+  = \frac{L_k'}{L_k} x \frac{\partial u}{\partial x}
+  - \frac{U'}{U} u
+  + \frac{\partial^2 u}{\partial x^2}.
+\end{equation}
+\par
+We assume that $U$ is of the form
+\begin{equation}\label{eq:U-power-form}
+  U = (t^* + \alpha_U)^{\beta_U}.
+\qquad
+L = (t^* + \alpha_L)^{\beta_L}.
+\end{equation}
+It follows that
+\begin{equation}\label{eq:U-ratio}
+  \frac{U_{k+i}}{U_k} = \left( 1 + \frac{i\cdot\Delta t_k^*}{t_k^* + \alpha_U} \right)^{\beta_U},
+  \qquad
+  \frac{L_{k+i}}{L_k} = \left( 1 + \frac{i\cdot\Delta t_k^*}{t_k^* + \alpha_L} \right)^{\beta_L}.
+\end{equation}
+We can express $\Delta t^*$ using
+\begin{equation}\label{eq:dtstar-approx}
+  \Delta t_k^* = \int_{t_k}^{t_{k+1}} \frac{L^2}{D}\,\mathrm{d}t \approx \frac{\Delta t}{12 D}\left(23L_k^2 - 16L_{k-1}^2 + 5L_{k-2}^2\right).
+\end{equation}
+As such
+\begin{equation}\label{eq:UL-ratio-expanded}
+  \frac{U_{k+i}}{U_k} = \left( 1 + \frac{i\cdot \Delta t}{12 D}\frac{23L_k^2 - 16L_{k-1}^2 + 5L_{k-2}^2}{U_k^{1/ \beta_U}} \right)^{\beta_U},
+  \qquad
+  \frac{L_{k+i}}{L_k} = \left( 1 + \frac{i\cdot \Delta t}{12 D}\frac{23L_k^2 - 16L_{k-1}^2 + 5L_{k-2}^2}{L_k^{1/ \beta_L}} \right)^{\beta_L}.
+\end{equation}
+We store $\ln(U_k)$ and $\ln(L_k)$ instead of $U_k$ and $L_k$ to avoid overflow, but naively substituting $U_k^{1/\beta_U} = \exp[\ln(U_k)/\beta_U]$ and $L_k^2 = \exp[2\ln(L_k)]$ into \eqref{eq:UL-ratio-expanded} defeats the purpose: exponentiating $2\ln(L_k)$ or $-\ln(U_k)/\beta_U$ just hands back the huge quantity we were trying to avoid. Instead we combine every sum and difference in log space using
+\begin{equation}\label{eq:log-sum-exp}
+  \log_b(X+Y) = \log_b(X) + \log_b\!\bigl(1+b^{\,y-x}\bigr),
+  \qquad
+  \log_b(X-Y) = \log_b(X) + \log_b\!\bigl(1-b^{\,y-x}\bigr) \quad (X>Y>0),
+\end{equation}
+where $x=\log_b(X)$, $y=\log_b(Y)$; taking $b=e$ and letting $X$ be whichever term has the larger log keeps $y-x\le0$, so \eqref{eq:log-sum-exp} never overflows. This gives the stable primitives
+\begin{equation}\label{eq:logadd-logsub}
+  \mathrm{logadd}(x,y) := \max\{x,y\} + \ln\!\bigl(1+e^{-|x-y|}\bigr) = \ln\!\bigl(e^x+e^y\bigr),
+  \qquad
+  \mathrm{logsub}(x,y) := x + \ln\!\bigl(1-e^{\,y-x}\bigr) = \ln\!\bigl(e^x-e^y\bigr) \ \ (x>y).
+\end{equation}
+\par
+With $x_1 := \ln(23) + 2\ln(L_k)$, $x_2 := \ln(16) + 2\ln(L_{k-1})$, $x_3 := \ln(5) + 2\ln(L_{k-2})$ (assuming $23L_k^2 > 16L_{k-1}^2$, true whenever $L$ is not decreasing too fast across the stencil), two applications of \eqref{eq:logadd-logsub} give
+\begin{equation}\label{eq:Lambda-def}
+  \Lambda_k := \mathrm{logadd}\Bigl(\mathrm{logsub}(x_1,x_2),\,x_3\Bigr) = \ln\!\bigl(23L_k^2 - 16L_{k-1}^2 + 5L_{k-2}^2\bigr)
+\end{equation}
+without ever forming $L_k^2$ itself. Define the (safely computable) log-arguments
+\begin{equation}\label{eq:q-def}
+  q_k^U := \Lambda_k - \frac{\ln(U_k)}{\beta_U} + \ln\!\left[\frac{i\cdot\Delta t}{12D}\right],
+  \qquad
+  q_k^L := \Lambda_k - \frac{\ln(L_k)}{\beta_L} + \ln\!\left[\frac{i\cdot\Delta t}{12D}\right].
+\end{equation}
+A third application of \eqref{eq:logadd-logsub}, now to $1+e^{q_k^U}$ (i.e. $x=0$, $y=q_k^U$), turns \eqref{eq:UL-ratio-expanded} into
+\begin{equation}\label{eq:U-ratio-log}
+  \ln(U_{k+i}) = \ln(U_k) + \beta_U\,\mathrm{logadd}\bigl(q_k^U,0\bigr),
+\end{equation}
+\begin{equation}\label{eq:L-ratio-log}
+  \ln(L_{k+i}) = \ln(L_k) + \beta_L\,\mathrm{logadd}\bigl(q_k^L,0\bigr),
+\end{equation}
+so every exponential evaluated -- in \eqref{eq:logadd-logsub}, \eqref{eq:Lambda-def} and \eqref{eq:U-ratio-log}--\eqref{eq:L-ratio-log} -- has non-positive argument and can never overflow.
+
+
+\subsection{Integration}
+Let
+\begin{equation}
+  \Phi_{\Delta t}^{(D)}(u_k) = u_k + \int_{t_k}^{t_k+\Delta t} \frac{\partial^2 u}{\partial x^2}\mathrm{d}t,
+\end{equation}
+and
+\begin{equation}
+  \Phi_{\Delta t}^{(S)}(u_k) = u_k + \int_{t_k}^{t_{k+1}}
+  \left( \frac{L'}{L} x \frac{\partial u}{\partial x} - \frac{U'}{U} u \right) \mathrm{d}t.
+\end{equation}
+
+\subsubsection{scaling operator}
+evaluating $\Phi_{\Delta t}^{(S)}$ can be done by solving the following pde
+\begin{equation}
+  \frac{\partial u}{\partial t} = x\frac{L^\prime}{L}\frac{\partial u}{\partial x} - \frac{U^\prime}{U}u,
+\end{equation}
+with the method of characteristics. Along a curve $x(t)$ satisfying
+\begin{equation}\label{eq:scaling-characteristic}
+  \frac{\mathrm{d} x}{\mathrm{d} t} = -x \frac{L^\prime}{L},
+\end{equation}
+the total derivative of $u$ is
+\begin{equation}
+  \frac{\mathrm{d} u}{\mathrm{d} t} = \frac{\partial u}{\partial t} + \frac{\partial u}{\partial x} \frac{\mathrm{d} x}{\mathrm{d} t}
+  = \frac{\partial u}{\partial t} - x \frac{L^\prime}{L} \frac{\partial u}{\partial x},
+\end{equation}
+so along this characteristic the PDE reduces to the ODE
+\begin{equation}\label{eq:scaling-ode}
+  \frac{\mathrm{d} u}{\mathrm{d} t} = -\frac{U^\prime}{U} u.
+\end{equation}
+
+Integrating \eqref{eq:scaling-characteristic} from $t_k$ to $t_{k+1}$ gives
+\begin{equation}
+  \ln x_{k+1} - \ln x_k = -\bigl[\ln L_{k+1} - \ln L_k\bigr]
+  \quad\Longrightarrow\quad
+  x_{k+1} = x_k\, \frac{L_k}{L_{k+1}},
+\end{equation}
+so that the characteristic arriving at $x_{k+1}$ originated at
+\begin{equation}\label{eq:scaling-origin}
+  x_k = x_{k+1}\, \frac{L_{k+1}}{L_k}.
+\end{equation}
+Integrating \eqref{eq:scaling-ode} in the same way gives
+\begin{equation}
+  u_{k+1} = u_k\, \frac{U_k}{U_{k+1}}.
+\end{equation}
+Combining this with the initial condition $u_k(x)$ and the
+characteristic origin \eqref{eq:scaling-origin} gives the solution of the
+PDE at $t_{k+1} = t_k + \Delta t$, i.e.\ the scaling operator in closed form,
+\begin{equation}\label{eq:scaling-operator}
+  \Phi_{\Delta t}^{(S)}(u_k)(x) = u_{k+1}(x) = \frac{U_k}{U_{k+1}}\, u_k\!\left( x\, \frac{L_{k+1}}{L_k} \right).
+\end{equation}
+Substituting in
+\begin{align}
+  \tilde{U}_{k+1} = \frac{U_{k+1}}{U_{k}},\\
+  \tilde{L}_{k+1} = \frac{L_{k+1}}{L_k},
+\end{align}
+we have
+\begin{equation}
+  \Phi_{\Delta t}^{(S)}(u_k)(x) = u_{k+1}(x) = \frac{1}{\tilde{U}_{k+1}}u_k\!\left( x\, \tilde{L}_{k+1} \right).
+\end{equation}
+$\tilde{U}_{k+1}$ and $\tilde{L}_{k+1}$ are set such that the resulting solution has a specific first order moment, $M_0$ and second order moment, $M_2$. Denote the
+moments of the input $u_k$ as
+\begin{equation}
+  M_0^* = \int u_k \mathrm{d}x,
+\end{equation}
+and
+\begin{equation}
+  M_2^* = \int x^2 u_k \mathrm{d}x.
+\end{equation}
+The requriment for the first moment
+\begin{equation}
+  M_0 = \int \frac{1}{\tilde{U}_{k+1}}u_k\!\left( x\, \tilde{L}_{k+1} \right)\mathrm{d}x = \frac{1}{\tilde{U}_{k+1}\tilde{L}_{k+1}}M_0^*.
+\end{equation}
+The second moment requirment is
+\begin{equation}\label{eq:M2-req}
+  M_2 = \frac{1}{M_0}\int x^2\frac{1}{\tilde{U}_{k+1}}u_k\!\left( x\, \tilde{L}_{k+1} \right)\mathrm{d}x.
+\end{equation}
+Substituting $y = x\, \tilde{L}_{k+1}$ in the integral gives
+\begin{equation}
+  \int x^2\, \frac{1}{\tilde{U}_{k+1}} u_k\!\left( x\, \tilde{L}_{k+1} \right) \mathrm{d}x
+  = \frac{1}{\tilde{U}_{k+1}\tilde{L}_{k+1}^3} \int y^2 u_k(y)\, \mathrm{d}y
+  = \frac{M_2^*}{\tilde{U}_{k+1}\tilde{L}_{k+1}^3},
+\end{equation}
+so that \eqref{eq:M2-req} becomes
+\begin{equation}
+  M_2 = \frac{M_2^*}{M_0\, \tilde{U}_{k+1}\tilde{L}_{k+1}^3}.
+\end{equation}
+Using the first-moment requirement in the form $M_0\, \tilde{U}_{k+1}\tilde{L}_{k+1} = M_0^*$ to eliminate $\tilde{U}_{k+1}$, this reduces to
+\begin{equation}
+  M_2 = \frac{M_2^*}{M_0^*\, \tilde{L}_{k+1}^2},
+\end{equation}
+which gives
+\begin{equation}\label{eq:Ltilde-solution}
+  \tilde{L}_{k+1} = \sqrt{\frac{M_2^*}{M_0^*\, M_2}}.
+\end{equation}
+Substituting \eqref{eq:Ltilde-solution} back into the first-moment requirement $\tilde{U}_{k+1}\tilde{L}_{k+1} = M_0^*/M_0$ then yields
+\begin{equation}\label{eq:Utilde-solution}
+  \tilde{U}_{k+1} = \frac{M_0^*}{M_0\, \tilde{L}_{k+1}}
+  = \frac{(M_0^*)^{3/2}}{M_0}\sqrt{\frac{M_2}{M_2^*}}.
+\end{equation}
+\section{Post-processing}
+Assume that $L$ and $U$ are of the form
+\begin{equation}\label{eq:L-form}
+  L = (t^* + a_L)^{b_L},
+\end{equation}
+and
+\begin{equation}\label{eq:U-form}
+  U = (t^* + a_U)^{b_U}.
+\end{equation}
+
+Define
+\begin{equation}\label{eq:logs}
+  \mathcal{L}_k = \ln L_k, \qquad \mathcal{U}_k = \ln U_k,
+\end{equation}
+together with the per-step log-ratios
+\begin{equation}\label{eq:log-ratios}
+  \ell_k = \ln \tilde{L}_{k+1}, \qquad \lambda_k = \ln \tilde{U}_{k+1}.
+\end{equation}
+\begin{equation}\label{eq:cumsum}
+  \mathcal{L}_k = \mathcal{L}_0 + \sum_{i=1}^{k} \ell_i = \ln(L_k),
+  \qquad
+  \mathcal{U}_k = \mathcal{U}_0 + \sum_{i=1}^{k} \lambda_i = \ln(U_k).
+\end{equation}
+grows only linearly in $k$; unlike $L_k$ and $U_k$ themselves, $\mathcal{L}_k$ and $\mathcal{U}_k$ never
+overflow.
+
+Differentiating \eqref{eq:L-form} and \eqref{eq:U-form} with respect to $t^*$ gives
+\begin{equation}\label{eq:tstar-ag}
+  t^* + a_L = L^{1/b_L},
+  \qquad
+  t^* + a_U = U^{1/b_U}.
+\end{equation}
+By the chain rule
+\begin{equation}
+  \alpha = \frac{\frac{\mathrm{d}L}{\mathrm{d}t^*}\frac{\mathrm{d}t^*}{\mathrm{d}t}}{L} = \frac{b_L}{t^* + a_L}\frac{L^2}{D}.
+\end{equation}
+Substituting \eqref{eq:tstar-ag}
+\begin{equation}\label{eq:alpha-L}
+  \alpha = \frac{b_L}{D} \, L^{\,2 - 1/b_L}.
+\end{equation}
+The same steps applied to $\beta$ give
+\begin{equation}\label{eq:beta-LU}
+  \beta = \frac{b_U}{D} \, L^{2} U^{-1/b_U}.
+\end{equation}
+Taking logarithms
+\begin{equation}\label{eq:alpha-log}
+  \ln \alpha_k = \ln \frac{b_L}{D} + \left( 2 - \frac{1}{b_L} \right) \mathcal{L}_k,
+\end{equation}
+\begin{equation}\label{eq:beta-log}
+  \ln \beta_k = \ln \frac{b_U}{D} + 2 \mathcal{L}_k - \frac{\mathcal{U}_k}{b_U}.
+\end{equation}
+Finally, $\alpha_k$ and $\beta_k$ are estimated directly from the log-ratios already in hand,
+without any finite difference of $L_k$ or $U_k$ themselves,
+\begin{equation}\label{eq:alpha-beta-fd}
+  \alpha_k \approx \frac{\ell_k}{\Delta t}, \qquad \beta_k \approx \frac{\lambda_k}{\Delta t}.
+\end{equation}
+By fitting curves to Eq.~\eqref{eq:alpha-log} and Eq.~\eqref{eq:beta-log} we can compute $a_L$, $a_U$, $b_L$, and $b_U$.
+
+
+\end{document}
