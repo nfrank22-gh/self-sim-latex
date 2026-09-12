@@ -414,32 +414,7 @@ We store $\ln(U_k)$ and $\ln(L_k)$ instead of $U_k$ and $L_k$ to avoid overflow,
   \qquad
   \log_b(X-Y) = \log_b(X) + \log_b\!\bigl(1-b^{\,y-x}\bigr) \quad (X>Y>0),
 \end{equation}
-where $x=\log_b(X)$, $y=\log_b(Y)$; taking $b=e$ and letting $X$ be whichever term has the larger log keeps $y-x\le0$, so \eqref{eq:log-sum-exp} never overflows. This gives the stable primitives
-\begin{equation}\label{eq:logadd-logsub}
-  \mathrm{logadd}(x,y) := \max\{x,y\} + \ln\!\bigl(1+e^{-|x-y|}\bigr) = \ln\!\bigl(e^x+e^y\bigr),
-  \qquad
-  \mathrm{logsub}(x,y) := x + \ln\!\bigl(1-e^{\,y-x}\bigr) = \ln\!\bigl(e^x-e^y\bigr) \ \ (x>y).
-\end{equation}
-\par
-With $x_1 := \ln(23) + 2\ln(L_k)$, $x_2 := \ln(16) + 2\ln(L_{k-1})$, $x_3 := \ln(5) + 2\ln(L_{k-2})$ (assuming $23L_k^2 > 16L_{k-1}^2$, true whenever $L$ is not decreasing too fast across the stencil), two applications of \eqref{eq:logadd-logsub} give
-\begin{equation}\label{eq:Lambda-def}
-  \Lambda_k := \mathrm{logadd}\Bigl(\mathrm{logsub}(x_1,x_2),\,x_3\Bigr) = \ln\!\bigl(23L_k^2 - 16L_{k-1}^2 + 5L_{k-2}^2\bigr)
-\end{equation}
-without ever forming $L_k^2$ itself. Define the (safely computable) log-arguments
-\begin{equation}\label{eq:q-def}
-  q_k^U := \Lambda_k - \frac{\ln(U_k)}{\beta_U} + \ln\!\left[\frac{i\cdot\Delta t}{12D}\right],
-  \qquad
-  q_k^L := \Lambda_k - \frac{\ln(L_k)}{\beta_L} + \ln\!\left[\frac{i\cdot\Delta t}{12D}\right].
-\end{equation}
-A third application of \eqref{eq:logadd-logsub}, now to $1+e^{q_k^U}$ (i.e. $x=0$, $y=q_k^U$), turns \eqref{eq:UL-ratio-expanded} into
-\begin{equation}\label{eq:U-ratio-log}
-  \ln(U_{k+i}) = \ln(U_k) + \beta_U\,\mathrm{logadd}\bigl(q_k^U,0\bigr),
-\end{equation}
-\begin{equation}\label{eq:L-ratio-log}
-  \ln(L_{k+i}) = \ln(L_k) + \beta_L\,\mathrm{logadd}\bigl(q_k^L,0\bigr),
-\end{equation}
-so every exponential evaluated -- in \eqref{eq:logadd-logsub}, \eqref{eq:Lambda-def} and \eqref{eq:U-ratio-log}--\eqref{eq:L-ratio-log} -- has non-positive argument and can never overflow.
-
+where $x=\log_b(X)$, $y=\log_b(Y)$.
 
 \subsection{Integration}
 Let
