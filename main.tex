@@ -3,6 +3,8 @@
 \usepackage{amsmath, amssymb}
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \title{Self similar diffusion}
 \author{}
@@ -324,23 +326,19 @@ We use the following non-dimensionalization
   u = \frac{u^*}{U},
 \end{equation}
 \begin{equation}\label{eq:x-nondim}
-  x = \frac{x^*}{L_k},
+  x = \frac{x^*}{L},
 \end{equation}
-where $U$ and $L_k$ are functions of time. For the temporal coordinate, we define
+where $U$ and $L$ are functions of time. For the temporal coordinate, we define
 \begin{equation}\label{eq:tstar-def}
   t^* = s(t),
 \end{equation}
 such that
 \begin{equation}\label{eq:sprime}
-  \frac{\mathrm{d} s}{\mathrm{d} t} = s' = \frac{L_k^2}{D}.
+  \frac{\mathrm{d} s}{\mathrm{d} t} = s' = \frac{L_k^2}{D},
 \end{equation}
-Because
-\begin{equation}\label{eq:tstar-identity}
-  \frac{\mathrm{d} t^*}{\mathrm{d} t^*} = 1 = \frac{\mathrm{d} s}{\mathrm{d} t} \frac{\mathrm{d} t}{\mathrm{d} t^*}
-\end{equation}
-it follows that
+and
 \begin{equation}\label{eq:dtdtstar}
-  \frac{\mathrm{d} t}{\mathrm{d} t^*} = \frac{D}{L_k^2}.
+\frac{\mathrm{d} t}{\mathrm{d} t^*} = \frac{D}{L_k^2}.
 \end{equation}
 
 Using the chain rule, the left-hand side of \eqref{eq:dim-diffusion} becomes
@@ -408,6 +406,7 @@ As such
   \qquad
   \frac{L_{k+i}}{L_k} = \left( 1 + \frac{i\cdot \Delta t}{12 D}\frac{23L_k^2 - 16L_{k-1}^2 + 5L_{k-2}^2}{L_k^{1/ \beta_L}} \right)^{\beta_L}.
 \end{equation}
+<<<<<<< HEAD
 We store $\ln(U_k)$ and $\ln(L_k)$ instead of $U_k$ and $L_k$ to avoid overflow, but naively substituting $U_k^{1/\beta_U} = \exp[\ln(U_k)/\beta_U]$ and $L_k^2 = \exp[2\ln(L_k)]$ into \eqref{eq:UL-ratio-expanded} defeats the purpose: exponentiating $2\ln(L_k)$ or $-\ln(U_k)/\beta_U$ just hands back the huge quantity we were trying to avoid. Instead we combine every sum and difference in log space using
 \begin{equation}\label{eq:log-sum-exp}
   \log_b(X+Y) = \log_b(X) + \log_b\!\bigl(1+b^{\,y-x}\bigr),
@@ -415,13 +414,16 @@ We store $\ln(U_k)$ and $\ln(L_k)$ instead of $U_k$ and $L_k$ to avoid overflow,
   \log_b(X-Y) = \log_b(X) + \log_b\!\bigl(1-b^{\,y-x}\bigr) \quad (X>Y>0),
 \end{equation}
 where $x=\log_b(X)$, $y=\log_b(Y)$.
+=======
+>>>>>>> 895d73b (m)
 
 \subsection{Integration}
-Let
+The numerical scheme will use different operator splitting schemes which are composed of the diffusion step
 \begin{equation}
+  \label{eq:diff_step}
   \Phi_{\Delta t}^{(D)}(u_k) = u_k + \int_{t_k}^{t_k+\Delta t} \frac{\partial^2 u}{\partial x^2}\mathrm{d}t,
 \end{equation}
-and
+and the scaling step
 \begin{equation}
   \Phi_{\Delta t}^{(S)}(u_k) = u_k + \int_{t_k}^{t_{k+1}}
   \left( \frac{L'}{L} x \frac{\partial u}{\partial x} - \frac{U'}{U} u \right) \mathrm{d}t.
@@ -473,8 +475,16 @@ Substituting in
 \end{align}
 we have
 \begin{equation}
+  \label{eq:scaleStep}
   \Phi_{\Delta t}^{(S)}(u_k)(x) = u_{k+1}(x) = \frac{1}{\tilde{U}_{k+1}}u_k\!\left( x\, \tilde{L}_{k+1} \right).
 \end{equation}
+\subsubsection{Specteral interpolation}
+From Eq.~\eqref{eq:scaleStep}, for a real-valued field $u_k$, $u_{k+1}$ can be computed using spectral interpolation via the non-negative frequency components obtained from a real Fast Fourier Transform ($\mathrm{RFFT}$):
+\begin{equation}
+  u_{k+1}(x) = \frac{1}{\tilde{U}_{k+1}}\left\{\hat{u}_0^{(k)} + 2 \sum_{j=1}^{N/2-1} \left[ \operatorname{Re}(\hat{u}_j^{(k)}) \cos\left(\frac{2\pi j \tilde{L}_{k+1} x}{H}\right) - \operatorname{Im}(\hat{u}_j^{(k)}) \sin\left(\frac{2\pi j \tilde{L}_{k+1} x}{H}\right) \right] + \hat{u}_{N/2}^{(k)} \cos\left(\frac{\pi N \tilde{L}_{k+1} x}{H}\right)\right\},
+\end{equation}
+where $\hat{u}_j^{(k)} = \frac{1}{N} \mathrm{RFFT}(u_k)_j$ for $j = 0, 1, \dots, N/2$, the Nyquist term at $j = N/2$ is included only if $N$ is even, and $H$ is the fixed physical domain length of \S\ref{sssec:domain-setup}.
+\subsubsection{Moment constraints}\label{sssec:moment-constraints}
 $\tilde{U}_{k+1}$ and $\tilde{L}_{k+1}$ are set such that the resulting solution has a specific first order moment, $M_0$ and second order moment, $M_2$. Denote the
 moments of the input $u_k$ as
 \begin{equation}
@@ -515,6 +525,142 @@ Substituting \eqref{eq:Ltilde-solution} back into the first-moment requirement $
   \tilde{U}_{k+1} = \frac{M_0^*}{M_0\, \tilde{L}_{k+1}}
   = \frac{(M_0^*)^{3/2}}{M_0}\sqrt{\frac{M_2}{M_2^*}}.
 \end{equation}
+\subsection{Algorithm}
+
+\subsubsection{Domain, grid, and notation}\label{sssec:domain-setup}
+The spatial domain is periodic with a fixed physical length $H$ and $N$ grid
+points; both are simulation parameters, fixed for the whole run, and are
+distinct from the time-varying self-similar length scale $L_k$ (hence the
+different symbol). The domain is centered at the origin,
+$x \in [-H/2, H/2)$, with uniform spacing $\Delta x = H/N$ and grid points
+\begin{equation}\label{eq:grid}
+  x_n = -\frac{H}{2} + n\, \Delta x, \qquad n = 0, 1, \dots, N-1
+\end{equation}
+(indices are 0-based here, as is conventional for FFTs; shift by one in a
+1-indexed language such as Julia). Every integral over $x$ below -- in
+particular the moments $M_0, M_2, M_0^*, M_2^*$ -- is approximated by the
+Riemann sum $\int f(x)\,\mathrm{d}x \approx \Delta x \sum_{n=0}^{N-1} f(x_n)$
+on this grid. The field $u_k$ always lives on this same fixed grid: rescaling
+never changes the grid itself, it resamples the field onto it via the
+spectral interpolation of Eq.~\eqref{eq:scaleStep} and the equation that
+follows it.
+
+\subsubsection{Initialization}
+A run is specified by the initial field $u_0(x_n)$, the diffusivity $D$, the
+domain parameters $H, N$, a fixed nondimensional timestep $\Delta t$, a time
+horizon $T_{\mathrm{end}}$, and placeholder initial guesses
+$\beta_U^{(0)}, \beta_L^{(0)}$ (unused until the Strang-splitting variant of
+\textsc{intStep}, \S\ref{sssec:strang}, is implemented). From these:
+\begin{itemize}
+  \item The number of steps is $N_{\mathrm{steps}} = \lceil T_{\mathrm{end}}/\Delta t \rceil$.
+  \item The self-similar frame is initialized at the initial condition
+  itself, $L_0 = U_0 = 1$, i.e.\ $\ln L_0 = \ln U_0 = 0$.
+  \item The \emph{target} moments $M_0, M_2$ used in the moment constraints
+  of \S\ref{sssec:moment-constraints} are fixed once, from $u_0$ itself,
+  \begin{equation}\label{eq:target-moments}
+    M_0 = \Delta x \sum_n u_0(x_n), \qquad M_2 = \Delta x \sum_n x_n^2\, u_0(x_n),
+  \end{equation}
+  and are never recomputed: all subsequent growth of mass and spread is
+  absorbed into $U_k, L_k$ rather than changing $M_0, M_2$.
+\end{itemize}
+
+\subsubsection{Top-level integrator}
+\begin{algorithm}[H]
+\caption{Top-level integrator}
+\begin{algorithmic}[1]
+\Require $u_0$, $D$, $H$, $N$, $\Delta t$, $T_{\mathrm{end}}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
+\State $N_{\mathrm{steps}} \gets \lceil T_{\mathrm{end}}/\Delta t \rceil$
+\State $\ln U_0 \gets 0$, $\ln L_0 \gets 0$
+\State Compute target moments $M_0, M_2$ from $u_0$ via \eqref{eq:target-moments}
+\State $\beta_U \gets \beta_U^{(0)}$, $\beta_L \gets \beta_L^{(0)}$
+\State Store $(u_0, \ln U_0, \ln L_0, \beta_U, \beta_L)$
+\For{$k = 0, 1, \dots, N_{\mathrm{steps}}-1$}
+  \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{intStep}{u_k, \ln U_k, \ln L_k, \beta_U, \beta_L}$ \Comment{\S\ref{sssec:lie-trotter}}
+  \State $u_{k+1}(x_0) \gets 0$;\ \ $u_{k+1}(x_{N-1}) \gets 0$ \Comment{zero the two edge grid points, in physical space}
+  \If{$k+1 \geq 3$}
+    \State Update $\beta_U, \beta_L$ by root-finding \Comment{\S\ref{sssec:beta-estimation}}
+  \EndIf
+  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \beta_U, \beta_L)$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+Throughout, all arithmetic on $U_k, L_k$ (which can be extremely large or
+small) is done in log space -- adding and subtracting logarithms rather than
+multiplying and dividing the values themselves -- with exponentiation
+deferred until a final value is actually needed (e.g.\ for output), to avoid
+overflow or underflow. Note that $\beta_U, \beta_L$ are threaded through
+every call to \textsc{intStep} and stored at every step, but under
+Lie--Trotter splitting (\S\ref{sssec:lie-trotter}) they are not actually used
+by the step computation itself: they are plumbing for the future
+Strang-splitting variant of \textsc{intStep} (\S\ref{sssec:strang}), which
+will need them.
+
+\subsubsection{intStep: Lie--Trotter splitting}\label{sssec:lie-trotter}
+Given $(u_k, \ln U_k, \ln L_k, \beta_U, \beta_L)$, this implementation of
+\textsc{intStep} returns $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1})$ by composing
+the diffusion operator $\Phi_{\Delta t}^{(D)}$ (Eq.~\eqref{eq:diff_step})
+with the scaling operator $\Phi_{\Delta t}^{(S)}$ (Eq.~\eqref{eq:scaleStep}),
+diffusion first, then scaling; $\beta_U, \beta_L$ are accepted as arguments
+but not used by any of the steps below.
+\begin{enumerate}
+  \item \textbf{Diffusion substep, evaluated exactly in Fourier space.}
+  Because the diffusion term in \eqref{eq:transformed} has unit coefficient
+  in the nondimensional time $t$, $\Phi_{\Delta t}^{(D)}$ has the closed-form
+  spectral solution
+  \begin{equation}\label{eq:diffusion-propagator}
+    \hat u_j^{(D)} = \hat u_j^{(k)}\, e^{-k_j^2 \Delta t}, \qquad k_j = \frac{2\pi j}{H}, \quad j = 0, \dots, \left\lfloor N/2 \right\rfloor,
+  \end{equation}
+  where $\hat u_j^{(k)} = \mathrm{RFFT}(u_k)_j$: this is an exact one-shot
+  spectral propagator, not an approximate time-marching scheme, so no
+  sub-stepping or implicit solve is needed. Inverse-transforming gives the
+  diffused field $u_k^{(D)}(x_n)$.
+  \item \textbf{Moments of the diffused field,}
+  \begin{equation}\label{eq:actual-moments}
+    M_0^* = \Delta x \sum_n u_k^{(D)}(x_n), \qquad M_2^* = \Delta x \sum_n x_n^2\, u_k^{(D)}(x_n).
+  \end{equation}
+  \item \textbf{Scale factors from the moment constraints}
+  (\S\ref{sssec:moment-constraints}), using the fixed targets $M_0, M_2$
+  from \eqref{eq:target-moments} and $M_0^*, M_2^*$ just computed,
+  \begin{equation}\label{eq:step-scale-factors}
+    \tilde L_{k+1} = \sqrt{\frac{M_2^*}{M_0^* M_2}}, \qquad
+    \tilde U_{k+1} = \frac{(M_0^*)^{3/2}}{M_0}\sqrt{\frac{M_2}{M_2^*}}.
+  \end{equation}
+  \item \textbf{Apply the scaling operator} via the spectral interpolation
+  formula following Eq.~\eqref{eq:scaleStep} (with its domain-length symbol
+  read as $H$), evaluated at each grid point $x_n$ using the RFFT
+  coefficients of $u_k^{(D)}$ together with $\tilde L_{k+1}, \tilde U_{k+1}$
+  from \eqref{eq:step-scale-factors}, to obtain $u_{k+1}(x_n)$.
+  \item \textbf{Update the log-scale state,}
+  \begin{equation}
+    \ln U_{k+1} = \ln U_k + \ln \tilde U_{k+1}, \qquad
+    \ln L_{k+1} = \ln L_k + \ln \tilde L_{k+1}.
+  \end{equation}
+\end{enumerate}
+
+\subsubsection{intStep: Strang splitting (placeholder)}\label{sssec:strang}
+A second, second-order-accurate implementation of \textsc{intStep} will use
+Strang splitting -- a symmetric composition of half-steps of the scaling and
+diffusion operators -- and will make use of $\beta_U, \beta_L$. Details
+(step ordering, half-step sizes) are deferred to future work.
+
+\subsubsection{Estimating $\beta_U$ and $\beta_L$}\label{sssec:beta-estimation}
+Once at least four states have been stored ($k+1 \geq 3$), $\beta_U$ and
+$\beta_L$ are re-estimated from the log-scale history using
+Eq.~\eqref{eq:UL-ratio-expanded} with base index $k$ and offset $i=1$, so
+that every quantity other than the unknown is already available from the
+stored history:
+\begin{equation}\label{eq:beta-U-rootfind}
+  \frac{U_{k+1}}{U_k} = \left(1 + \frac{\Delta t}{12D}\, \frac{23L_k^2 - 16L_{k-1}^2 + 5L_{k-2}^2}{U_k^{1/\beta_U}}\right)^{\beta_U},
+\end{equation}
+and identically with $U \to L$ for $\beta_L$, where
+$U_{k+1}/U_k = e^{\ln U_{k+1} - \ln U_k}$ and likewise for $L$. Each of
+\eqref{eq:beta-U-rootfind} and its $L$-counterpart is a single scalar
+equation in a single unknown ($\beta_U$, resp.\ $\beta_L$), solved by
+\texttt{brentq}; the implementer will need to choose a bracketing interval
+(e.g.\ centered on the previous $\beta_U, \beta_L$ estimate, widened
+adaptively if it fails to bracket a root). Before $k+1 \geq 3$, $\beta_U$ and
+$\beta_L$ are left unchanged at whatever was passed in -- initially their
+placeholder values $\beta_U^{(0)}, \beta_L^{(0)}$.
 \section{Post-processing}
 Assume that $L$ and $U$ are of the form
 \begin{equation}\label{eq:L-form}
