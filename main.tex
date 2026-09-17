@@ -28,7 +28,7 @@ scales $U$ and $L$ taken to be functions of $t$:
   u_i &= \frac{u_i^*}{U}, \\
   x_i &= \frac{x_i^*}{L}, \\
   p &= \frac{p^*}{\rho U^2}, \\
-  \frac{\mathrm{d}t}{\mathrm{d}t^*} &= \frac{U^2}{\nu}. \label{eq:ns-dtdtstar}
+  \frac{\mathrm{d}t}{\mathrm{d}t^*} &= \frac{U}{L}. \label{eq:ns-dtdtstar}
 \end{align}
 We will also need, for each component $j$,
 \begin{equation}\label{eq:ns-dxdt}
@@ -44,7 +44,7 @@ time-derivative term becomes
  Substituting \eqref{eq:ns-dtdtstar} and
 \eqref{eq:ns-dxdt}, this becomes
 \begin{equation}\label{eq:ns-final}
-   \frac{\partial u_i^*}{\partial t^*} = U^\prime \frac{U^2}{\nu}u_i + U \left(\frac{\partial u_i}{\partial t}\frac{U^2}{\nu} - \frac{\partial u_i}{\partial x_j} x_j \frac{L^\prime}{L} \frac{U^2}{\nu}\right).
+   \frac{\partial u_i^*}{\partial t^*} = U^\prime \frac{U}{L}u_i + U \left(\frac{\partial u_i}{\partial t}\frac{U}{L} - \frac{\partial u_i}{\partial x_j} x_j \frac{L^\prime}{L} \frac{U}{L}\right).
 \end{equation}
 
 The convection term is
@@ -63,14 +63,14 @@ The viscous term is
 Substituting \eqref{eq:ns-final}, \eqref{eq:ns-convection}, \eqref{eq:ns-pressure},
 and \eqref{eq:ns-viscous} into \eqref{eq:ns-momentum} gives
 \begin{equation}\label{eq:ns-assembled}
-  \frac{U^2 U^\prime}{\nu} u_i
-  + \frac{U^3}{\nu}\frac{\partial u_i}{\partial t}
-  - \frac{U^3}{\nu}\frac{L^\prime}{L} x_j \frac{\partial u_i}{\partial x_j}
+  \frac{U U^\prime}{L} u_i
+  + \frac{U^2}{L}\frac{\partial u_i}{\partial t}
+  - \frac{U^2}{L}\frac{L^\prime}{L} x_j \frac{\partial u_i}{\partial x_j}
   + \frac{U^2}{L} u_j \frac{\partial u_i}{\partial x_j}
   = -\frac{U^2}{L} \frac{\partial p}{\partial x_i}
   + \frac{\nu U}{L^2} \frac{\partial^2 u_i}{\partial x_j \partial x_j}.
 \end{equation}
-Dividing through by $U^3/\nu$ and introducing the instantaneous Reynolds number
+Dividing through by $U^2/L$ and introducing the instantaneous Reynolds number
 \begin{equation}\label{eq:ns-reynolds}
   Re = \frac{UL}{\nu}, \qquad \text{so that} \qquad \frac{\nu}{UL} = \frac{1}{Re},
 \end{equation}
@@ -79,13 +79,18 @@ gives the nondimensional momentum equation
   \frac{\partial u_i}{\partial t}
   = \frac{L^\prime}{L} x_j \frac{\partial u_i}{\partial x_j}
   - \frac{U^\prime}{U} u_i
-  - \frac{1}{Re} u_j \frac{\partial u_i}{\partial x_j}
-  - \frac{1}{Re} \frac{\partial p}{\partial x_i}
-  + \frac{1}{Re^2} \frac{\partial^2 u_i}{\partial x_j \partial x_j}.
+  - u_j \frac{\partial u_i}{\partial x_j}
+  - \frac{\partial p}{\partial x_i}
+  + \frac{1}{Re} \frac{\partial^2 u_i}{\partial x_j \partial x_j}.
 \end{equation}
 The dimensional continuity equation is simply
 \begin{equation}\label{eq:ns-nondim-continuity}
   \frac{\partial u_i}{\partial x_i} = 0.
+\end{equation}
+\subsection{Viscosity}
+Let the kinemetic viscosity be given by
+\begin{equation}
+   
 \end{equation}
 
 \section{1D Diffusion equation}
