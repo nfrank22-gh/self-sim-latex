@@ -14,83 +14,103 @@
 \newlabel{eq:ns-viscous}{{12}{2}{Navier--Stokes}{equation.12}{}}
 \newlabel{eq:ns-assembled}{{13}{2}{Navier--Stokes}{equation.13}{}}
 \newlabel{eq:ns-reynolds}{{14}{2}{Navier--Stokes}{equation.14}{}}
-\newlabel{eq:ns-nondim-momentum}{{15}{2}{Navier--Stokes}{equation.15}{}}
+\newlabel{eq:ns-nondim-momentum-base}{{15}{2}{Navier--Stokes}{equation.15}{}}
 \newlabel{eq:ns-nondim-continuity}{{16}{2}{Navier--Stokes}{equation.16}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}1D Diffusion equation}{2}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Governing equations}{2}{subsection.2.1}\protected@file@percent }
-\newlabel{eq:dim-diffusion}{{17}{2}{Governing equations}{equation.17}{}}
-\newlabel{eq:u-nondim}{{18}{2}{Governing equations}{equation.18}{}}
-\newlabel{eq:x-nondim}{{19}{2}{Governing equations}{equation.19}{}}
-\newlabel{eq:tstar-def}{{20}{2}{Governing equations}{equation.20}{}}
-\newlabel{eq:sprime}{{21}{2}{Governing equations}{equation.21}{}}
-\newlabel{eq:dtdtstar}{{22}{2}{Governing equations}{equation.22}{}}
-\newlabel{eq:lhs-chain}{{23}{2}{Governing equations}{equation.23}{}}
-\newlabel{eq:dxdt}{{24}{2}{Governing equations}{equation.24}{}}
-\newlabel{eq:lhs-transformed}{{25}{3}{Governing equations}{equation.25}{}}
-\newlabel{eq:rhs-chain}{{26}{3}{Governing equations}{equation.26}{}}
-\newlabel{eq:dxdxstar}{{27}{3}{Governing equations}{equation.27}{}}
-\newlabel{eq:rhs-transformed}{{28}{3}{Governing equations}{equation.28}{}}
-\newlabel{eq:transformed}{{29}{3}{Governing equations}{equation.29}{}}
-\newlabel{eq:U-power-form}{{30}{3}{Governing equations}{equation.30}{}}
-\newlabel{eq:U-ratio}{{31}{3}{Governing equations}{equation.31}{}}
-\newlabel{eq:dtstar-approx}{{32}{3}{Governing equations}{equation.32}{}}
-\newlabel{eq:UL-ratio-expanded}{{33}{3}{Governing equations}{equation.33}{}}
-\newlabel{eq:log-sum-exp}{{34}{3}{Governing equations}{equation.34}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Integration}{3}{subsection.2.2}\protected@file@percent }
-\newlabel{eq:diff_step}{{35}{3}{Integration}{equation.35}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.1}scaling operator}{4}{subsubsection.2.2.1}\protected@file@percent }
-\newlabel{eq:scaling-characteristic}{{38}{4}{scaling operator}{equation.38}{}}
-\newlabel{eq:scaling-ode}{{40}{4}{scaling operator}{equation.40}{}}
-\newlabel{eq:scaling-origin}{{42}{4}{scaling operator}{equation.42}{}}
-\newlabel{eq:scaling-operator}{{44}{4}{scaling operator}{equation.44}{}}
-\newlabel{eq:scaleStep}{{47}{4}{scaling operator}{equation.47}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.2}Specteral interpolation}{4}{subsubsection.2.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.3}Moment constraints}{5}{subsubsection.2.2.3}\protected@file@percent }
-\newlabel{sssec:moment-constraints}{{2.2.3}{5}{Moment constraints}{subsubsection.2.2.3}{}}
-\newlabel{eq:M2-req}{{52}{5}{Moment constraints}{equation.52}{}}
-\newlabel{eq:Ltilde-solution}{{56}{5}{Moment constraints}{equation.56}{}}
-\newlabel{eq:Utilde-solution}{{57}{5}{Moment constraints}{equation.57}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Algorithm}{5}{subsection.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}Domain, grid, and notation}{5}{subsubsection.2.3.1}\protected@file@percent }
-\newlabel{sssec:domain-setup}{{2.3.1}{5}{Domain, grid, and notation}{subsubsection.2.3.1}{}}
-\newlabel{eq:grid}{{58}{5}{Domain, grid, and notation}{equation.58}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}Initialization}{6}{subsubsection.2.3.2}\protected@file@percent }
-\newlabel{eq:target-moments}{{60}{6}{Initialization}{equation.60}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}Top-level integrator}{6}{subsubsection.2.3.3}\protected@file@percent }
-\newlabel{sssec:top-level-integrator}{{2.3.3}{6}{Top-level integrator}{subsubsection.2.3.3}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Top-level integrator}}{6}{algorithm.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.4}Substeps}{6}{subsubsection.2.3.4}\protected@file@percent }
-\newlabel{sssec:substeps}{{2.3.4}{6}{Substeps}{subsubsection.2.3.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {Diffuse}$(u, \Delta t)$.}{7}{section*.1}\protected@file@percent }
-\newlabel{eq:diffusion-propagator}{{61}{7}{\textsc {Diffuse}$(u, \Delta t)$}{equation.61}{}}
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {Scale}$(u, \ln \tilde  U, \ln \tilde  L)$.}{7}{section*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {ConstrainedScale}$(u, \ln U, \ln L)$.}{7}{section*.3}\protected@file@percent }
-\newlabel{eq:actual-moments}{{62}{7}{\textsc {ConstrainedScale}$(u, \ln U, \ln L)$}{equation.62}{}}
-\newlabel{eq:step-scale-factors}{{63}{7}{\textsc {ConstrainedScale}$(u, \ln U, \ln L)$}{equation.63}{}}
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {PredictScale}$(i, \ln U_k, \ln L_{k-2:k}, \beta _U, \beta _L)$.}{7}{section*.4}\protected@file@percent }
-\newlabel{eq:ln-dtstar}{{64}{7}{\textsc {PredictScale}$(i, \ln U_k, \ln L_{k-2:k}, \beta _U, \beta _L)$}{equation.64}{}}
-\newlabel{eq:G-def}{{65}{7}{\textsc {PredictScale}$(i, \ln U_k, \ln L_{k-2:k}, \beta _U, \beta _L)$}{equation.65}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.5}\textsc  {LieTrotter}: Lie--Trotter splitting}{7}{subsubsection.2.3.5}\protected@file@percent }
-\newlabel{sssec:lie-trotter}{{2.3.5}{7}{\textsc {LieTrotter}: Lie--Trotter splitting}{subsubsection.2.3.5}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Lie--Trotter step}}{7}{algorithm.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.6}\textsc  {Strang}: Strang splitting}{8}{subsubsection.2.3.6}\protected@file@percent }
-\newlabel{sssec:strang}{{2.3.6}{8}{\textsc {Strang}: Strang splitting}{subsubsection.2.3.6}{}}
-\newlabel{eq:strang-composition}{{66}{8}{\textsc {Strang}: Strang splitting}{equation.66}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces Strang step}}{8}{algorithm.3}\protected@file@percent }
-\newlabel{eq:strang-predict}{{67}{8}{\textsc {Strang}: Strang splitting}{equation.67}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.7}\textsc  {EstimateBeta}: estimating $\beta _U$ and $\beta _L$}{8}{subsubsection.2.3.7}\protected@file@percent }
-\newlabel{sssec:beta-estimation}{{2.3.7}{8}{\textsc {EstimateBeta}: estimating \texorpdfstring {$\beta _U$}{beta\_U} and \texorpdfstring {$\beta _L$}{beta\_L}}{subsubsection.2.3.7}{}}
-\newlabel{eq:beta-U-rootfind}{{68}{8}{\textsc {EstimateBeta}: estimating \texorpdfstring {$\beta _U$}{beta\_U} and \texorpdfstring {$\beta _L$}{beta\_L}}{equation.68}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Post-processing}{8}{section.3}\protected@file@percent }
-\newlabel{eq:L-form}{{69}{8}{Post-processing}{equation.69}{}}
-\newlabel{eq:U-form}{{70}{8}{Post-processing}{equation.70}{}}
-\newlabel{eq:logs}{{71}{9}{Post-processing}{equation.71}{}}
-\newlabel{eq:log-ratios}{{72}{9}{Post-processing}{equation.72}{}}
-\newlabel{eq:cumsum}{{73}{9}{Post-processing}{equation.73}{}}
-\newlabel{eq:tstar-ag}{{74}{9}{Post-processing}{equation.74}{}}
-\newlabel{eq:alpha-L}{{76}{9}{Post-processing}{equation.76}{}}
-\newlabel{eq:beta-LU}{{77}{9}{Post-processing}{equation.77}{}}
-\newlabel{eq:alpha-log}{{78}{9}{Post-processing}{equation.78}{}}
-\newlabel{eq:beta-log}{{79}{9}{Post-processing}{equation.79}{}}
-\newlabel{eq:alpha-beta-fd}{{80}{9}{Post-processing}{equation.80}{}}
-\gdef \@abspage@last{9}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Viscosity}{2}{subsection.1.1}\protected@file@percent }
+\newlabel{eq:ns-nondim-momentum-base}{{1.1}{2}{Viscosity}{equation.18}{}}
+\newlabel{eq:ns-nondim-momentum}{{19}{2}{Viscosity}{equation.19}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Fourier representation}{2}{subsection.1.2}\protected@file@percent }
+\newlabel{eq:ns-fourier-convention}{{20}{2}{Fourier representation}{equation.20}{}}
+\newlabel{eq:ns-fourier-viscous}{{21}{2}{Fourier representation}{equation.21}{}}
+\newlabel{eq:ns-fourier-pressure}{{22}{2}{Fourier representation}{equation.22}{}}
+\newlabel{eq:ns-fourier-convection}{{23}{2}{Fourier representation}{equation.23}{}}
+\newlabel{eq:ns-scaling-divform}{{24}{2}{Fourier representation}{equation.24}{}}
+\newlabel{eq:ns-fourier-scaling}{{25}{3}{Fourier representation}{equation.25}{}}
+\newlabel{eq:ns-nondim-momentum-fourier}{{26}{3}{Fourier representation}{equation.26}{}}
+\newlabel{eq:ns-fourier-continuity}{{27}{3}{Fourier representation}{equation.27}{}}
+\newlabel{eq:ns-pressure-contracted}{{28}{3}{Fourier representation}{equation.28}{}}
+\newlabel{eq:ns-continuity-dk}{{29}{3}{Fourier representation}{equation.29}{}}
+\newlabel{eq:ns-fourier-poisson}{{30}{3}{Fourier representation}{equation.30}{}}
+\newlabel{eq:ns-fourier-pressure-substituted}{{31}{3}{Fourier representation}{equation.31}{}}
+\newlabel{eq:ns-projection-tensor}{{32}{3}{Fourier representation}{equation.32}{}}
+\newlabel{eq:ns-fourier-final}{{33}{3}{Fourier representation}{equation.33}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}NS term}{3}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Scaling term}{3}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}1D Diffusion equation}{4}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Governing equations}{4}{subsection.2.1}\protected@file@percent }
+\newlabel{eq:dim-diffusion}{{37}{4}{Governing equations}{equation.37}{}}
+\newlabel{eq:u-nondim}{{38}{4}{Governing equations}{equation.38}{}}
+\newlabel{eq:x-nondim}{{39}{4}{Governing equations}{equation.39}{}}
+\newlabel{eq:tstar-def}{{40}{4}{Governing equations}{equation.40}{}}
+\newlabel{eq:sprime}{{41}{4}{Governing equations}{equation.41}{}}
+\newlabel{eq:dtdtstar}{{42}{4}{Governing equations}{equation.42}{}}
+\newlabel{eq:lhs-chain}{{43}{4}{Governing equations}{equation.43}{}}
+\newlabel{eq:dxdt}{{44}{4}{Governing equations}{equation.44}{}}
+\newlabel{eq:lhs-transformed}{{45}{4}{Governing equations}{equation.45}{}}
+\newlabel{eq:rhs-chain}{{46}{4}{Governing equations}{equation.46}{}}
+\newlabel{eq:dxdxstar}{{47}{4}{Governing equations}{equation.47}{}}
+\newlabel{eq:rhs-transformed}{{48}{4}{Governing equations}{equation.48}{}}
+\newlabel{eq:transformed}{{49}{4}{Governing equations}{equation.49}{}}
+\newlabel{eq:U-power-form}{{50}{5}{Governing equations}{equation.50}{}}
+\newlabel{eq:U-ratio}{{51}{5}{Governing equations}{equation.51}{}}
+\newlabel{eq:dtstar-approx}{{52}{5}{Governing equations}{equation.52}{}}
+\newlabel{eq:UL-ratio-expanded}{{53}{5}{Governing equations}{equation.53}{}}
+\newlabel{eq:log-sum-exp}{{54}{5}{Governing equations}{equation.54}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Integration}{5}{subsection.2.2}\protected@file@percent }
+\newlabel{eq:diff_step}{{55}{5}{Integration}{equation.55}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.1}scaling operator}{5}{subsubsection.2.2.1}\protected@file@percent }
+\newlabel{eq:scaling-characteristic}{{58}{5}{scaling operator}{equation.58}{}}
+\newlabel{eq:scaling-ode}{{60}{5}{scaling operator}{equation.60}{}}
+\newlabel{eq:scaling-origin}{{62}{6}{scaling operator}{equation.62}{}}
+\newlabel{eq:scaling-operator}{{64}{6}{scaling operator}{equation.64}{}}
+\newlabel{eq:scaleStep}{{67}{6}{scaling operator}{equation.67}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.2}Specteral interpolation}{6}{subsubsection.2.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.3}Moment constraints}{6}{subsubsection.2.2.3}\protected@file@percent }
+\newlabel{sssec:moment-constraints}{{2.2.3}{6}{Moment constraints}{subsubsection.2.2.3}{}}
+\newlabel{eq:M2-req}{{72}{7}{Moment constraints}{equation.72}{}}
+\newlabel{eq:Ltilde-solution}{{76}{7}{Moment constraints}{equation.76}{}}
+\newlabel{eq:Utilde-solution}{{77}{7}{Moment constraints}{equation.77}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Algorithm}{7}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}Domain, grid, and notation}{7}{subsubsection.2.3.1}\protected@file@percent }
+\newlabel{sssec:domain-setup}{{2.3.1}{7}{Domain, grid, and notation}{subsubsection.2.3.1}{}}
+\newlabel{eq:grid}{{78}{7}{Domain, grid, and notation}{equation.78}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}Initialization}{7}{subsubsection.2.3.2}\protected@file@percent }
+\newlabel{eq:target-moments}{{80}{8}{Initialization}{equation.80}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}Top-level integrator}{8}{subsubsection.2.3.3}\protected@file@percent }
+\newlabel{sssec:top-level-integrator}{{2.3.3}{8}{Top-level integrator}{subsubsection.2.3.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Top-level integrator}}{8}{algorithm.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.4}Substeps}{8}{subsubsection.2.3.4}\protected@file@percent }
+\newlabel{sssec:substeps}{{2.3.4}{8}{Substeps}{subsubsection.2.3.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {Diffuse}$(u, \Delta t)$.}{8}{section*.1}\protected@file@percent }
+\newlabel{eq:diffusion-propagator}{{81}{8}{\textsc {Diffuse}$(u, \Delta t)$}{equation.81}{}}
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {Scale}$(u, \ln \tilde  U, \ln \tilde  L)$.}{9}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {ConstrainedScale}$(u, \ln U, \ln L)$.}{9}{section*.3}\protected@file@percent }
+\newlabel{eq:actual-moments}{{82}{9}{\textsc {ConstrainedScale}$(u, \ln U, \ln L)$}{equation.82}{}}
+\newlabel{eq:step-scale-factors}{{83}{9}{\textsc {ConstrainedScale}$(u, \ln U, \ln L)$}{equation.83}{}}
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {PredictScale}$(i, \ln U_k, \ln L_{k-2:k}, \beta _U, \beta _L)$.}{9}{section*.4}\protected@file@percent }
+\newlabel{eq:ln-dtstar}{{84}{9}{\textsc {PredictScale}$(i, \ln U_k, \ln L_{k-2:k}, \beta _U, \beta _L)$}{equation.84}{}}
+\newlabel{eq:G-def}{{85}{9}{\textsc {PredictScale}$(i, \ln U_k, \ln L_{k-2:k}, \beta _U, \beta _L)$}{equation.85}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.5}\textsc  {LieTrotter}: Lie--Trotter splitting}{9}{subsubsection.2.3.5}\protected@file@percent }
+\newlabel{sssec:lie-trotter}{{2.3.5}{9}{\textsc {LieTrotter}: Lie--Trotter splitting}{subsubsection.2.3.5}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Lie--Trotter step}}{9}{algorithm.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.6}\textsc  {Strang}: Strang splitting}{10}{subsubsection.2.3.6}\protected@file@percent }
+\newlabel{sssec:strang}{{2.3.6}{10}{\textsc {Strang}: Strang splitting}{subsubsection.2.3.6}{}}
+\newlabel{eq:strang-composition}{{86}{10}{\textsc {Strang}: Strang splitting}{equation.86}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces Strang step}}{10}{algorithm.3}\protected@file@percent }
+\newlabel{eq:strang-predict}{{87}{10}{\textsc {Strang}: Strang splitting}{equation.87}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.7}\textsc  {EstimateBeta}: estimating $\beta _U$ and $\beta _L$}{10}{subsubsection.2.3.7}\protected@file@percent }
+\newlabel{sssec:beta-estimation}{{2.3.7}{10}{\textsc {EstimateBeta}: estimating \texorpdfstring {$\beta _U$}{beta\_U} and \texorpdfstring {$\beta _L$}{beta\_L}}{subsubsection.2.3.7}{}}
+\newlabel{eq:beta-U-rootfind}{{88}{10}{\textsc {EstimateBeta}: estimating \texorpdfstring {$\beta _U$}{beta\_U} and \texorpdfstring {$\beta _L$}{beta\_L}}{equation.88}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Post-processing}{10}{section.3}\protected@file@percent }
+\newlabel{eq:L-form}{{89}{10}{Post-processing}{equation.89}{}}
+\newlabel{eq:U-form}{{90}{10}{Post-processing}{equation.90}{}}
+\newlabel{eq:logs}{{91}{11}{Post-processing}{equation.91}{}}
+\newlabel{eq:log-ratios}{{92}{11}{Post-processing}{equation.92}{}}
+\newlabel{eq:cumsum}{{93}{11}{Post-processing}{equation.93}{}}
+\newlabel{eq:tstar-ag}{{94}{11}{Post-processing}{equation.94}{}}
+\newlabel{eq:alpha-L}{{96}{11}{Post-processing}{equation.96}{}}
+\newlabel{eq:beta-LU}{{97}{11}{Post-processing}{equation.97}{}}
+\newlabel{eq:alpha-log}{{98}{11}{Post-processing}{equation.98}{}}
+\newlabel{eq:beta-log}{{99}{11}{Post-processing}{equation.99}{}}
+\newlabel{eq:alpha-beta-fd}{{100}{11}{Post-processing}{equation.100}{}}
+\gdef \@abspage@last{11}
