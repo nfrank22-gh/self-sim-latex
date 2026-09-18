@@ -205,16 +205,61 @@ Let ${\Phi}_{\Delta t}^{(NS)}$ be
   + \Delta \cdot k^2 \hat{u}_i \mathrm{d}t.
 \end{equation}
 \subsection{Scaling term}
-Let $\Phi_{\Delta t}^{(\mathrm{SC})}$
+Let $\Phi_{\Delta t}^{(\mathrm{SC})}$ be
 \begin{equation}
-  \Phi_{\Delta t}^{(\mathrm{SC})}(u_i(t)) = u_i(t) - \int_t^{t+\Delta t}-\frac{L^\prime}{L} \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
-  - \frac{U^\prime}{U} \hat{u}_i \mathrm{d}t.
+  \Phi_{\Delta t}^{(\mathrm{SC})}\big(\hat{u}_i(t)\big) = \hat{u}_i(t) - \int_t^{t+\Delta t}
+  \left[\frac{L^\prime}{L} \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
+  + \frac{U^\prime}{U} \hat{u}_i\right] \mathrm{d}t.
 \end{equation}
-This operator can be obtained from the anyaltical solution to
+This operator can be obtained from the analytical solution to the
+$\mathbf{k}$-space scaling PDE
+\begin{equation}\label{eq:scaling-pde}
+  \frac{\partial \widehat{u}_i}{\partial t} = -\frac{L^\prime}{L} \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
+  - \frac{U^\prime}{U} \hat{u}_i,
+\end{equation}
+but rather than solving \eqref{eq:scaling-pde} directly in $\mathbf{k}$-space,
+it is easier to transform to physical space, solve there, and transform the
+result back. Since the Fourier transform \eqref{eq:ns-fourier-convention} is
+linear, \eqref{eq:scaling-pde} is simply the transform of the physical-space
+scaling contribution to \eqref{eq:ns-nondim-momentum}, i.e.
+\begin{equation}\label{eq:scaling-pde-phys}
+  \frac{\partial u_i}{\partial t} = \frac{L^\prime}{L}\, x_j \frac{\partial u_i}{\partial x_j} - \frac{U^\prime}{U}\, u_i.
+\end{equation}
+This is a linear, first-order PDE in $\mathbf{x}$-space and can be solved by
+the method of characteristics, exactly as for the scalar scaling operator of
+\S\ref{sssec:scaling-operator-1d}. Let $x_j(t)$ denote a
+characteristic curve satisfying
+\begin{equation}\label{eq:scaling-char-x}
+  \frac{\mathrm{d} x_j}{\mathrm{d} t} = -x_j\, \frac{L^\prime}{L}.
+\end{equation}
+The total derivative of $u_i$ along this curve is
 \begin{equation}
-  \frac{\partial \widehat{u}_i}{\partial t}
+  \frac{\mathrm{d} u_i}{\mathrm{d} t} = \frac{\partial u_i}{\partial t} + \frac{\partial u_i}{\partial x_j}\frac{\mathrm{d} x_j}{\mathrm{d} t}
+  = \frac{\partial u_i}{\partial t} - x_j \frac{L^\prime}{L} \frac{\partial u_i}{\partial x_j},
 \end{equation}
-
+so along the characteristic \eqref{eq:scaling-pde-phys} reduces to the
+ordinary differential equation
+\begin{equation}\label{eq:scaling-char-amp}
+  \frac{\mathrm{d} u_i}{\mathrm{d} t} = -\frac{U^\prime}{U}\, u_i.
+\end{equation}
+Integrating \eqref{eq:scaling-char-x} from $t$ to $t+\Delta t$ gives
+\begin{equation}
+  \ln x_j(t+\Delta t) - \ln x_j(t) = -\big[\ln L(t+\Delta t) - \ln L(t)\big]
+  \quad\Longrightarrow\quad
+  x_j(t+\Delta t) = x_j(t)\, \frac{L(t)}{L(t+\Delta t)},
+\end{equation}
+so that the characteristic arriving at the evaluation point
+$x_j \equiv x_j(t+\Delta t)$ originated at
+\begin{equation}\label{eq:scaling-char-x-sol}
+  x_j(t) = x_j\, \frac{L(t+\Delta t)}{L(t)}.
+\end{equation}
+Integrating \eqref{eq:scaling-char-amp} in the same way gives
+$u_i(t+\Delta t) = u_i(t)\, U(t)/U(t+\Delta t)$. Combining this with the
+characteristic origin \eqref{eq:scaling-char-x-sol} and the initial condition
+$u_i(t,\cdot)$ gives the exact solution of \eqref{eq:scaling-pde-phys},
+\begin{equation}\label{eq:scaling-analytical}
+  u_i(t+\Delta t, x) = \frac{U(t)}{U(t+\Delta t)}\; u_i\!\left(t,\; x\, \frac{L(t+\Delta t)}{L(t)}\right).
+\end{equation}
 
 
 \section{1D Diffusion equation}
@@ -329,7 +374,7 @@ and the scaling step
   \left( \frac{L'}{L} x \frac{\partial u}{\partial x} - \frac{U'}{U} u \right) \mathrm{d}t.
 \end{equation}
 
-\subsubsection{scaling operator}
+\subsubsection{scaling operator}\label{sssec:scaling-operator-1d}
 evaluating $\Phi_{\Delta t}^{(S)}$ can be done by solving the following pde
 \begin{equation}
   \frac{\partial u}{\partial t} = x\frac{L^\prime}{L}\frac{\partial u}{\partial x} - \frac{U^\prime}{U}u,
