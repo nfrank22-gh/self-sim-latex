@@ -1,0 +1,219 @@
+\section{The Navier--Stokes equations}\label{sec:ns}
+
+The second instantiation is the incompressible Navier--Stokes equations, with
+$d = 3$ and $u_i$ the velocity field. The framework applies unchanged; what
+this section supplies is the clock, the nondimensional right-hand side, and
+the structure of the physics operator. Two items needed to actually run the
+algorithm of \S\ref{sec:algorithm} --- the time-marching scheme inside
+$\Phi^{(\mathrm{P})}$ and the constraint functionals --- remain open, and are
+marked as such below.
+
+\subsection{Governing equations and clock}\label{ssec:ns-clock}
+
+The dimensional equations are
+\begin{equation}\label{eq:ns-momentum}
+  \frac{\partial u_i^*}{\partial t^*} + u_j^* \frac{\partial u_i^*}{\partial x_j^*}= -\frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*} + \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*},
+\end{equation}
+together with the continuity equation,
+\begin{equation}\label{eq:ns-continuity}
+  \frac{\partial u_i^*}{\partial x_i^*} = 0,
+\end{equation}
+so that, in the notation of \eqref{eq:fw-general-pde},
+\begin{equation}\label{eq:ns-R}
+  R_i^*(u^*) = - u_j^* \frac{\partial u_i^*}{\partial x_j^*}
+  - \frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*}
+  + \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*}.
+\end{equation}
+In addition to the rescaling \eqref{eq:fw-nondim} of $u_i$ and $x_j$, the
+pressure is nondimensionalized by the dynamic pressure,
+\begin{equation}\label{eq:ns-pressure-nondim}
+  p = \frac{p^*}{\rho U^2}.
+\end{equation}
+Term by term, the convective and pressure terms scale as $U^2/L$,
+\begin{equation}\label{eq:ns-convection}
+  u_j^* \frac{\partial u_i^*}{\partial x_j^*} = \frac{U^2}{L} u_j \frac{\partial u_i}{\partial x_j},
+  \qquad
+  \frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*} = \frac{U^2}{L} \frac{\partial p}{\partial x_i},
+\end{equation}
+while the viscous term scales as $\nu U / L^2$,
+\begin{equation}\label{eq:ns-viscous}
+  \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*} = \frac{\nu U}{L^2}\frac{\partial^2 u_i}{\partial x_j \partial x_j}.
+\end{equation}
+The clock is chosen so that the dominant, advective part of the physical term
+of the lemma \eqref{eq:fw-lemma} carries unit coefficient,
+\begin{equation}\label{eq:ns-clock}
+  \frac{\tau}{U} \cdot \frac{U^2}{L} = 1
+  \quad\Longrightarrow\quad
+  \tau = \frac{L}{U},
+\end{equation}
+which is the eddy turnover time of the current scales. In log form, as
+required by \eqref{eq:fw-ln-dtstar},
+\begin{equation}\label{eq:ns-ln-clock}
+  \ln \tau_k = \ln L_k - \ln U_k .
+\end{equation}
+Applying $\tau / U = L/U^2$ to \eqref{eq:ns-R} and introducing the
+instantaneous Reynolds number
+\begin{equation}\label{eq:ns-reynolds}
+  Re = \frac{U L}{\nu},
+\end{equation}
+the rescaling lemma \eqref{eq:fw-lemma} gives the nondimensional momentum
+equation
+\begin{equation}\label{eq:ns-nondim-momentum-base}
+  \frac{\partial u_i}{\partial t}
+  = \sigma_L\, x_j \frac{\partial u_i}{\partial x_j}
+  - \sigma_U\, u_i
+  - u_j \frac{\partial u_i}{\partial x_j}
+  - \frac{\partial p}{\partial x_i}
+  + \frac{1}{Re} \frac{\partial^2 u_i}{\partial x_j \partial x_j},
+\end{equation}
+and the continuity equation is unchanged by the rescaling,
+\begin{equation}\label{eq:ns-nondim-continuity}
+  \frac{\partial u_i}{\partial x_i} = 0.
+\end{equation}
+
+\subsection{Viscosity}\label{ssec:ns-viscosity}
+Let the kinematic viscosity be given by
+\begin{equation}\label{eq:ns-viscosity-split}
+  \nu = \nu_{\mathrm{turb}} + \nu_{\mathrm{mol}},
+\end{equation}
+where $\nu_{\mathrm{mol}}$ is the molecular viscosity and $\nu_{\mathrm{turb}}$
+is a turbulent viscosity representing under-resolved eddies, approximated as
+\begin{equation}\label{eq:ns-turb-viscosity}
+  \nu_{\mathrm{turb}} = \Delta \cdot U L,
+\end{equation}
+where $\Delta$ is a parameter related to the resolution of the mesh. In the
+limit of infinite Reynolds number, where $\nu_{\mathrm{mol}} = 0$, we have
+$1/Re = \Delta$ and the momentum equation
+\eqref{eq:ns-nondim-momentum-base} becomes
+\begin{equation}\label{eq:ns-nondim-momentum}
+  \frac{\partial u_i}{\partial t}
+  = \sigma_L\, x_j \frac{\partial u_i}{\partial x_j}
+  - \sigma_U\, u_i
+  - u_j \frac{\partial u_i}{\partial x_j}
+  - \frac{\partial p}{\partial x_i}
+  + \Delta \cdot \frac{\partial^2 u_i}{\partial x_j \partial x_j}.
+\end{equation}
+
+\subsection{Fourier representation}\label{ssec:ns-fourier}
+Using the Fourier convention \eqref{eq:fw-fourier-convention}, the viscous
+term becomes
+\begin{equation}\label{eq:ns-fourier-viscous}
+  \widehat{\frac{\partial^2 u_i}{\partial x_j \partial x_j}} = -k^2 \hat{u}_i,
+\end{equation}
+and the pressure gradient becomes
+\begin{equation}\label{eq:ns-fourier-pressure}
+  \widehat{\frac{\partial p}{\partial x_i}} = \mathrm{i} k_i \hat{p}.
+\end{equation}
+The convective term
+\begin{equation}\label{eq:ns-fourier-convection}
+  \hat{N}_i = \widehat{u_j \frac{\partial u_i}{\partial x_j}},
+\end{equation}
+will be evaluated pseudo-spectrally. The scaling terms transform as in
+\eqref{eq:fw-scaling-pde-fourier} with $d = 3$, so the transform of
+\eqref{eq:ns-nondim-momentum} is
+\begin{equation}\label{eq:ns-nondim-momentum-fourier}
+  \frac{\partial \hat{u}_i}{\partial t}
+  = -\sigma_L \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
+  - \sigma_U\, \hat{u}_i
+  - \hat{N}_i
+  - \mathrm{i} k_i \hat{p}
+  - \Delta \cdot k^2 \hat{u}_i,
+\end{equation}
+and the transform of the continuity equation
+\eqref{eq:ns-nondim-continuity} is
+\begin{equation}\label{eq:ns-fourier-continuity}
+  k_i \hat{u}_i = 0.
+\end{equation}
+
+\subsection{Pressure and the solenoidal projection}\label{ssec:ns-projection}
+Contracting \eqref{eq:ns-nondim-momentum-fourier} with $k_i$ and using the
+continuity constraint gives
+\begin{equation}\label{eq:ns-pressure-contracted}
+  0 = -\sigma_L \left( k_i k_j \frac{\partial \hat{u}_i}{\partial k_j} + d\, k_i \hat{u}_i \right)
+  - \sigma_U\, k_i \hat{u}_i
+  - k_i \hat{N}_i
+  - \mathrm{i} k^2 \hat{p}
+  - \Delta \cdot k^2 k_i \hat{u}_i.
+\end{equation}
+The remaining scaling contribution also vanishes: differentiating
+\eqref{eq:ns-fourier-continuity} with respect to $k_j$ gives
+\begin{equation}\label{eq:ns-continuity-dk}
+  \frac{\partial}{\partial k_j}\left( k_i \hat{u}_i \right)
+  = \hat{u}_j + k_i \frac{\partial \hat{u}_i}{\partial k_j} = 0
+  \quad\Longrightarrow\quad
+  k_i \frac{\partial \hat{u}_i}{\partial k_j} = -\hat{u}_j,
+\end{equation}
+so that $k_i k_j \partial \hat{u}_i / \partial k_j = -k_j \hat{u}_j = 0$.
+Hence the scaling terms are divergence free on their own --- the self-similar
+frame does not generate pressure --- and \eqref{eq:ns-pressure-contracted}
+reduces to a Poisson equation for the pressure,
+\begin{equation}\label{eq:ns-fourier-poisson}
+  \mathrm{i} k^2 \hat{p} = -k_i \hat{N}_i
+  \quad\Longrightarrow\quad
+  \hat{p} = \mathrm{i}\,\frac{k_l \hat{N}_l}{k^2},
+  \qquad k \neq 0,
+\end{equation}
+with $\hat{p}$ at $k = 0$ fixed arbitrarily, since only its gradient enters
+the momentum equation. Substituting \eqref{eq:ns-fourier-poisson} into
+\eqref{eq:ns-nondim-momentum-fourier}, the pressure term becomes
+\begin{equation}\label{eq:ns-fourier-pressure-substituted}
+  -\mathrm{i} k_i \hat{p} = \frac{k_i k_l}{k^2} \hat{N}_l,
+\end{equation}
+which combines with $-\hat{N}_i$ to give the solenoidal projection of the
+convective term. Defining the projection tensor
+\begin{equation}\label{eq:ns-projection-tensor}
+  P_{il}(\mathbf{k}) = \delta_{il} - \frac{k_i k_l}{k^2},
+\end{equation}
+the evolution equation splits exactly along the lines of the lemma
+\eqref{eq:fw-lemma},
+\begin{equation}\label{eq:ns-fourier-final}
+  \frac{\partial \hat{u}_i}{\partial t}
+  = \underbrace{-\sigma_L \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
+  - \sigma_U\, \hat{u}_i}_{\text{scaling terms}}
+  \underbrace{- P_{il}(\mathbf{k})\, \hat{N}_l
+  - \Delta \cdot k^2 \hat{u}_i}_{\text{physical terms}}.
+\end{equation}
+
+\subsection{The physics step}\label{ssec:ns-physics-step}
+
+The physics operator \eqref{eq:fw-physics-flow} is the flow of the bracketed
+physical terms of \eqref{eq:ns-fourier-final},
+\begin{equation}\label{eq:ns-physics-flow}
+  \Phi_{\Delta t}^{(\mathrm{P})}\bigl(\hat{u}_i(t)\bigr)
+  = \hat{u}_i(t) - \int_{t}^{t+\Delta t}
+    \left[ P_{il}(\mathbf{k})\, \hat{N}_l + \Delta \cdot k^2 \hat{u}_i \right] \mathrm{d}t .
+\end{equation}
+
+\emph{Open.} Unlike the 1D case, \eqref{eq:ns-physics-flow} has no closed form:
+the convective term is nonlinear, so $\Phi^{(\mathrm{P})}$ must be realized by
+an actual time-marching scheme. That scheme has not been chosen. Whatever is
+chosen must meet the accuracy requirement of \S\ref{ssec:alg-substeps} ---
+second order for the Strang composition to retain its order --- and must
+handle the dealiasing of the pseudo-spectral product
+\eqref{eq:ns-fourier-convection}. The linear term $-\Delta k^2 \hat u_i$ admits
+an exact integrating factor and need not be marched with the rest.
+
+\subsection{Constraint functionals}\label{ssec:ns-constraints}
+
+\emph{Open.} The constraint functionals of \S\ref{ssec:fw-constraints} have not
+been chosen for the Navier--Stokes case. The moments
+\eqref{eq:1d-functionals} used for the 1D equation do not carry over: a
+velocity field in a periodic box has $\int u_i\, \mathrm{d}\mathbf{x} \approx 0$,
+so $F_1$ as written is not usable as a scale. Any admissible replacement must
+be a pair $(F_1, F_2)$ that is homogeneous under the scaling
+\eqref{eq:fw-scale-step} in the sense of \eqref{eq:fw-homogeneity}, with
+exponents satisfying the solvability condition
+\eqref{eq:fw-constraint-solvable} --- that is, one functional sensitive
+primarily to the amplitude of the field and one sensitive primarily to its
+length scale. Quantities of the right character are the kinetic energy and an
+integral length scale extracted from the energy spectrum, but neither their
+exponents nor their behaviour under the constrained step has been worked out
+here.
+
+\subsection{Boundary treatment}\label{ssec:ns-boundary}
+
+The domain is a periodic box, so no boundary condition is imposed beyond
+periodicity itself and the substep \textsc{ApplyBC} of
+\S\ref{ssec:alg-substeps} is the identity. The tension noted in
+\S\ref{ssec:1d-boundary} between a spectral discretization and a clamped edge
+therefore does not arise here.

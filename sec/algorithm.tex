@@ -1,0 +1,228 @@
+\section{Algorithm}\label{sec:algorithm}
+
+The integrator below is stated once, for any equation that supplies the three
+items of \S\ref{sec:framework}: a clock $\tau$, a physics operator
+$\Phi^{(\mathrm{P})}$, and a pair of constraint functionals. Everything else
+--- the splitting, the scale bookkeeping, the exponent estimation --- is
+common.
+
+\subsection{Domain, grid, and notation}\label{ssec:alg-domain}
+
+The spatial domain is periodic with a fixed physical side length $H$ and $N$
+grid points per direction, centred at the origin, so that
+$x_j \in [-H/2, H/2)$ with uniform spacing $\Delta x = H/N$ and grid points
+\begin{equation}\label{eq:alg-grid}
+  x_n = -\frac{H}{2} + n\, \Delta x, \qquad n = 0, 1, \dots, N-1
+\end{equation}
+in each of the $d$ directions. Every integral over the domain below --- in
+particular the constraint functionals of \S\ref{ssec:fw-constraints} --- is
+approximated by the Riemann sum
+\begin{equation}\label{eq:alg-riemann}
+  \int f(\mathbf{x})\,\mathrm{d}\mathbf{x} \approx (\Delta x)^d \sum_{\mathbf{n}} f(\mathbf{x_n})
+\end{equation}
+on this grid.
+
+An index range abbreviates the corresponding tuple of stored values, e.g.\
+$\ln \tau_{k-2:k} = (\ln \tau_{k-2}, \ln \tau_{k-1}, \ln \tau_k)$. The run
+constants $\Delta t, H, N$, the constraint targets $F_1, F_2$, and whatever
+physical parameters the equation carries are visible to every subroutine and
+are omitted from their signatures. As set out in \S\ref{ssec:fw-powerlaw}, all
+arithmetic on the scales is done on $\ln U_k, \ln L_k$.
+
+\subsection{Initialization}\label{ssec:alg-init}
+
+A run is specified by the initial field $u_0$, the domain parameters $H, N$, a
+fixed self-similar timestep $\Delta t$, a time horizon $T_{\mathrm{end}}$, the
+splitting scheme
+$\mathit{scheme} \in \{\textsc{LieTrotter}, \textsc{Strang}\}$
+(\S\ref{ssec:alg-lie-trotter}, \S\ref{ssec:alg-strang}), and initial guesses
+$\beta_U^{(0)}, \beta_L^{(0)}$, which only seed the bracket of the first
+root-find for $\beta_U, \beta_L$ (\S\ref{ssec:alg-beta-estimation}). From these:
+\begin{itemize}
+  \item The number of steps is $N_{\mathrm{steps}} = \lceil T_{\mathrm{end}}/\Delta t \rceil$.
+  \item The self-similar frame is initialized at the initial condition itself,
+  $L_0 = U_0 = 1$, i.e.\ $\ln L_0 = \ln U_0 = 0$.
+  \item The \emph{target} values $F_1, F_2$ of the constraint functionals
+  (\S\ref{ssec:fw-constraints}) are fixed once, from $u_0$ itself,
+  \begin{equation}\label{eq:alg-targets}
+    F_1 = F_1[u_0], \qquad F_2 = F_2[u_0].
+  \end{equation}
+  \item The flag $\beta_{\mathrm{ok}}$, which records whether the current
+  $\beta_U, \beta_L$ are usable by \textsc{Strang}, starts as
+  $\beta_{\mathrm{ok}} = \text{false}$.
+\end{itemize}
+
+\subsection{Top-level integrator}\label{ssec:alg-top-level}
+\begin{algorithm}[H]
+\caption{Top-level integrator}
+\begin{algorithmic}[1]
+\Require $u_0$, $H$, $N$, $\Delta t$, $T_{\mathrm{end}}$, $\mathit{scheme}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
+\State $N_{\mathrm{steps}} \gets \lceil T_{\mathrm{end}}/\Delta t \rceil$
+\State $\ln U_0 \gets 0$, $\ln L_0 \gets 0$
+\State Compute constraint targets $F_1, F_2$ from $u_0$ via \eqref{eq:alg-targets}
+\State $\beta_U \gets \beta_U^{(0)}$, $\beta_L \gets \beta_L^{(0)}$, $\beta_{\mathrm{ok}} \gets \text{false}$
+\State Store $(u_0, \ln U_0, \ln L_0, \ln \tau_0, \beta_U, \beta_L, \beta_{\mathrm{ok}})$
+\For{$k = 0, 1, \dots, N_{\mathrm{steps}}-1$}
+  \If{$\mathit{scheme} = \textsc{Strang}$ \textbf{and} $\beta_{\mathrm{ok}}$}
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{Strang}{u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-strang}}
+  \Else
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{LieTrotter}{u_k, \ln U_k, \ln L_k}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+  \EndIf
+  \State $u_{k+1} \gets \Call{ApplyBC}{u_{k+1}}$ \Comment{equation-specific, \S\ref{ssec:alg-substeps}}
+  \State $\ln \tau_{k+1} \gets \ln \tau(\ln U_{k+1}, \ln L_{k+1})$ \Comment{\eqref{eq:1d-ln-clock}, \eqref{eq:ns-ln-clock}}
+  \If{$k+1 \geq 3$}
+    \State $(\beta_U, \beta_L, \beta_{\mathrm{ok}}) \gets \Call{EstimateBeta}{\ln U_{k:k+1}, \ln L_{k:k+1}, \ln \tau_{k-2:k}, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-beta-estimation}}
+  \EndIf
+  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \ln \tau_{k+1}, \beta_U, \beta_L, \beta_{\mathrm{ok}})$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+The run parameter $\mathit{scheme}$ selects the step function. \textsc{Strang}
+needs usable estimates of $\beta_U, \beta_L$, so the loop falls back to
+\textsc{LieTrotter} whenever $\beta_{\mathrm{ok}}$ is false. This is always
+the case for the first three steps $k = 0, 1, 2$: the first $\beta$ update
+needs four stored states, so it first runs at the end of step $k = 2$. It is
+also the case for every step that follows a failed $\beta$ update
+(\S\ref{ssec:alg-beta-estimation}), until a later update succeeds. The $\beta$
+update itself runs regardless of $\mathit{scheme}$; under
+$\mathit{scheme} = \textsc{LieTrotter}$ the estimates are diagnostic only.
+
+\subsection{Substeps}\label{ssec:alg-substeps}
+Both splitting schemes are assembled from the substeps below. None of them
+applies the boundary treatment, which is handled only by the top-level loop.
+
+\paragraph{\textsc{Evolve}$(u, \Delta t)$.}
+Applies the physics operator $\Phi_{\Delta t}^{(\mathrm{P})}$ of
+\eqref{eq:fw-physics-flow}: it advances the non-scaling terms of
+\eqref{eq:fw-lemma} over $\Delta t$, leaving the scales $\ln U, \ln L$
+untouched. This is the one substep the framework does not supply. Its
+realization is equation-specific (\S\ref{ssec:1d-physics-step},
+\S\ref{ssec:ns-physics-step}), and it is required to be at least first-order
+accurate for the Lie--Trotter composition and at least second-order accurate
+for the Strang composition, since the splitting cannot recover an order the
+substep does not have.
+
+\paragraph{\textsc{Scale}$(u, \ln \tilde U, \ln \tilde L)$.}
+Applies the scaling operator \eqref{eq:fw-scale-step} with prescribed ratios
+$\tilde U, \tilde L$, returning $\tilde U^{-1} u(\mathbf{x_n} \tilde L)$ at each grid
+point, evaluated with the spectral interpolation of
+\S\ref{ssec:fw-interpolation}. Here, and wherever the substeps are used,
+$\tilde U$ and $\tilde L$ denote the ratio of $U$, respectively $L$, after the
+substep to its value before it. Inside a Lie--Trotter step this is
+$\tilde U_{k+1} = U_{k+1}/U_k$ of \eqref{eq:fw-ratios}; inside a Strang step it
+is a ratio across a half step, $U_{k+1/2}/U_k$ or $U_{k+1}/U_{k+1/2}$
+(\S\ref{ssec:alg-strang}).
+
+\paragraph{\textsc{ConstrainedScale}$(u, \ln U, \ln L)$.}
+Rescales $u$ so that the result carries the fixed targets $F_1, F_2$ of
+\eqref{eq:alg-targets}, and advances the log-scale state accordingly:
+\begin{enumerate}
+  \item \textbf{Functionals of the input,} $F_1^* = F_1[u]$, $F_2^* = F_2[u]$,
+  evaluated on the grid via \eqref{eq:alg-riemann}.
+  \item \textbf{Ratios} $\ln \tilde U, \ln \tilde L$ from the constraint system
+  \eqref{eq:fw-constraint-system}.
+  \item \textbf{Rescale,} $u' = \textsc{Scale}(u, \ln \tilde U, \ln \tilde L)$.
+  \item \textbf{Return} $u'$ together with the advanced state
+  $\ln U + \ln \tilde U$, $\ln L + \ln \tilde L$.
+\end{enumerate}
+No time increment enters \textsc{ConstrainedScale}: the ratios are fixed by the
+functionals of the field it is given, not by the elapsed time. The same substep
+therefore serves as the full scaling step of Lie--Trotter and as the closing
+scaling half step of Strang.
+
+\paragraph{\textsc{PredictScale}$(i, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L)$.}
+Predicts the ratios over the fraction $i$ of step $k$ from the power-law form
+\eqref{eq:fw-powerlaw} rather than from the constraints. It evaluates
+$\ln \Delta t_k^*$ from \eqref{eq:fw-ln-dtstar} and returns
+$\bigl(G_U(i, \beta_U; k),\, G_L(i, \beta_L; k)\bigr)$ using \eqref{eq:fw-G}.
+The same function $G_X$ is inverted for $\beta$ in
+\S\ref{ssec:alg-beta-estimation}.
+
+\paragraph{\textsc{ApplyBC}$(u)$.}
+Imposes whatever boundary treatment the equation requires, after the full step
+has been assembled. It is the identity for a genuinely periodic problem; the
+1D diffusion equation instead clamps the domain edges
+(\S\ref{ssec:1d-boundary}).
+
+\subsection{\textsc{LieTrotter}: Lie--Trotter splitting}\label{ssec:alg-lie-trotter}
+A Lie--Trotter step composes a full physics step with a full scaling step,
+$u_{k+1} = \Phi_{\Delta t}^{(\mathrm{S})}\bigl(\Phi_{\Delta t}^{(\mathrm{P})}(u_k)\bigr)$,
+with the scaling ratios fixed by the constraints. It uses no estimate of
+$\beta_U, \beta_L$, so it is valid from the first step. It is written for a
+general input state $(u, \ln U, \ln L)$ rather than only a stored state
+$(u_k, \ln U_k, \ln L_k)$, so that \textsc{Strang} can call it on a
+half-stepped state.
+\begin{algorithm}[H]
+\caption{Lie--Trotter step}
+\begin{algorithmic}[1]
+\Function{LieTrotter}{$u, \ln U, \ln L$}
+  \State $u^{(\mathrm{P})} \gets \Call{Evolve}{u, \Delta t}$ \Comment{\S\ref{ssec:alg-substeps}}
+  \State \Return $\Call{ConstrainedScale}{u^{(\mathrm{P})}, \ln U, \ln L}$ \Comment{\S\ref{ssec:alg-substeps}}
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{\textsc{Strang}: Strang splitting}\label{ssec:alg-strang}
+A Strang step is the symmetric composition
+\begin{equation}\label{eq:alg-strang-composition}
+  u_{k+1} = \Phi_{\Delta t/2}^{(\mathrm{S})}\Bigl(\Phi_{\Delta t}^{(\mathrm{P})}\bigl(\Phi_{\Delta t/2}^{(\mathrm{S})}(u_k)\bigr)\Bigr)
+\end{equation}
+of a scaling half step, a full physics step, and a second scaling half step.
+The last two of these are exactly a Lie--Trotter step --- a full physics step
+followed by a scaling step whose ratios come from the constraints --- so
+\textsc{Strang} is a predicted scaling half step followed by a call to
+\textsc{LieTrotter}.
+\begin{algorithm}[H]
+\caption{Strang step}
+\begin{algorithmic}[1]
+\Function{Strang}{$u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L$}
+  \State $\bigl(\ln (U_{k+1/2}/U_k),\, \ln (L_{k+1/2}/L_k)\bigr) \gets \Call{PredictScale}{\tfrac12, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L}$ \Comment{\eqref{eq:alg-strang-predict}}
+  \State $u_{k+1/2} \gets \Call{Scale}{u_k, \ln (U_{k+1/2}/U_k), \ln (L_{k+1/2}/L_k)}$
+  \State $\ln U_{k+1/2} \gets \ln U_k + \ln (U_{k+1/2}/U_k)$;\ \ $\ln L_{k+1/2} \gets \ln L_k + \ln (L_{k+1/2}/L_k)$
+  \State \Return $\Call{LieTrotter}{u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2}}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+No constraint fixes the state at $t_k + \Delta t/2$, so the first scaling half
+step takes its ratios from the current power-law estimates, via
+\textsc{PredictScale} with $i = 1/2$:
+\begin{equation}\label{eq:alg-strang-predict}
+  \ln\frac{U_{k+1/2}}{U_k} = G_U\!\left(\tfrac12, \beta_U; k\right), \qquad
+  \ln\frac{L_{k+1/2}}{L_k} = G_L\!\left(\tfrac12, \beta_L; k\right).
+\end{equation}
+The call to \textsc{LieTrotter} then advances $u_{k+1/2}$ over the full
+$\Delta t$, and its \textsc{ConstrainedScale} substep --- the second scaling
+half step --- sets $U_{k+1}/U_{k+1/2}$ and $L_{k+1}/L_{k+1/2}$ so that
+$u_{k+1}$ satisfies the constraints. The half-step state
+$(u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2})$ is internal to the step and is not
+stored. The top-level loop calls \textsc{Strang} only when
+$\beta_{\mathrm{ok}}$ is true (\S\ref{ssec:alg-top-level}), which guarantees
+that $\beta_U, \beta_L$ were fitted to the stored history at the end of the
+previous step and that $\ln \tau_{k-2}$ exists.
+
+\subsection{\textsc{EstimateBeta}: estimating \texorpdfstring{$\beta_U$}{beta\_U} and \texorpdfstring{$\beta_L$}{beta\_L}}\label{ssec:alg-beta-estimation}
+After every step with $k+1 \geq 3$, regardless of $\mathit{scheme}$, $\beta_U$
+and $\beta_L$ are re-estimated from the log-scale history. Four stored states
+are needed: $\ln X_k$ and $\ln X_{k+1}$ for the ratio, and $\ln \tau_{k-2:k}$
+for $\Delta t_k^*$. The update inverts the function $G_X$ of \eqref{eq:fw-G}
+with $i = 1$, the same function that \textsc{PredictScale} evaluates forward
+with $i = 1/2$:
+\begin{equation}\label{eq:alg-beta-rootfind}
+  G_U(1, \beta_U; k) = \ln U_{k+1} - \ln U_k,
+\end{equation}
+and identically with $U \to L$ for $\beta_L$. Each of
+\eqref{eq:alg-beta-rootfind} and its $L$-counterpart is a single scalar
+equation in a single unknown ($\beta_U$, resp.\ $\beta_L$), solved by
+\texttt{brentq}; the implementer will need to choose a bracketing interval
+(e.g.\ centred on the previous $\beta_U, \beta_L$ estimate --- on
+$\beta_U^{(0)}, \beta_L^{(0)}$ for the first update --- widened adaptively if
+it fails to bracket a root).
+
+If both root-finds succeed, \textsc{EstimateBeta} returns the new
+$\beta_U, \beta_L$ with $\beta_{\mathrm{ok}} = \text{true}$. If either fails
+to bracket a root even after widening, the failed estimate keeps its previous
+value (which seeds the next bracket), and \textsc{EstimateBeta} returns
+$\beta_{\mathrm{ok}} = \text{false}$, so the next step falls back to
+\textsc{LieTrotter}. Before $k+1 \geq 3$ no update is made: $\beta_U, \beta_L$
+stay at $\beta_U^{(0)}, \beta_L^{(0)}$ and $\beta_{\mathrm{ok}}$ stays false.

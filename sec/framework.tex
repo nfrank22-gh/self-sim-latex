@@ -1,0 +1,302 @@
+\section{The self-similar framework}\label{sec:framework}
+
+This section collects the machinery that is common to every equation treated
+in this document. It is stated once, for a $d$-dimensional vector field, and
+each equation section (\S\ref{sec:1d}, \S\ref{sec:ns}) supplies only the three
+things that distinguish it: its clock $\tau$, its physical right-hand side
+$R_i^*$, and its constraint functionals.
+
+\subsection{Rescaling into a self-similar frame}\label{ssec:fw-rescaling}
+
+Let $u_i^*(\mathbf{x}^*, t^*)$, $i = 1, \dots, d$, satisfy an evolution
+equation of the form
+\begin{equation}\label{eq:fw-general-pde}
+  \frac{\partial u_i^*}{\partial t^*} = R_i^*(u^*),
+\end{equation}
+on $\mathbb{R}^d$, where $R_i^*$ collects every term other than the time
+derivative. We rescale amplitude, length, and time by
+\begin{equation}\label{eq:fw-nondim}
+  u_i = \frac{u_i^*}{U}, \qquad
+  x_j = \frac{x_j^*}{L}, \qquad
+  t^* = s(t),
+\end{equation}
+where the amplitude scale $U$ and the length scale $L$ are functions of the
+new time $t$, and where we write
+\begin{equation}\label{eq:fw-clock}
+  \tau = \frac{\mathrm{d} s}{\mathrm{d} t} = \frac{\mathrm{d} t^*}{\mathrm{d} t}
+\end{equation}
+for the \emph{clock}: the rate at which physical time advances per unit
+self-similar time. Throughout, a prime denotes differentiation with respect
+to $t$, and we abbreviate the logarithmic rates
+\begin{equation}\label{eq:fw-rates}
+  \sigma_L = \frac{L^\prime}{L}, \qquad \sigma_U = \frac{U^\prime}{U}.
+\end{equation}
+The clock $\tau$ is the only place the physics of a particular equation enters
+the time transformation; it is fixed in \S\ref{ssec:1d-clock} and
+\S\ref{ssec:ns-clock} for the two cases considered here.
+
+Differentiating $x_j = x_j^*/L$ with respect to $t$ at fixed $x_j^*$ gives,
+for each component $j$,
+\begin{equation}\label{eq:fw-dxdt}
+  \frac{\mathrm{d} x_j}{\mathrm{d} t} = -x_j^* \frac{L^\prime}{L^2} = -x_j\, \sigma_L .
+\end{equation}
+Applying the chain rule to the left-hand side of \eqref{eq:fw-general-pde},
+and using \eqref{eq:fw-clock} and \eqref{eq:fw-dxdt},
+\begin{equation}\label{eq:fw-lhs-chain}
+  \begin{aligned}
+  \frac{\partial u_i^*}{\partial t^*}
+  &= \frac{\mathrm{d} t}{\mathrm{d} t^*}\left(
+      \frac{\partial (U u_i)}{\partial t}
+      + U \frac{\partial u_i}{\partial x_j} \frac{\mathrm{d} x_j}{\mathrm{d} t}
+    \right) \\
+  &= \frac{U}{\tau}\left(
+      \frac{\partial u_i}{\partial t}
+      + \sigma_U u_i
+      - \sigma_L\, x_j \frac{\partial u_i}{\partial x_j}
+    \right).
+  \end{aligned}
+\end{equation}
+Equating \eqref{eq:fw-lhs-chain} to $R_i^*$ and solving for
+$\partial u_i / \partial t$ gives the result used throughout this document.
+
+\paragraph{Rescaling lemma.}
+Under the rescaling \eqref{eq:fw-nondim}, the equation
+\eqref{eq:fw-general-pde} becomes
+\begin{equation}\label{eq:fw-lemma}
+  \frac{\partial u_i}{\partial t}
+  = \underbrace{\sigma_L\, x_j \frac{\partial u_i}{\partial x_j}
+    - \sigma_U\, u_i}_{\text{scaling terms}}
+  + \underbrace{\frac{\tau}{U}\, R_i^*(U u,\, L x)}_{\text{physical terms}} .
+\end{equation}
+
+The two scaling terms are the same for every equation: they depend only on
+$\sigma_L$ and $\sigma_U$, never on $R_i^*$. This is what makes the scaling
+operator of \S\ref{ssec:fw-scaling-operator}, the algorithm of
+\S\ref{sec:algorithm}, and the post-processing of \S\ref{sec:postproc} shared.
+All that an equation contributes is $\tau$ and the nondimensional group
+$(\tau/U)\,R_i^*$.
+
+Accordingly we split \eqref{eq:fw-lemma} into two flows. The \emph{scaling
+operator} $\Phi_{\Delta t}^{(\mathrm{S})}$ advances the scaling terms,
+\begin{equation}\label{eq:fw-scaling-flow}
+  \Phi_{\Delta t}^{(\mathrm{S})}(u_i)
+  = u_i + \int_t^{t + \Delta t}
+    \left( \sigma_L\, x_j \frac{\partial u_i}{\partial x_j} - \sigma_U\, u_i \right)
+    \mathrm{d} t,
+\end{equation}
+and the \emph{physics operator} $\Phi_{\Delta t}^{(\mathrm{P})}$ advances the
+rest,
+\begin{equation}\label{eq:fw-physics-flow}
+  \Phi_{\Delta t}^{(\mathrm{P})}(u_i)
+  = u_i + \int_t^{t + \Delta t} \frac{\tau}{U}\, R_i^*(U u,\, L x)\, \mathrm{d} t .
+\end{equation}
+Both are written as the field plus the integral of the terms they advance.
+$\Phi^{(\mathrm{S})}$ is obtained in closed form below and is shared;
+$\Phi^{(\mathrm{P})}$ is equation-specific and is supplied in
+\S\ref{ssec:1d-physics-step} and \S\ref{ssec:ns-physics-step}.
+
+\subsection{The scaling operator}\label{ssec:fw-scaling-operator}
+
+Evaluating $\Phi_{\Delta t}^{(\mathrm{S})}$ amounts to solving
+\begin{equation}\label{eq:fw-scaling-pde}
+  \frac{\partial u_i}{\partial t}
+  = \sigma_L\, x_j \frac{\partial u_i}{\partial x_j} - \sigma_U\, u_i .
+\end{equation}
+This is a linear, first-order PDE and can be solved by the method of
+characteristics. Note that the scaling terms do not couple the components of
+$u_i$, so the argument below is componentwise.
+
+Let $x_j(t)$ denote a characteristic curve satisfying
+\begin{equation}\label{eq:fw-characteristic}
+  \frac{\mathrm{d} x_j}{\mathrm{d} t} = -x_j\, \sigma_L ,
+\end{equation}
+which is \eqref{eq:fw-dxdt}: the characteristics are exactly the paths of
+fixed physical position $x_j^*$. The total derivative of $u_i$ along such a
+curve is
+\begin{equation}\label{eq:fw-total-derivative}
+  \frac{\mathrm{d} u_i}{\mathrm{d} t}
+  = \frac{\partial u_i}{\partial t} + \frac{\partial u_i}{\partial x_j} \frac{\mathrm{d} x_j}{\mathrm{d} t}
+  = \frac{\partial u_i}{\partial t} - \sigma_L\, x_j \frac{\partial u_i}{\partial x_j},
+\end{equation}
+so along the characteristic \eqref{eq:fw-scaling-pde} reduces to the ordinary
+differential equation
+\begin{equation}\label{eq:fw-scaling-ode}
+  \frac{\mathrm{d} u_i}{\mathrm{d} t} = -\sigma_U\, u_i .
+\end{equation}
+
+Integrating \eqref{eq:fw-characteristic} from $t_k$ to $t_{k+1}$ gives
+\begin{equation}\label{eq:fw-char-integrated}
+  \ln x_j(t_{k+1}) - \ln x_j(t_k) = -\bigl[\ln L_{k+1} - \ln L_k\bigr]
+  \quad\Longrightarrow\quad
+  x_j(t_{k+1}) = x_j(t_k)\, \frac{L_k}{L_{k+1}},
+\end{equation}
+so that the characteristic arriving at the evaluation point
+$x_j \equiv x_j(t_{k+1})$ originated at
+\begin{equation}\label{eq:fw-char-origin}
+  x_j(t_k) = x_j\, \frac{L_{k+1}}{L_k} .
+\end{equation}
+Integrating \eqref{eq:fw-scaling-ode} in the same way gives
+$u_i(t_{k+1}) = u_i(t_k)\, U_k / U_{k+1}$. Combining this with the
+characteristic origin \eqref{eq:fw-char-origin} and the initial condition
+$u_i(t_k, \cdot)$ gives the scaling operator in closed form,
+\begin{equation}\label{eq:fw-scaling-closed}
+  \Phi_{\Delta t}^{(\mathrm{S})}(u_i)(\mathbf{x})
+  = \frac{U_k}{U_{k+1}}\, u_i\!\left( \mathbf{x}\, \frac{L_{k+1}}{L_k} \right).
+\end{equation}
+Writing the step ratios
+\begin{equation}\label{eq:fw-ratios}
+  \tilde{U}_{k+1} = \frac{U_{k+1}}{U_k}, \qquad
+  \tilde{L}_{k+1} = \frac{L_{k+1}}{L_k},
+\end{equation}
+this is
+\begin{equation}\label{eq:fw-scale-step}
+  \Phi_{\Delta t}^{(\mathrm{S})}(u_i)(\mathbf{x})
+  = \frac{1}{\tilde{U}_{k+1}}\, u_i\!\left( \mathbf{x}\, \tilde{L}_{k+1} \right).
+\end{equation}
+The operator depends on $\Delta t$ only through the ratios
+$\tilde{U}_{k+1}, \tilde{L}_{k+1}$; given those, no time integration remains.
+
+\paragraph{The scaling terms in \texorpdfstring{$\mathbf{k}$}{k}-space.}
+For equations formulated spectrally it is useful to have the transform of the
+scaling terms. Using $\widehat{\cdot}$ for the spatial Fourier transform,
+\begin{equation}\label{eq:fw-fourier-convention}
+  \hat{u}_i(\mathbf{k}) = \int u_i(\mathbf{x})\, e^{-\mathrm{i} k_j x_j}\, \mathrm{d}\mathbf{x},
+\end{equation}
+and writing the spread term in conservative form,
+\begin{equation}\label{eq:fw-scaling-divform}
+  x_j \frac{\partial u_i}{\partial x_j}
+  = \frac{\partial}{\partial x_j}\left( x_j u_i \right) - d\, u_i,
+\end{equation}
+gives
+\begin{equation}\label{eq:fw-fourier-scaling}
+  \widehat{x_j \frac{\partial u_i}{\partial x_j}}
+  = \mathrm{i} k_j \left( \mathrm{i} \frac{\partial \hat{u}_i}{\partial k_j} \right) - d\, \hat{u}_i
+  = -\left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + d\, \hat{u}_i \right),
+\end{equation}
+so that the transform of \eqref{eq:fw-scaling-pde} is
+\begin{equation}\label{eq:fw-scaling-pde-fourier}
+  \frac{\partial \hat{u}_i}{\partial t}
+  = -\sigma_L \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + d\, \hat{u}_i \right)
+  - \sigma_U\, \hat{u}_i .
+\end{equation}
+Rather than solving \eqref{eq:fw-scaling-pde-fourier} directly in
+$\mathbf{k}$-space, it is easier to transform to physical space, apply
+\eqref{eq:fw-scale-step}, and transform back; the Fourier transform
+\eqref{eq:fw-fourier-convention} is linear, so the two are equivalent.
+
+\subsection{Spectral interpolation}\label{ssec:fw-interpolation}
+
+The closed form \eqref{eq:fw-scale-step} requires $u_i$ at the rescaled points
+$\mathbf{x}\,\tilde{L}_{k+1}$, which are not grid points. On a uniform
+periodic grid the represented field is band-limited, so it can be evaluated at
+arbitrary points exactly, with no interpolation error, by summing its
+truncated Fourier series there:
+\begin{equation}\label{eq:fw-spectral-interp}
+  u_i\!\left(\mathbf{x}\, \tilde{L}_{k+1}\right)
+  = \sum_{\mathbf{k} \in \mathcal{K}} \hat{u}_i(\mathbf{k})\,
+    \exp\!\left( \mathrm{i}\, k_j x_j\, \tilde{L}_{k+1} \right),
+\end{equation}
+where $\mathcal{K}$ is the set of represented wavenumbers and
+$\hat{u}_i(\mathbf{k})$ are the normalized transform coefficients of $u_i$.
+This is the defining property of the scheme: the scaling step introduces no
+spatial discretization error of its own.
+
+Note that \eqref{eq:fw-spectral-interp} is \emph{not} an inverse FFT. The
+output points $\mathbf{x}\,\tilde{L}_{k+1}$ are not the transform grid, so the
+sum is evaluated directly. The concrete real-transform realization for $d = 1$
+is given in \S\ref{ssec:1d-interpolation}.
+
+\subsection{Constraint functionals}\label{ssec:fw-constraints}
+
+The step ratios $\tilde{U}, \tilde{L}$ have so far been left free. One way to
+fix them is to require that the scaled field carry prescribed values of two
+functionals of the field --- this is what pins the self-similar frame to the
+solution rather than prescribing it in advance.
+
+Let $F_1, F_2$ be functionals of the field that are homogeneous under the
+scaling \eqref{eq:fw-scale-step}, that is, for which there exist exponents
+$(p_a, q_a)$ with
+\begin{equation}\label{eq:fw-homogeneity}
+  F_a\!\left[ \tilde{U}^{-1} u(\,\cdot\, \tilde{L}) \right]
+  = \tilde{U}^{-p_a}\, \tilde{L}^{-q_a}\, F_a[u],
+  \qquad a = 1, 2 .
+\end{equation}
+Write $F_a^* = F_a[u]$ for the values carried by the field being scaled and
+$F_a$ for the prescribed target values. Requiring the scaled field to attain
+the targets and taking logarithms turns \eqref{eq:fw-homogeneity} into a
+linear system in $\ln \tilde{U}$ and $\ln \tilde{L}$,
+\begin{equation}\label{eq:fw-constraint-system}
+  \begin{pmatrix} p_1 & q_1 \\ p_2 & q_2 \end{pmatrix}
+  \begin{pmatrix} \ln \tilde{U} \\ \ln \tilde{L} \end{pmatrix}
+  =
+  \begin{pmatrix} \ln (F_1^*/F_1) \\ \ln (F_2^*/F_2) \end{pmatrix},
+\end{equation}
+which has a unique solution precisely when
+\begin{equation}\label{eq:fw-constraint-solvable}
+  p_1 q_2 - p_2 q_1 \neq 0,
+\end{equation}
+i.e.\ when the two functionals respond independently to amplitude and to
+length rescaling. Solving \eqref{eq:fw-constraint-system} directly in log
+space is what the substep \textsc{ConstrainedScale} of
+\S\ref{ssec:alg-substeps} does; note that no time increment enters, since the
+ratios are fixed by the field alone.
+
+A valid choice of $(F_1, F_2)$ is part of specifying an equation. The
+instantiation for the 1D diffusion equation is given in
+\S\ref{ssec:1d-moments}; for the Navier--Stokes equations it remains open
+(\S\ref{ssec:ns-constraints}).
+
+\subsection{Power-law ansatz and the step in physical time}\label{ssec:fw-powerlaw}
+
+The algorithm also needs to \emph{predict} scale ratios over a fraction of a
+step, at points where no constraint is available to fix them
+(\S\ref{ssec:alg-strang}). For this we assume that both scales follow a power
+law in physical time,
+\begin{equation}\label{eq:fw-powerlaw}
+  X = (t^* + \alpha_X)^{\beta_X}, \qquad X \in \{U, L\},
+\end{equation}
+so that the ratio over a fraction $i$ of step $k$ is
+\begin{equation}\label{eq:fw-ratio}
+  \frac{X_{k+i}}{X_k} = \left( 1 + \frac{i\, \Delta t_k^*}{t_k^* + \alpha_X} \right)^{\beta_X}.
+\end{equation}
+Since the time step $\Delta t$ is taken in the self-similar time $t$, the
+corresponding physical increment must be obtained from the clock,
+\begin{equation}\label{eq:fw-dtstar}
+  \Delta t_k^* = \int_{t_k}^{t_{k+1}} \tau\, \mathrm{d} t
+  \approx \frac{\Delta t}{12}\left( 23\tau_k - 16\tau_{k-1} + 5\tau_{k-2} \right),
+\end{equation}
+using a three-point Adams--Bashforth-style quadrature on the stored history of
+$\tau$. Eliminating $t_k^* + \alpha_X = X_k^{1/\beta_X}$ from
+\eqref{eq:fw-powerlaw} and taking logarithms gives the function that the
+algorithm uses in both directions,
+\begin{equation}\label{eq:fw-G}
+  \ln \frac{X_{k+i}}{X_k} = G_X(i, \beta_X; k),
+  \qquad
+  G_X(i, \beta; k) = \beta \ln\!\left( 1 + \exp\!\left( \ln i + \ln \Delta t_k^* - \frac{\ln X_k}{\beta} \right) \right).
+\end{equation}
+It is evaluated forward, with $i = \tfrac12$, to predict a half-step ratio
+(\S\ref{ssec:alg-substeps}), and inverted for $\beta$, with $i = 1$, to
+estimate the exponents from the realized history
+(\S\ref{ssec:alg-beta-estimation}).
+
+\paragraph{Logarithmic arithmetic.}
+$U_k$ and $L_k$ may become extremely large or small, so we store
+$\ln U_k$ and $\ln L_k$ rather than $U_k$ and $L_k$, and perform all
+arithmetic on them in the logarithmic number system, where multiplication and
+division become addition and subtraction, and where sums and differences are
+evaluated by
+\begin{equation}\label{eq:fw-log-sum-exp}
+  \log_b(X+Y) = \log_b(X) + \log_b\!\bigl(1+b^{\,y-x}\bigr),
+  \qquad
+  \log_b(X-Y) = \log_b(X) + \log_b\!\bigl(1-b^{\,y-x}\bigr) \quad (X>Y>0),
+\end{equation}
+with $x = \log_b(X)$, $y = \log_b(Y)$. In particular
+\eqref{eq:fw-dtstar} is evaluated as
+\begin{equation}\label{eq:fw-ln-dtstar}
+  \ln \Delta t_k^* = \ln\frac{\Delta t}{12}
+  + \ln\!\left( 23\, e^{\ln \tau_k} - 16\, e^{\ln \tau_{k-1}} + 5\, e^{\ln \tau_{k-2}} \right),
+\end{equation}
+with the sum taken via \eqref{eq:fw-log-sum-exp}, and each $\ln \tau_k$
+supplied in log form by the equation at hand
+(\eqref{eq:1d-ln-clock}, \eqref{eq:ns-ln-clock}). Exponentiation is deferred
+until a value is actually needed, e.g.\ for output.
