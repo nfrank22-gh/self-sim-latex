@@ -28,28 +28,24 @@ equation of the form
 \begin{equation}\label{eq:fw-general-pde}
   \frac{\partial u_i^*}{\partial t^*} = R_i^*(u^*),
 \end{equation}
-on $\mathbb{R}^d$, where $R_i^*$ collects every term other than the time
-derivative. We rescale amplitude, length, and time by
+on $\mathbb{R}^d$. We rescale amplitude, length, and time by
 \begin{equation}\label{eq:fw-nondim}
   u_i = \frac{u_i^*}{U}, \qquad
   x_j = \frac{x_j^*}{L}, \qquad
-  t^* = s(t),
+  t = \frac{t^*}{s(t)},
 \end{equation}
-where the amplitude scale $U$ and the length scale $L$ are functions of the
-new time $t$, and where we write
+where the amplitude scale $U$ and the length scale $L$ depend on the non dimensional time $t$. The timescale
+is determined by specifiying the clock
 \begin{equation}\label{eq:fw-clock}
-  \tau = \frac{\mathrm{d} s}{\mathrm{d} t} = \frac{\mathrm{d} t^*}{\mathrm{d} t}
+  \tau = \frac{\mathrm{d}t^*}{\mathrm{d}t},
 \end{equation}
-for the \emph{clock}: the rate at which physical time advances per unit
-self-similar time. Throughout, a prime denotes differentiation with respect
-to $t$, and we abbreviate the logarithmic rates
+The clock $\tau$ is problem specific and can contain the time dependent length and amplitude scales.
+It is defined in \S\ref{ssec:1d-clock} and \S\ref{ssec:ns-clock} for the two cases considered here.
+\par
+Throughout, a prime denotes differentiation with respect to $t$ and we use the following abbreviations
 \begin{equation}\label{eq:fw-rates}
   \sigma_L = \frac{L^\prime}{L}, \qquad \sigma_U = \frac{U^\prime}{U}.
 \end{equation}
-The clock $\tau$ is the only place the physics of a particular equation enters
-the time transformation; it is fixed in \S\ref{ssec:1d-clock} and
-\S\ref{ssec:ns-clock} for the two cases considered here.
-
 Differentiating $x_j = x_j^*/L$ with respect to $t$ at fixed $x_j^*$ gives,
 for each component $j$,
 \begin{equation}\label{eq:fw-dxdt}
@@ -73,23 +69,14 @@ and using \eqref{eq:fw-clock} and \eqref{eq:fw-dxdt},
 \end{equation}
 Equating \eqref{eq:fw-lhs-chain} to $R_i^*$ and solving for
 $\partial u_i / \partial t$ gives the result used throughout this document.
-
-\paragraph{Rescaling lemma.}
-Under the rescaling \eqref{eq:fw-nondim}, the equation
-\eqref{eq:fw-general-pde} becomes
+Under the rescaling \eqref{eq:fw-nondim}, the equation \eqref{eq:fw-general-pde} becomes
 \begin{equation}\label{eq:fw-lemma}
   \frac{\partial u_i}{\partial t}
   = \underbrace{\sigma_L\, x_j \frac{\partial u_i}{\partial x_j}
     - \sigma_U\, u_i}_{\text{scaling terms}}
   + \underbrace{\frac{\tau}{U}\, R_i^*(U u,\, L x)}_{\text{physical terms}} .
 \end{equation}
-
-The two scaling terms are the same for every equation: they depend only on
-$\sigma_L$ and $\sigma_U$, never on $R_i^*$. This is what makes the scaling
-operator of \S\ref{ssec:fw-scaling-operator}, the algorithm of
-\S\ref{sec:algorithm}, and the post-processing of \S\ref{sec:postproc} shared.
-All that an equation contributes is $\tau$ and the nondimensional group
-$(\tau/U)\,R_i^*$.
+\par
 
 Accordingly we split \eqref{eq:fw-lemma} into two flows. The \emph{scaling
 operator} $\Phi_{\Delta t}^{(\mathrm{S})}$ advances the scaling terms,
@@ -216,50 +203,36 @@ $\hat{u}_i(\mathbf{k})$ are the normalized transform coefficients of $u_i$.
 This is the defining property of the scheme: the scaling step introduces no
 spatial discretization error of its own.
 
-Note that \eqref{eq:fw-spectral-interp} is \emph{not} an inverse FFT. The
-output points $\mathbf{x}\,\tilde{L}_{k+1}$ are not the transform grid, so the
-sum is evaluated directly. The concrete real-transform realization for $d = 1$
-is given in \S\ref{ssec:1d-interpolation}.
-
 \subsection{Constraint functionals}\label{ssec:fw-constraints}
 
-The step ratios $\tilde{U}, \tilde{L}$ have so far been left free. One way to
-fix them is to require that the scaled field carry prescribed values of two
-functionals of the field --- this is what pins the self-similar frame to the
-solution rather than prescribing it in advance.
-
-Let $F_1, F_2$ be functionals of the field that are homogeneous under the
-scaling \eqref{eq:fw-scale-step}, that is, for which there exist exponents
-$(p_a, q_a)$ with
+Nothing so far fixes the ratios $\tilde{U}_{k+1}, \tilde{L}_{k+1}$ that the
+scaling step \eqref{eq:fw-scale-step} depends on. They are fixed by requiring
+the rescaled field to carry prescribed values of two functionals $F_1, F_2$ of
+the field, each homogeneous under \eqref{eq:fw-scale-step}: there exist
+exponents $p_m, q_m$ with
 \begin{equation}\label{eq:fw-homogeneity}
-  F_a\!\left[ \tilde{U}^{-1} u(\,\cdot\, \tilde{L}) \right]
-  = \tilde{U}^{-p_a}\, \tilde{L}^{-q_a}\, F_a[u],
-  \qquad a = 1, 2 .
+  F_m\!\left[ \frac{1}{\tilde{U}}\, u\!\left( \cdot\, \tilde{L} \right) \right]
+  = \tilde{U}^{-p_m}\, \tilde{L}^{-q_m}\, F_m[u],
+  \qquad m = 1, 2 .
 \end{equation}
-Write $F_a^* = F_a[u]$ for the values carried by the field being scaled and
-$F_a$ for the prescribed target values. Requiring the scaled field to attain
-the targets and taking logarithms turns \eqref{eq:fw-homogeneity} into a
-linear system in $\ln \tilde{U}$ and $\ln \tilde{L}$,
+The targets $F_1, F_2$ are fixed once, from the initial condition
+(\S\ref{ssec:alg-init}). Given a field $u$ with current values
+$F_m^* = F_m[u]$, imposing $\tilde{U}^{-p_m} \tilde{L}^{-q_m} F_m^* = F_m$ and
+taking logarithms gives a system linear in the log-ratios,
 \begin{equation}\label{eq:fw-constraint-system}
-  \begin{pmatrix} p_1 & q_1 \\ p_2 & q_2 \end{pmatrix}
-  \begin{pmatrix} \ln \tilde{U} \\ \ln \tilde{L} \end{pmatrix}
-  =
-  \begin{pmatrix} \ln (F_1^*/F_1) \\ \ln (F_2^*/F_2) \end{pmatrix},
+  \begin{bmatrix} p_1 & q_1 \\ p_2 & q_2 \end{bmatrix}
+  \begin{bmatrix} \ln \tilde{U} \\ \ln \tilde{L} \end{bmatrix}
+  = \begin{bmatrix} \ln F_1^* - \ln F_1 \\ \ln F_2^* - \ln F_2 \end{bmatrix},
 \end{equation}
-which has a unique solution precisely when
+uniquely solvable precisely when
 \begin{equation}\label{eq:fw-constraint-solvable}
   p_1 q_2 - p_2 q_1 \neq 0,
 \end{equation}
-i.e.\ when the two functionals respond independently to amplitude and to
-length rescaling. Solving \eqref{eq:fw-constraint-system} directly in log
-space is what the substep \textsc{ConstrainedScale} of
-\S\ref{ssec:alg-substeps} does; note that no time increment enters, since the
-ratios are fixed by the field alone.
-
-A valid choice of $(F_1, F_2)$ is part of specifying an equation. The
-instantiation for the 1D diffusion equation is given in
-\S\ref{ssec:1d-moments}; for the Navier--Stokes equations it remains open
-(\S\ref{ssec:ns-constraints}).
+that is, when the two functionals respond independently to amplitude and to
+length rescaling. The functionals themselves are equation-specific
+(\S\ref{ssec:1d-moments}, \S\ref{ssec:ns-constraints}); the substep that
+applies \eqref{eq:fw-constraint-system} is \textsc{ConstrainedScale}
+(\S\ref{ssec:alg-substeps}).
 
 \subsection{Power-law ansatz and the step in physical time}\label{ssec:fw-powerlaw}
 
@@ -332,8 +305,7 @@ $x_j \in [-H/2, H/2)$ with uniform spacing $\Delta x = H/N$ and grid points
 \begin{equation}\label{eq:alg-grid}
   x_n = -\frac{H}{2} + n\, \Delta x, \qquad n = 0, 1, \dots, N-1
 \end{equation}
-in each of the $d$ directions. Every integral over the domain below --- in
-particular the constraint functionals of \S\ref{ssec:fw-constraints} --- is
+in each of the $d$ directions. Every integral over the domain below is
 approximated by the Riemann sum
 \begin{equation}\label{eq:alg-riemann}
   \int f(\mathbf{x})\,\mathrm{d}\mathbf{x} \approx (\Delta x)^d \sum_{\mathbf{n}} f(\mathbf{x_n})
@@ -798,10 +770,10 @@ of it, and is not currently monitored.
 
 The second instantiation is the incompressible Navier--Stokes equations, with
 $d = 3$ and $u_i$ the velocity field. The framework applies unchanged; what
-this section supplies is the clock, the nondimensional right-hand side, and
-the structure of the physics operator. Two items needed to actually run the
-algorithm of \S\ref{sec:algorithm} --- the time-marching scheme inside
-$\Phi^{(\mathrm{P})}$ and the constraint functionals --- remain open, and are
+this section supplies is the clock, the nondimensional right-hand side, the
+structure of the physics operator, and the constraint functionals. One item
+needed to actually run the algorithm of \S\ref{sec:algorithm} --- the
+time-marching scheme inside $\Phi^{(\mathrm{P})}$ --- remains open, and is
 marked as such below.
 
 \subsection{Governing equations and clock}\label{ssec:ns-clock}
@@ -991,20 +963,63 @@ an exact integrating factor and need not be marched with the rest.
 
 \subsection{Constraint functionals}\label{ssec:ns-constraints}
 
-\emph{Open.} The constraint functionals of \S\ref{ssec:fw-constraints} have not
-been chosen for the Navier--Stokes case. The moments
-\eqref{eq:1d-functionals} used for the 1D equation do not carry over: a
-velocity field in a periodic box has $\int u_i\, \mathrm{d}\mathbf{x} \approx 0$,
-so $F_1$ as written is not usable as a scale. Any admissible replacement must
-be a pair $(F_1, F_2)$ that is homogeneous under the scaling
-\eqref{eq:fw-scale-step} in the sense of \eqref{eq:fw-homogeneity}, with
-exponents satisfying the solvability condition
-\eqref{eq:fw-constraint-solvable} --- that is, one functional sensitive
-primarily to the amplitude of the field and one sensitive primarily to its
-length scale. Quantities of the right character are the kinetic energy and an
-integral length scale extracted from the energy spectrum, but neither their
-exponents nor their behaviour under the constrained step has been worked out
-here.
+The moments \eqref{eq:1d-functionals} used for the 1D equation do not carry
+over: a velocity field in a periodic box has
+$\int u_i\, \mathrm{d}\mathbf{x} \approx 0$, so $F_1$ as written is not usable
+as a scale. We therefore take the corresponding moments of the energy density
+$u_i u_i$, which is non-negative and so cannot cancel,
+\begin{equation}\label{eq:ns-functionals}
+  F_1[u] = \int u_i u_i\, \mathrm{d}\mathbf{x} \equiv E_0,
+  \qquad
+  F_2[u] = \int r^2\, u_i u_i\, \mathrm{d}\mathbf{x} \equiv E_2,
+\end{equation}
+where $r^2 = x_j x_j$ is the squared distance from the centre of the domain
+\eqref{eq:alg-grid}. Thus $E_0$ is twice the total kinetic energy and
+$E_2 / E_0$ the energy-weighted mean square radius, so $E_0$ measures the
+amplitude of the field and $E_2$ its spread, exactly as $M_0$ and $M_2$ do in
+the 1D case.
+\par
+Writing $E_0^*, E_2^*$ for the values carried by the field being scaled and
+substituting $\mathbf{y} = \mathbf{x}\, \tilde L$ in each integral, with
+$d = 3$,
+\begin{equation}\label{eq:ns-E0-homogeneity}
+  \int \frac{1}{\tilde U^2}\, u_i u_i\!\left( \mathbf{x}\, \tilde L \right) \mathrm{d}\mathbf{x}
+  = \frac{1}{\tilde U^2 \tilde L^{3}}\, E_0^*,
+\end{equation}
+\begin{equation}\label{eq:ns-E2-homogeneity}
+  \int r^2\, \frac{1}{\tilde U^2}\, u_i u_i\!\left( \mathbf{x}\, \tilde L \right) \mathrm{d}\mathbf{x}
+  = \frac{1}{\tilde U^2 \tilde L^{5}}\, E_2^*,
+\end{equation}
+so the homogeneity exponents of \eqref{eq:fw-homogeneity} are
+\begin{equation}\label{eq:ns-exponents}
+  (p_1, q_1) = (2, 3), \qquad (p_2, q_2) = (2, 5),
+\end{equation}
+with $p_1 q_2 - p_2 q_1 = 4 \neq 0$, so the constraint system
+\eqref{eq:fw-constraint-system} is uniquely solvable. Solving it,
+\begin{equation}\label{eq:ns-Ltilde}
+  \tilde L = \sqrt{\frac{E_0\, E_2^*}{E_0^*\, E_2}},
+\end{equation}
+\begin{equation}\label{eq:ns-Utilde}
+  \tilde U = \left(\frac{E_0^*}{E_0}\right)^{1/2} \tilde L^{-3/2}
+  = \left(\frac{E_0^*}{E_0}\right)^{5/4} \left(\frac{E_2}{E_2^*}\right)^{3/4} .
+\end{equation}
+The length ratio \eqref{eq:ns-Ltilde} is identical in form to its 1D
+counterpart \eqref{eq:1d-Ltilde}: in both cases $\tilde L$ is the square root
+of a ratio of mean square widths.
+
+\emph{Open.} Two properties of this pair are assumptions rather than
+consequences. First, the homogeneity \eqref{eq:fw-homogeneity} is exact only
+for integrals over $\mathbb{R}^d$; on the finite box the substitution
+$\mathbf{y} = \mathbf{x}\, \tilde L$ rescales the domain of integration as
+well, so \eqref{eq:ns-E0-homogeneity} and \eqref{eq:ns-E2-homogeneity} hold
+only to the extent that the energy is concentrated well inside the box. This
+is the same assumption the 1D moments make, and like it is not currently
+monitored. Second, $r$ is measured from a fixed origin and is not periodic, so
+$E_2$ is meaningful only for a field that stays centred and localized: for a
+statistically homogeneous field filling the box, $u_i u_i$ is uniform on
+average and $E_2 / E_0$ reduces to the mean square radius of the box itself,
+carrying no information about the field. Which of these two regimes the
+intended runs occupy should be settled before the pair is used.
 
 \subsection{Boundary treatment}\label{ssec:ns-boundary}
 
