@@ -15,11 +15,6 @@
 
 \section{The self-similar framework}\label{sec:framework}
 
-This section collects the machinery that is common to every equation treated
-in this document. It is stated once, for a $d$-dimensional vector field, and
-each equation section (\S\ref{sec:1d}, \S\ref{sec:ns}) supplies only the three
-things that distinguish it: its clock $\tau$, its physical right-hand side
-$R_i^*$, and its constraint functionals.
 
 \subsection{Rescaling into a self-similar frame}\label{ssec:fw-rescaling}
 
@@ -37,7 +32,7 @@ on $\mathbb{R}^d$. We rescale amplitude, length, and time by
 where the amplitude scale $U$ and the length scale $L$ depend on the non dimensional time $t$. The timescale
 is determined by specifiying the clock
 \begin{equation}\label{eq:fw-clock}
-  \tau = \frac{\mathrm{d}t^*}{\mathrm{d}t},
+  \tau = \frac{\mathrm{d}t^*}{\mathrm{d}t}.
 \end{equation}
 The clock $\tau$ is problem specific and can contain the time dependent length and amplitude scales.
 It is defined in \S\ref{ssec:1d-clock} and \S\ref{ssec:ns-clock} for the two cases considered here.
@@ -110,10 +105,9 @@ $u_i$, so the argument below is componentwise.
 
 Let $x_j(t)$ denote a characteristic curve satisfying
 \begin{equation}\label{eq:fw-characteristic}
-  \frac{\mathrm{d} x_j}{\mathrm{d} t} = -x_j\, \sigma_L ,
+  \frac{\mathrm{d} x_j}{\mathrm{d} t} = -x_j\, \sigma_L.
 \end{equation}
-which is \eqref{eq:fw-dxdt}: the characteristics are exactly the paths of
-fixed physical position $x_j^*$. The total derivative of $u_i$ along such a
+ The total derivative of $u_i$ along such a
 curve is
 \begin{equation}\label{eq:fw-total-derivative}
   \frac{\mathrm{d} u_i}{\mathrm{d} t}
@@ -137,9 +131,11 @@ $x_j \equiv x_j(t_{k+1})$ originated at
 \begin{equation}\label{eq:fw-char-origin}
   x_j(t_k) = x_j\, \frac{L_{k+1}}{L_k} .
 \end{equation}
-Integrating \eqref{eq:fw-scaling-ode} in the same way gives
-$u_i(t_{k+1}) = u_i(t_k)\, U_k / U_{k+1}$. Combining this with the
-characteristic origin \eqref{eq:fw-char-origin} and the initial condition
+Integrating \eqref{eq:fw-scaling-ode} gives
+\begin{equation}
+  u_i(t_{k+1}) = u_i(t_k)\, U_k / U_{k+1}.
+\end{equation}
+Combining this with the characteristic origin \eqref{eq:fw-char-origin} and the initial condition
 $u_i(t_k, \cdot)$ gives the scaling operator in closed form,
 \begin{equation}\label{eq:fw-scaling-closed}
   \Phi_{\Delta t}^{(\mathrm{S})}(u_i)(\mathbf{x})
@@ -155,8 +151,6 @@ this is
   \Phi_{\Delta t}^{(\mathrm{S})}(u_i)(\mathbf{x})
   = \frac{1}{\tilde{U}_{k+1}}\, u_i\!\left( \mathbf{x}\, \tilde{L}_{k+1} \right).
 \end{equation}
-The operator depends on $\Delta t$ only through the ratios
-$\tilde{U}_{k+1}, \tilde{L}_{k+1}$; given those, no time integration remains.
 
 \paragraph{The scaling terms in \texorpdfstring{$\mathbf{k}$}{k}-space.}
 For equations formulated spectrally it is useful to have the transform of the
@@ -203,33 +197,39 @@ $\hat{u}_i(\mathbf{k})$ are the normalized transform coefficients of $u_i$.
 This is the defining property of the scheme: the scaling step introduces no
 spatial discretization error of its own.
 
-\subsection{Constraint functionals}\label{ssec:fw-constraints}
+\paragraph{Queries outside the box.}
+The true problem we are trying to approximate is posed on an infinite box, with $u_i$ going to zero as it approaches the boundaries.
+For $\tilde{L}_{k+1} > 1$ it is possible that $|x_j\,\tilde{L}_{k+1}| > H/2$, in which case we would like the rescaling in \eqref{eq:fw-spectral-interp} to return $0$.
+However, this is not the current behavior: instead, it wraps around the periodic box and returns a potentially nonzero value from the other end of the domain.
+Therefore, to obtain the desired behavior we modify the scaling step to
+\begin{equation}\label{eq:fw-dilate-cutoff}
+  u_i\!\left(\mathbf{x}\, \tilde{L}_{k+1}\right)
+  = \chi\!\left(\mathbf{x}\, \tilde{L}_{k+1}\right)
+    \sum_{\mathbf{k} \in \mathcal{K}} \hat{u}_i(\mathbf{k})\,
+    \exp\!\left( \mathrm{i}\, k_j x_j\, \tilde{L}_{k+1} \right),
+  \qquad
+  \chi(\mathbf{y}) = \prod_{d} \mathbb{1}\!\left[\, |y_d| \le H/2 \,\right].
+\end{equation}
 
-Nothing so far fixes the ratios $\tilde{U}_{k+1}, \tilde{L}_{k+1}$ that the
-scaling step \eqref{eq:fw-scale-step} depends on. They are fixed by requiring
-the rescaled field to carry prescribed values of two functionals $F_1, F_2$ of
-the field, each homogeneous under \eqref{eq:fw-scale-step}: there exist
-exponents $p_m, q_m$ with
+\subsection{Constraint functionals}\label{ssec:fw-constraints}
+We will set the ratios $\tilde{U}_{k+1}, \tilde{L}_{k+1}$ that the
+scaling step \eqref{eq:fw-scale-step} depends on by requiring
+the rescaled field to carry prescribed values of two functionals $F_1, F_2$ of the form
 \begin{equation}\label{eq:fw-homogeneity}
-  F_m\!\left[ \frac{1}{\tilde{U}}\, u\!\left( \cdot\, \tilde{L} \right) \right]
+  F_m\!\left[ \frac{1}{\tilde{U}}\, u\!\left( x \tilde{L} \right) \right]
   = \tilde{U}^{-p_m}\, \tilde{L}^{-q_m}\, F_m[u],
   \qquad m = 1, 2 .
 \end{equation}
 The targets $F_1, F_2$ are fixed once, from the initial condition
 (\S\ref{ssec:alg-init}). Given a field $u$ with current values
 $F_m^* = F_m[u]$, imposing $\tilde{U}^{-p_m} \tilde{L}^{-q_m} F_m^* = F_m$ and
-taking logarithms gives a system linear in the log-ratios,
+taking logarithms gives the following linear system
 \begin{equation}\label{eq:fw-constraint-system}
   \begin{bmatrix} p_1 & q_1 \\ p_2 & q_2 \end{bmatrix}
   \begin{bmatrix} \ln \tilde{U} \\ \ln \tilde{L} \end{bmatrix}
-  = \begin{bmatrix} \ln F_1^* - \ln F_1 \\ \ln F_2^* - \ln F_2 \end{bmatrix},
+  = \begin{bmatrix} \ln F_1^* - \ln F_1 \\ \ln F_2^* - \ln F_2 \end{bmatrix}.
 \end{equation}
-uniquely solvable precisely when
-\begin{equation}\label{eq:fw-constraint-solvable}
-  p_1 q_2 - p_2 q_1 \neq 0,
-\end{equation}
-that is, when the two functionals respond independently to amplitude and to
-length rescaling. The functionals themselves are equation-specific
+The functionals themselves are equation-specific
 (\S\ref{ssec:1d-moments}, \S\ref{ssec:ns-constraints}); the substep that
 applies \eqref{eq:fw-constraint-system} is \textsc{ConstrainedScale}
 (\S\ref{ssec:alg-substeps}).
@@ -247,14 +247,28 @@ so that the ratio over a fraction $i$ of step $k$ is
 \begin{equation}\label{eq:fw-ratio}
   \frac{X_{k+i}}{X_k} = \left( 1 + \frac{i\, \Delta t_k^*}{t_k^* + \alpha_X} \right)^{\beta_X}.
 \end{equation}
-Since the time step $\Delta t$ is taken in the self-similar time $t$, the
-corresponding physical increment must be obtained from the clock,
+Since the time step $\Delta t_k = t_{k+1} - t_k$ is taken in the
+self-similar time $t$, the corresponding physical increment must be obtained
+from the clock,
+\begin{equation}
+  \Delta t_k^* = \int_{t_k}^{t_{k+1}} \tau\, \mathrm{d} t,
+\end{equation}
+which can be approximated with a three-point Adams--Bashforth-style quadrature:
 \begin{equation}\label{eq:fw-dtstar}
   \Delta t_k^* = \int_{t_k}^{t_{k+1}} \tau\, \mathrm{d} t
-  \approx \frac{\Delta t}{12}\left( 23\tau_k - 16\tau_{k-1} + 5\tau_{k-2} \right),
+  \approx w_0\, \tau_k + w_1\, \tau_{k-1} + w_2\, \tau_{k-2}.
 \end{equation}
-using a three-point Adams--Bashforth-style quadrature on the stored history of
-$\tau$. Eliminating $t_k^* + \alpha_X = X_k^{1/\beta_X}$ from
+The coefficients can be computed as follows.
+\begin{equation}\label{eq:fw-dtstar-weights}
+  \begin{aligned}
+    w_0 &= \frac{h^3/3 + (2h_1 + h_2)\, h^2/2 + h_1 (h_1 + h_2)\, h}{h_1 (h_1 + h_2)}, \\
+    w_1 &= -\frac{h^3/3 + (h_1 + h_2)\, h^2/2}{h_1 h_2}, \\
+    w_2 &= \frac{h^3/3 + h_1\, h^2/2}{h_2 (h_1 + h_2)},
+  \end{aligned}
+\end{equation}
+where $h = \Delta t_k$, $h_1 = \Delta t_{k-1}$, $h_2 = \Delta t_{k-2}$.
+\par
+Eliminating $t_k^* + \alpha_X = X_k^{1/\beta_X}$ from
 \eqref{eq:fw-powerlaw} and taking logarithms gives the function that the
 algorithm uses in both directions,
 \begin{equation}\label{eq:fw-G}
@@ -281,13 +295,9 @@ evaluated by
 with $x = \log_b(X)$, $y = \log_b(Y)$. In particular
 \eqref{eq:fw-dtstar} is evaluated as
 \begin{equation}\label{eq:fw-ln-dtstar}
-  \ln \Delta t_k^* = \ln\frac{\Delta t}{12}
-  + \ln\!\left( 23\, e^{\ln \tau_k} - 16\, e^{\ln \tau_{k-1}} + 5\, e^{\ln \tau_{k-2}} \right),
+  \ln \Delta t_k^* =
+  \ln\!\left( w_0\, e^{\ln \tau_k} + w_1\, e^{\ln \tau_{k-1}} + w_2\, e^{\ln \tau_{k-2}} \right).
 \end{equation}
-with the sum taken via \eqref{eq:fw-log-sum-exp}, and each $\ln \tau_k$
-supplied in log form by the equation at hand
-(\eqref{eq:1d-ln-clock}, \eqref{eq:ns-ln-clock}). Exponentiation is deferred
-until a value is actually needed, e.g.\ for output.
 
 \section{Algorithm}\label{sec:algorithm}
 
@@ -313,23 +323,27 @@ approximated by the Riemann sum
 on this grid.
 
 An index range abbreviates the corresponding tuple of stored values, e.g.\
-$\ln \tau_{k-2:k} = (\ln \tau_{k-2}, \ln \tau_{k-1}, \ln \tau_k)$. The run
-constants $\Delta t, H, N$, the constraint targets $F_1, F_2$, and whatever
-physical parameters the equation carries are visible to every subroutine and
-are omitted from their signatures. As set out in \S\ref{ssec:fw-powerlaw}, all
+$\ln \tau_{k-2:k} = (\ln \tau_{k-2}, \ln \tau_{k-1}, \ln \tau_k)$ and
+$\Delta t_{k-2:k} = (\Delta t_{k-2}, \Delta t_{k-1}, \Delta t_k)$. The run
+constants $H, N$, the time-step constants
+$\Delta t_{\max}, C, \gamma, \Delta t_{\min}$ of \S\ref{ssec:alg-timestep}, the
+constraint targets $F_1, F_2$, and whatever physical parameters the equation
+carries are visible to every subroutine and are omitted from their signatures.
+The step $\Delta t_k$ is updated dynamically. As set out in \S\ref{ssec:fw-powerlaw}, all
 arithmetic on the scales is done on $\ln U_k, \ln L_k$.
 
 \subsection{Initialization}\label{ssec:alg-init}
 
-A run is specified by the initial field $u_0$, the domain parameters $H, N$, a
-fixed self-similar timestep $\Delta t$, a time horizon $T_{\mathrm{end}}$, the
+A run is specified by the initial field $u_0$, the domain parameters $H, N$,
+the time-step constants $\Delta t_{\max}, C, \gamma, \Delta t_{\min}$ of
+\S\ref{ssec:alg-timestep}, a time horizon $T_{\mathrm{end}}$, the
 splitting scheme
 $\mathit{scheme} \in \{\textsc{LieTrotter}, \textsc{Strang}\}$
 (\S\ref{ssec:alg-lie-trotter}, \S\ref{ssec:alg-strang}), and initial guesses
 $\beta_U^{(0)}, \beta_L^{(0)}$, which only seed the bracket of the first
 root-find for $\beta_U, \beta_L$ (\S\ref{ssec:alg-beta-estimation}). From these:
 \begin{itemize}
-  \item The number of steps is $N_{\mathrm{steps}} = \lceil T_{\mathrm{end}}/\Delta t \rceil$.
+  \item The integration loop starts at $t_0 = 0$ and runs while $t_k < T_{\mathrm{end}}$.
   \item The self-similar frame is initialized at the initial condition itself,
   $L_0 = U_0 = 1$, i.e.\ $\ln L_0 = \ln U_0 = 0$.
   \item The \emph{target} values $F_1, F_2$ of the constraint functionals
@@ -342,29 +356,88 @@ root-find for $\beta_U, \beta_L$ (\S\ref{ssec:alg-beta-estimation}). From these:
   $\beta_{\mathrm{ok}} = \text{false}$.
 \end{itemize}
 
+\subsection{Time step}\label{ssec:alg-timestep}
+
+The step $\Delta t_k$ is chosen at the start of each step from the field
+$u_k$ it starts from,
+\begin{equation}\label{eq:alg-dt-rule}
+  \Delta t_k = \min\bigl( \Delta t_{\max},\ \gamma\, \Delta t_{k-1},\
+  \Delta t_{\mathrm{CFL}}(u_k; C) \bigr),
+\end{equation}
+where $\Delta t_{\mathrm{CFL}}(u; C) = \textsc{MaxStableDt}(u, C)$
+(\S\ref{ssec:alg-substeps}) is the largest step at which the equation's
+physics operator runs at the target CFL number $C$, expressed as a fraction of
+the time integrator's own stability limit. For Navier--Stokes this is the
+advective bound \eqref{eq:rk4-cfl-dt}. The three terms play distinct roles.
+\begin{itemize}
+  \item $\Delta t_{\max}$ caps the step when the field is quiet, and is the
+  step of the settled regime.
+  \item $\Delta t_{\mathrm{CFL}}$ shrinks the step when the field concentrates:
+  a momentary high-amplitude event raises $\max|\mathbf{u}|$ and would otherwise
+  carry the physics step past its stability limit.
+  \item $\gamma > 1$ caps \emph{growth only}. The step drops in a single step
+  when an event arrives and recovers geometrically afterwards. Step $k = 0$ has
+  no predecessor and is uncapped. The cap keeps the step ratios
+  $h/h_1, h_1/h_2$ in the quadrature \eqref{eq:fw-dtstar-weights} moderate,
+  and it limits the per-step growth of $L$, which drives the feedback between
+  the predicted half step and the $\beta$ fit under \textsc{Strang}
+  (\S\ref{ssec:alg-strang}). We take $C = 0.5$, $\gamma = 1.1$.
+\end{itemize}
+If \eqref{eq:alg-dt-rule} falls below $\Delta t_{\min}$ the run stops with an
+error: a runaway $\max|\mathbf{u}|$ should end the run rather than stall it in
+ever smaller steps. Fixed stepping at $\Delta t_{\max}$ is the special case
+with no CFL term, $\Delta t_{\mathrm{CFL}} = \infty$. It is what the 1D
+diffusion equation uses, since its propagator \eqref{eq:1d-propagator} is exact
+at any step and has no CFL limit to adapt to.
+
+\paragraph{No rejection.} Every step is accepted. The CFL is measured on
+$u_k$, so the step overshoots its target only if $\max|\mathbf{u}|$ grows
+within the step; with $C = 0.5$ it has to more than double in a single step
+to breach the stability limit. Whether that happens is monitored rather than
+prevented. The \emph{realized} CFL of step $k$,
+\begin{equation}\label{eq:alg-realized-cfl}
+  \mathrm{CFL}_k = \frac{\Delta t_k}{\Delta t_{\mathrm{CFL}}(u_{k+1}; 1)},
+\end{equation}
+measures the step actually taken against the field it produced. It is recorded
+every step, and the run warns the first time it exceeds $1$. The pre-step value
+would carry no information whenever the CFL term is active, since it reads
+back $C$ by construction.
+
+\paragraph{The end of the run.} The loop runs while $t_k < T_{\mathrm{end}}$,
+with $t_{k+1} = t_k + \Delta t_k$, and the last step is \emph{not} shortened
+to land on $T_{\mathrm{end}}$. A clipped step can be arbitrarily small, which
+would put an extreme ratio $h/h_1$ into \eqref{eq:fw-dtstar-weights} on the
+next $\beta$ update. The run overshoots $T_{\mathrm{end}}$ by less than one
+step, which is immaterial on the logarithmic clock $t$. For the same reason,
+output taken at prescribed times $t$ is taken at the first step reaching each
+time, never by shortening a step.
+
 \subsection{Top-level integrator}\label{ssec:alg-top-level}
 \begin{algorithm}[H]
 \caption{Top-level integrator}
 \begin{algorithmic}[1]
-\Require $u_0$, $H$, $N$, $\Delta t$, $T_{\mathrm{end}}$, $\mathit{scheme}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
-\State $N_{\mathrm{steps}} \gets \lceil T_{\mathrm{end}}/\Delta t \rceil$
+\Require $u_0$, $H$, $N$, $\Delta t_{\max}, C, \gamma, \Delta t_{\min}$, $T_{\mathrm{end}}$, $\mathit{scheme}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
+\State $t_0 \gets 0$, $k \gets 0$
 \State $\ln U_0 \gets 0$, $\ln L_0 \gets 0$
 \State Compute constraint targets $F_1, F_2$ from $u_0$ via \eqref{eq:alg-targets}
 \State $\beta_U \gets \beta_U^{(0)}$, $\beta_L \gets \beta_L^{(0)}$, $\beta_{\mathrm{ok}} \gets \text{false}$
 \State Store $(u_0, \ln U_0, \ln L_0, \ln \tau_0, \beta_U, \beta_L, \beta_{\mathrm{ok}})$
-\For{$k = 0, 1, \dots, N_{\mathrm{steps}}-1$}
+\While{$t_k < T_{\mathrm{end}}$}
+  \State $\Delta t_k \gets$ \eqref{eq:alg-dt-rule} on $u_k$; \textbf{error} if $\Delta t_k < \Delta t_{\min}$ \Comment{\S\ref{ssec:alg-timestep}}
   \If{$\mathit{scheme} = \textsc{Strang}$ \textbf{and} $\beta_{\mathrm{ok}}$}
-    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{Strang}{u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-strang}}
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{Strang}{u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t_{k-2:k}, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-strang}}
   \Else
-    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{LieTrotter}{u_k, \ln U_k, \ln L_k}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{LieTrotter}{u_k, \ln U_k, \ln L_k, \Delta t_k}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
   \EndIf
   \State $u_{k+1} \gets \Call{ApplyBC}{u_{k+1}}$ \Comment{equation-specific, \S\ref{ssec:alg-substeps}}
   \State $\ln \tau_{k+1} \gets \ln \tau(\ln U_{k+1}, \ln L_{k+1})$ \Comment{\eqref{eq:1d-ln-clock}, \eqref{eq:ns-ln-clock}}
+  \State $t_{k+1} \gets t_k + \Delta t_k$
   \If{$k+1 \geq 3$}
-    \State $(\beta_U, \beta_L, \beta_{\mathrm{ok}}) \gets \Call{EstimateBeta}{\ln U_{k:k+1}, \ln L_{k:k+1}, \ln \tau_{k-2:k}, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-beta-estimation}}
+    \State $(\beta_U, \beta_L, \beta_{\mathrm{ok}}) \gets \Call{EstimateBeta}{\ln U_{k:k+1}, \ln L_{k:k+1}, \ln \tau_{k-2:k}, \Delta t_{k-2:k}, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-beta-estimation}}
   \EndIf
-  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \ln \tau_{k+1}, \beta_U, \beta_L, \beta_{\mathrm{ok}})$
-\EndFor
+  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \ln \tau_{k+1}, t_{k+1}, \Delta t_k, \mathrm{CFL}_k, \beta_U, \beta_L, \beta_{\mathrm{ok}})$ \Comment{\eqref{eq:alg-realized-cfl}}
+  \State $k \gets k + 1$
+\EndWhile
 \end{algorithmic}
 \end{algorithm}
 
@@ -382,22 +455,25 @@ $\mathit{scheme} = \textsc{LieTrotter}$ the estimates are diagnostic only.
 Both splitting schemes are assembled from the substeps below. None of them
 applies the boundary treatment, which is handled only by the top-level loop.
 
-\paragraph{\textsc{Evolve}$(u, \Delta t)$.}
-Applies the physics operator $\Phi_{\Delta t}^{(\mathrm{P})}$ of
+\paragraph{\textsc{Evolve}$(u, \Delta t_k)$.}
+Applies the physics operator $\Phi_{\Delta t_k}^{(\mathrm{P})}$ of
 \eqref{eq:fw-physics-flow}: it advances the non-scaling terms of
-\eqref{eq:fw-lemma} over $\Delta t$, leaving the scales $\ln U, \ln L$
-untouched. This is the one substep the framework does not supply. Its
-realization is equation-specific (\S\ref{ssec:1d-physics-step},
-\S\ref{ssec:ns-physics-step}), and it is required to be at least first-order
-accurate for the Lie--Trotter composition and at least second-order accurate
-for the Strang composition, since the splitting cannot recover an order the
-substep does not have.
+\eqref{eq:fw-lemma} over $\Delta t_k$, leaving the scales $\ln U, \ln L$
+untouched.
+
+\paragraph{\textsc{MaxStableDt}$(u, C)$.}
+Equation-specific: the largest step at which \textsc{Evolve} from $u$ runs at
+the fraction $C$ of its stability limit, the term
+$\Delta t_{\mathrm{CFL}}(u; C)$ of \eqref{eq:alg-dt-rule}. For Navier--Stokes
+it is \eqref{eq:rk4-cfl-dt}. An equation without a CFL limit does not define
+it and runs at fixed $\Delta t_{\max}$ (\S\ref{ssec:alg-timestep}).
 
 \paragraph{\textsc{Scale}$(u, \ln \tilde U, \ln \tilde L)$.}
 Applies the scaling operator \eqref{eq:fw-scale-step} with prescribed ratios
 $\tilde U, \tilde L$, returning $\tilde U^{-1} u(\mathbf{x_n} \tilde L)$ at each grid
 point, evaluated with the spectral interpolation of
-\S\ref{ssec:fw-interpolation}. Here, and wherever the substeps are used,
+\S\ref{ssec:fw-interpolation} and set to zero wherever $\mathbf{x_n}\tilde L$
+leaves the box \eqref{eq:fw-dilate-cutoff}. Here, and wherever the substeps are used,
 $\tilde U$ and $\tilde L$ denote the ratio of $U$, respectively $L$, after the
 substep to its value before it. Inside a Lie--Trotter step this is
 $\tilde U_{k+1} = U_{k+1}/U_k$ of \eqref{eq:fw-ratios}; inside a Strang step it
@@ -421,33 +497,37 @@ functionals of the field it is given, not by the elapsed time. The same substep
 therefore serves as the full scaling step of Lie--Trotter and as the closing
 scaling half step of Strang.
 
-\paragraph{\textsc{PredictScale}$(i, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L)$.}
+\paragraph{\textsc{PredictScale}$(i, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t_{k-2:k}, \beta_U, \beta_L)$.}
 Predicts the ratios over the fraction $i$ of step $k$ from the power-law form
 \eqref{eq:fw-powerlaw} rather than from the constraints. It evaluates
-$\ln \Delta t_k^*$ from \eqref{eq:fw-ln-dtstar} and returns
+$\ln \Delta t_k^*$ from \eqref{eq:fw-ln-dtstar}, with the weights
+\eqref{eq:fw-dtstar-weights} of the steps $\Delta t_{k-2:k}$ --- the last of
+which is the step about to be taken --- and returns
 $\bigl(G_U(i, \beta_U; k),\, G_L(i, \beta_L; k)\bigr)$ using \eqref{eq:fw-G}.
 The same function $G_X$ is inverted for $\beta$ in
 \S\ref{ssec:alg-beta-estimation}.
 
 \paragraph{\textsc{ApplyBC}$(u)$.}
 Imposes whatever boundary treatment the equation requires, after the full step
-has been assembled. It is the identity for a genuinely periodic problem; the
-1D diffusion equation instead clamps the domain edges
-(\S\ref{ssec:1d-boundary}).
+has been assembled. Both equations treated here clamp the domain boundary to zero: the 1D
+diffusion equation its two edge grid points (\S\ref{ssec:1d-boundary}), the
+Navier--Stokes equations the six faces of the box
+(\S\ref{ssec:ns-boundary}), optionally followed by a Leray projection back
+onto the divergence-free fields \eqref{eq:ns-leray-bc}.
 
 \subsection{\textsc{LieTrotter}: Lie--Trotter splitting}\label{ssec:alg-lie-trotter}
 A Lie--Trotter step composes a full physics step with a full scaling step,
-$u_{k+1} = \Phi_{\Delta t}^{(\mathrm{S})}\bigl(\Phi_{\Delta t}^{(\mathrm{P})}(u_k)\bigr)$,
+$u_{k+1} = \Phi_{\Delta t_k}^{(\mathrm{S})}\bigl(\Phi_{\Delta t_k}^{(\mathrm{P})}(u_k)\bigr)$,
 with the scaling ratios fixed by the constraints. It uses no estimate of
 $\beta_U, \beta_L$, so it is valid from the first step. It is written for a
-general input state $(u, \ln U, \ln L)$ rather than only a stored state
+general input state $(u, \ln U, \ln L)$ and step $\Delta t_k$ rather than only a stored state
 $(u_k, \ln U_k, \ln L_k)$, so that \textsc{Strang} can call it on a
 half-stepped state.
 \begin{algorithm}[H]
 \caption{Lie--Trotter step}
 \begin{algorithmic}[1]
-\Function{LieTrotter}{$u, \ln U, \ln L$}
-  \State $u^{(\mathrm{P})} \gets \Call{Evolve}{u, \Delta t}$ \Comment{\S\ref{ssec:alg-substeps}}
+\Function{LieTrotter}{$u, \ln U, \ln L, \Delta t_k$}
+  \State $u^{(\mathrm{P})} \gets \Call{Evolve}{u, \Delta t_k}$ \Comment{\S\ref{ssec:alg-substeps}}
   \State \Return $\Call{ConstrainedScale}{u^{(\mathrm{P})}, \ln U, \ln L}$ \Comment{\S\ref{ssec:alg-substeps}}
 \EndFunction
 \end{algorithmic}
@@ -456,7 +536,7 @@ half-stepped state.
 \subsection{\textsc{Strang}: Strang splitting}\label{ssec:alg-strang}
 A Strang step is the symmetric composition
 \begin{equation}\label{eq:alg-strang-composition}
-  u_{k+1} = \Phi_{\Delta t/2}^{(\mathrm{S})}\Bigl(\Phi_{\Delta t}^{(\mathrm{P})}\bigl(\Phi_{\Delta t/2}^{(\mathrm{S})}(u_k)\bigr)\Bigr)
+  u_{k+1} = \Phi_{\Delta t_k/2}^{(\mathrm{S})}\Bigl(\Phi_{\Delta t_k}^{(\mathrm{P})}\bigl(\Phi_{\Delta t_k/2}^{(\mathrm{S})}(u_k)\bigr)\Bigr)
 \end{equation}
 of a scaling half step, a full physics step, and a second scaling half step.
 The last two of these are exactly a Lie--Trotter step --- a full physics step
@@ -466,15 +546,15 @@ followed by a scaling step whose ratios come from the constraints --- so
 \begin{algorithm}[H]
 \caption{Strang step}
 \begin{algorithmic}[1]
-\Function{Strang}{$u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L$}
-  \State $\bigl(\ln (U_{k+1/2}/U_k),\, \ln (L_{k+1/2}/L_k)\bigr) \gets \Call{PredictScale}{\tfrac12, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \beta_U, \beta_L}$ \Comment{\eqref{eq:alg-strang-predict}}
+\Function{Strang}{$u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t_{k-2:k}, \beta_U, \beta_L$}
+  \State $\bigl(\ln (U_{k+1/2}/U_k),\, \ln (L_{k+1/2}/L_k)\bigr) \gets \Call{PredictScale}{\tfrac12, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t_{k-2:k}, \beta_U, \beta_L}$ \Comment{\eqref{eq:alg-strang-predict}}
   \State $u_{k+1/2} \gets \Call{Scale}{u_k, \ln (U_{k+1/2}/U_k), \ln (L_{k+1/2}/L_k)}$
   \State $\ln U_{k+1/2} \gets \ln U_k + \ln (U_{k+1/2}/U_k)$;\ \ $\ln L_{k+1/2} \gets \ln L_k + \ln (L_{k+1/2}/L_k)$
-  \State \Return $\Call{LieTrotter}{u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2}}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+  \State \Return $\Call{LieTrotter}{u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2}, \Delta t_k}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
-No constraint fixes the state at $t_k + \Delta t/2$, so the first scaling half
+No constraint fixes the state at $t_k + \Delta t_k/2$, so the first scaling half
 step takes its ratios from the current power-law estimates, via
 \textsc{PredictScale} with $i = 1/2$:
 \begin{equation}\label{eq:alg-strang-predict}
@@ -482,7 +562,7 @@ step takes its ratios from the current power-law estimates, via
   \ln\frac{L_{k+1/2}}{L_k} = G_L\!\left(\tfrac12, \beta_L; k\right).
 \end{equation}
 The call to \textsc{LieTrotter} then advances $u_{k+1/2}$ over the full
-$\Delta t$, and its \textsc{ConstrainedScale} substep --- the second scaling
+$\Delta t_k$, and its \textsc{ConstrainedScale} substep --- the second scaling
 half step --- sets $U_{k+1}/U_{k+1/2}$ and $L_{k+1}/L_{k+1/2}$ so that
 $u_{k+1}$ satisfies the constraints. The half-step state
 $(u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2})$ is internal to the step and is not
@@ -495,13 +575,26 @@ previous step and that $\ln \tau_{k-2}$ exists.
 After every step with $k+1 \geq 3$, regardless of $\mathit{scheme}$, $\beta_U$
 and $\beta_L$ are re-estimated from the log-scale history. Four stored states
 are needed: $\ln X_k$ and $\ln X_{k+1}$ for the ratio, and $\ln \tau_{k-2:k}$
-for $\Delta t_k^*$. The update inverts the function $G_X$ of \eqref{eq:fw-G}
-with $i = 1$, the same function that \textsc{PredictScale} evaluates forward
-with $i = 1/2$:
+with the steps $\Delta t_{k-2:k}$ for $\Delta t_k^*$. The update inverts the
+function $G_X$ of \eqref{eq:fw-G} with $i = 1$, the same function that
+\textsc{PredictScale} evaluates forward with $i = 1/2$:
 \begin{equation}\label{eq:alg-beta-rootfind}
   G_U(1, \beta_U; k) = \ln U_{k+1} - \ln U_k,
 \end{equation}
-and identically with $U \to L$ for $\beta_L$. Each of
+and identically with $U \to L$ for $\beta_L$. The steps $\Delta t_{k-2:k}$
+end in the step just taken, so the $\Delta t_k^*$ inverted here is the one
+\textsc{PredictScale} used for that step's half step: under a varying step,
+prediction and estimation remain exact inverses on the same step.
+
+The sensitivity of $\beta_X$ to an error in $\Delta t_k^*$ is weak. Taking
+logarithms of \eqref{eq:fw-G} for a small step,
+$\ln(\ln X_{k+1} - \ln X_k) \approx \ln \beta_X + \ln \Delta t_k^* - \ln X_k/\beta_X$,
+so a relative error $\epsilon$ in $\Delta t_k^*$ moves $\beta_X$ by
+$\delta\beta_X \approx \beta_X^2 \epsilon / \ln X_k$, damped as the scales grow.
+It is not zero, however: feeding a stale step into \eqref{eq:fw-dtstar-weights}
+instead of $\Delta t_k$ makes the estimate oscillate with the step sequence.
+
+Each of
 \eqref{eq:alg-beta-rootfind} and its $L$-counterpart is a single scalar
 equation in a single unknown ($\beta_U$, resp.\ $\beta_L$), solved by
 \texttt{brentq}; the implementer will need to choose a bracketing interval
@@ -572,10 +665,15 @@ Taking logarithms,
 Finally, the rates themselves are estimated directly from the log-ratios
 already in hand, without any finite difference of $L_k$ or $U_k$ themselves,
 \begin{equation}\label{eq:pp-rate-fd}
-  \sigma_{L,k} \approx \frac{\ell_k}{\Delta t},
+  \sigma_{L,k} \approx \frac{\ell_k}{\Delta t_k},
   \qquad
-  \sigma_{U,k} \approx \frac{\lambda_k}{\Delta t}.
+  \sigma_{U,k} \approx \frac{\lambda_k}{\Delta t_k},
 \end{equation}
+each divided by its own step, so that a run with a varying step
+(\S\ref{ssec:alg-timestep}) is fitted exactly as a fixed-step one. The rates,
+not the log-ratios $\ell_k, \lambda_k$ themselves, are also what the run's
+diagnostics plot: a ratio scales with its step, so a CFL-driven dip in
+$\Delta t_k$ would read as a dip in the scaling.
 
 \subsection{Recovering \texorpdfstring{$\alpha_X$}{alpha\_X} and \texorpdfstring{$\beta_X$}{beta\_X}}\label{ssec:pp-fit}
 
@@ -595,7 +693,9 @@ With $\beta_X$ in hand, the offset follows from \eqref{eq:pp-tstar-offset},
   \alpha_X = X_k^{1/\beta_X} - t_k^*,
 \end{equation}
 where the physical time is accumulated from the per-step increments of
-\eqref{eq:fw-dtstar},
+\eqref{eq:fw-dtstar}, with the weights \eqref{eq:fw-dtstar-weights} of the
+stored steps (the first two steps, which lack a three-point history, take
+$\Delta t_i^* \approx \Delta t_i \tau_i$),
 \begin{equation}\label{eq:pp-tstar-cumsum}
   t_k^* = t_0^* + \sum_{i=0}^{k-1} \Delta t_i^* .
 \end{equation}
@@ -734,15 +834,33 @@ components of a real Fast Fourier Transform ($\mathrm{RFFT}$):
 \begin{equation}\label{eq:1d-interp}
   \begin{split}
     \Phi_{\Delta t}^{(\mathrm{S})}(u_k)(x) = \frac{1}{\tilde{U}_{k+1}}\biggl\{ &\hat{u}_0^{(k)}
-      + 2 \sum_{j=1}^{N/2-1} \biggl[ \operatorname{Re}\bigl(\hat{u}_j^{(k)}\bigr) \cos\left(\frac{2\pi j \tilde{L}_{k+1} x}{H}\right) \\
+      + 2 \sum_{j=1}^{N/2-1} (-1)^j \biggl[ \operatorname{Re}\bigl(\hat{u}_j^{(k)}\bigr) \cos\left(\frac{2\pi j \tilde{L}_{k+1} x}{H}\right) \\
       &\qquad - \operatorname{Im}\bigl(\hat{u}_j^{(k)}\bigr) \sin\left(\frac{2\pi j \tilde{L}_{k+1} x}{H}\right) \biggr] \\
-      &+ \hat{u}_{N/2}^{(k)} \cos\left(\frac{\pi N \tilde{L}_{k+1} x}{H}\right) \biggr\},
+      &+ (-1)^{N/2}\, \hat{u}_{N/2}^{(k)} \cos\left(\frac{\pi N \tilde{L}_{k+1} x}{H}\right) \biggr\},
   \end{split}
 \end{equation}
 where $\hat{u}_j^{(k)} = \frac{1}{N} \mathrm{RFFT}(u_k)_j$ for
 $j = 0, 1, \dots, N/2$, and the Nyquist term at $j = N/2$ is included only if
 $N$ is even. The factor of $2$ accounts for the Hermitian conjugate modes
-omitted by the real transform.
+omitted by the real transform. \eqref{eq:1d-interp} holds for
+$|\tilde L_{k+1} x| \le H/2$; outside that the cutoff
+\eqref{eq:fw-dilate-cutoff} sets $\Phi_{\Delta t}^{(\mathrm{S})}(u_k)(x) = 0$.
+
+The alternating sign $(-1)^j$ is the phase-origin correction, and it is not
+optional. The transform phases its coefficients to the sample index $n$, whose
+origin $n = 0$ sits at $x = -H/2$ on the centred grid \eqref{eq:alg-grid}
+rather than at $x = 0$. Since the scaling operator \eqref{eq:fw-scale-step}
+dilates about the centre of the domain, each mode must be evaluated at
+$\tilde L_{k+1} x + H/2$ --- dilate about $x = 0$, then shift to the
+transform's phase origin --- and not at $\tilde L_{k+1}(x + H/2)$, which
+dilates the shift along with the coordinate and agrees with it only at
+$\tilde L_{k+1} = 1$. As $H/2$ is half a period, that shift contributes the
+constant phase $\exp(\mathrm{i} k_j H / 2) = (-1)^j$. Dropping it altogether
+returns $u_k\!\left(\tilde L_{k+1} x - H/2\right)$, the wanted profile
+displaced by half the domain, rather than the
+$u_k\!\left(\tilde L_{k+1} x\right)$ that \eqref{eq:fw-scale-step} calls for.
+The same factor carries to each axis in three dimensions
+(\S\ref{ssec:ns-interpolation}).
 
 \subsection{Boundary treatment}\label{ssec:1d-boundary}
 
@@ -756,9 +874,12 @@ On the centred grid $x \in [-H/2, H/2)$ these are two distinct grid points, not
 periodic images of one another.
 
 \emph{Open.} This sits in tension with the rest of the discretization: the
-spectral propagator \eqref{eq:1d-propagator} and the spectral interpolation
-\eqref{eq:1d-interp} both presume a periodic field, whereas
-\eqref{eq:1d-clamp} imposes a Dirichlet condition. The two are consistent only
+spectral propagator \eqref{eq:1d-propagator} presumes a periodic field, whereas
+\eqref{eq:1d-clamp} imposes a Dirichlet condition. The spectral interpolation
+\eqref{eq:1d-interp} no longer does at the edges: with the cutoff
+\eqref{eq:fw-dilate-cutoff} it treats everything beyond the box as zero, which
+is consistent with the clamp, but it is still a periodic interpolant inside the
+box. The two are consistent only
 so long as $u$ is negligible near the domain edges, which requires the initial
 condition to be localized well inside the domain and the run to be stopped
 before the profile spreads to the boundary. The scaling step works against
@@ -952,14 +1073,20 @@ physical terms of \eqref{eq:ns-fourier-final},
     \left[ P_{il}(\mathbf{k})\, \hat{N}_l + \Delta \cdot k^2 \hat{u}_i \right] \mathrm{d}t .
 \end{equation}
 
-\emph{Open.} Unlike the 1D case, \eqref{eq:ns-physics-flow} has no closed form:
-the convective term is nonlinear, so $\Phi^{(\mathrm{P})}$ must be realized by
-an actual time-marching scheme. That scheme has not been chosen. Whatever is
-chosen must meet the accuracy requirement of \S\ref{ssec:alg-substeps} ---
-second order for the Strang composition to retain its order --- and must
-handle the dealiasing of the pseudo-spectral product
-\eqref{eq:ns-fourier-convection}. The linear term $-\Delta k^2 \hat u_i$ admits
-an exact integrating factor and need not be marched with the rest.
+Unlike the 1D case, \eqref{eq:ns-physics-flow} has no closed form: the
+convective term is nonlinear, so $\Phi^{(\mathrm{P})}$ must be realized by an
+actual time-marching scheme. Two things constrain the choice. It must meet the
+accuracy requirement of \S\ref{ssec:alg-substeps} --- second order for the
+Strang composition to retain its order --- and it must handle the dealiasing of
+the pseudo-spectral product \eqref{eq:ns-fourier-convection}.
+
+We take $\Phi^{(\mathrm{P})}$ to be a single step of the classical fourth-order
+Runge--Kutta method (RK4) applied to the full physical right-hand side, the
+viscous term $-\Delta k^2 \hat{u}_i$ marched together with the convection. It
+is set out in Appendix~\ref{app:rk4}, together with the stability limits it
+places on $\Delta t$. The advective limit is enforced by the CFL time step of
+\S\ref{ssec:alg-timestep}, through \textsc{MaxStableDt} \eqref{eq:rk4-cfl-dt};
+the viscous one is state-independent and is only reported.
 
 \subsection{Constraint functionals}\label{ssec:ns-constraints}
 
@@ -1021,12 +1148,360 @@ average and $E_2 / E_0$ reduces to the mean square radius of the box itself,
 carrying no information about the field. Which of these two regimes the
 intended runs occupy should be settled before the pair is used.
 
+\subsection{Initial condition}\label{ssec:ns-ic}
+Because the curl of a vector feild is divergence-free we will define $u_i$ as the curl of some feild $A_i$
+\begin{equation}\label{eq:ns-ic-curl}
+  u_i = \varepsilon_{ijk} \frac{\partial A_k}{\partial x_j},
+  \qquad\text{equivalently}\qquad
+  \hat{u}_i = \mathrm{i}\, \varepsilon_{ijk}\, k_j \hat{A}_k.
+\end{equation}
+$u_i$ is built on the grid \eqref{eq:alg-grid} in four steps, followed
+by a rescaling.
+\begin{enumerate}
+  \item \emph{Noise.} Each component $A_k(\mathbf{x_n})$ is an independent
+  standard normal, drawn from a seeded Mersenne Twister.  
+  \item \emph{Spectral filter.} The noise is given a spectrum,
+  \begin{equation}\label{eq:ns-ic-filter}
+    \hat{A}_k \gets \hat{A}_k\, e^{-k^2/k_p^2}.
+  \end{equation}
+  \item \emph{Window.} The potential is localized in physical space,
+  \begin{equation}\label{eq:ns-ic-window}
+    A_k \gets A_k\, e^{-r^2/2\sigma^2},
+  \end{equation}
+  with $r$ the same distance from the centre of the domain that $E_2$ uses in
+  \eqref{eq:ns-functionals}.  
+  \item \emph{Rescaling.} Finally $u_i \gets u_i \sqrt{E_0 / F_1[u]}$, with
+  $F_1$ evaluated as the Riemann sum \eqref{eq:alg-riemann}, so that the field
+  delivered to the integrator carries a prescribed $E_0$. The constraint
+  targets \eqref{eq:alg-targets} are then $F_1 = E_0$ by construction and
+  $F_2 = E_2[u_0]$, the latter set by $\sigma$ rather than chosen
+  independently.
+\end{enumerate}
+\subsection{Spectral interpolation in three dimensions}\label{ssec:ns-interpolation}
+
+The scaling operator \eqref{eq:fw-scale-step} needs the same band-limited
+evaluation \eqref{eq:fw-spectral-interp} as in one dimension, but at $d = 3$ a
+direct evaluation of it is no longer affordable, and its realization on the
+real transform differs enough from \eqref{eq:1d-interp} to be worth writing
+out.
+
+\paragraph{The sum on the real transform.}
+Write $\hat u_i^{(k)}(\mathbf{j}) = N^{-3}\,\mathrm{RFFT}(u_k)_{\mathbf{j}}$
+for the normalized coefficients, with the first axis carrying only the
+non-negative frequencies $j_1 = 0, 1, \dots, N/2$ and the remaining two
+carrying the full signed set $j_d = 0, 1, \dots, N/2, -(N/2-1), \dots, -1$.
+Two corrections turn \eqref{eq:fw-spectral-interp} into a sum over that
+layout. First, the omitted Hermitian conjugates are restored by the
+multiplicity
+\begin{equation}\label{eq:ns-interp-multiplicity}
+  m_{j_1} =
+  \begin{cases}
+    1, & j_1 = 0, \ \text{or } j_1 = N/2 \text{ with } N \text{ even}, \\
+    2, & \text{otherwise},
+  \end{cases}
+\end{equation}
+exactly as the factor of $2$ does in \eqref{eq:1d-interp}. Second, the
+transform phases its coefficients to the sample index $n$, which on the
+centred grid \eqref{eq:alg-grid} places its origin at $x = -H/2$ rather than
+at $x = 0$. Since the scaling operator dilates about the centre of the domain,
+each mode must be evaluated at $\tilde L x + H/2$, not at
+$\tilde L (x + H/2)$ --- the two agree only at $\tilde L = 1$. As $H/2$ is
+half a period, the correction is the constant phase
+$\exp(\mathrm{i} k_j H/2) = (-1)^{j}$ per axis. Together,
+\begin{equation}\label{eq:ns-interp}
+  \Phi_{\Delta t}^{(\mathrm{S})}(u_k)_i(\mathbf{x})
+  = \frac{1}{\tilde U_{k+1}} \operatorname{Re}
+    \sum_{j_1 = 0}^{N/2} \sum_{j_2} \sum_{j_3}
+      m_{j_1}\, \hat u_i^{(k)}(\mathbf{j})
+      \prod_{d=1}^{3} (-1)^{j_d}
+      \exp\!\left( \frac{2\pi \mathrm{i}\, j_d\, \tilde L_{k+1}\, x_d}{H} \right).
+\end{equation}
+
+\paragraph{Separable evaluation.}
+Evaluated as written, \eqref{eq:ns-interp} costs $O(N^{2d})$: every retained
+mode is summed at every grid point, which at $N = 128$ is $4 \times 10^{12}$
+complex multiply--adds per scaling substep. The kernel, however, is a product
+of one factor per axis, so the triple sum separates and can be applied one
+axis at a time. Define the two interpolation matrices
+\begin{equation}\label{eq:ns-interp-matrices}
+  W^{(1)}_{n j_1} = m_{j_1} (-1)^{j_1}
+    \exp\!\left( \frac{2\pi \mathrm{i}\, j_1 \tilde L_{k+1} x_n}{H} \right),
+  \qquad
+  W^{(\mathrm{f})}_{n j} = (-1)^{j}
+    \exp\!\left( \frac{2\pi \mathrm{i}\, j\, \tilde L_{k+1} x_n}{H} \right),
+\end{equation}
+the first of size $N \times (N/2 + 1)$ for the half-spectrum axis and the
+second of size $N \times N$ for the two full axes, both rebuilt whenever
+$\tilde L_{k+1}$ changes. Then \eqref{eq:ns-interp} is the sequence of
+contractions
+\begin{equation}\label{eq:ns-interp-contractions}
+  \hat u_i \;\xrightarrow{\ W^{(\mathrm{f})} \text{ on axis } 3\ }\;
+  \;\xrightarrow{\ W^{(\mathrm{f})} \text{ on axis } 2\ }\;
+  \;\xrightarrow{\ W^{(1)} \text{ on axis } 1\ }\;
+  \operatorname{Re}(\cdot),
+\end{equation}
+each of which is a matrix--matrix product once the contracted axis is brought
+to the front. The cost falls to $O(d\, N^{d+1})$, i.e.\ $8 \times 10^{8}$
+multiply--adds at $N = 128$, a factor of $5 \times 10^{3}$ below the direct
+sum, and the work is expressed as three dense $\mathrm{GEMM}$ calls. The
+factorization is exact --- it is a regrouping of the same finite sum, not an
+approximation --- so the guarantee of \S\ref{ssec:fw-interpolation} that the
+scaling step contributes no spatial discretization error is retained. For
+$d = 1$ the sequence \eqref{eq:ns-interp-contractions} collapses to the single
+contraction with $W^{(1)}$, which is \eqref{eq:1d-interp}.
+
+\paragraph{The Nyquist bin.}
+For even $N$ the bins $j_d = \pm N/2$ of a real field's transform coincide,
+and the two axis layouts resolve that differently. On the half-spectrum axis
+the mode is stored once and is given multiplicity $m_{N/2} = 1$ by
+\eqref{eq:ns-interp-multiplicity}. On a full axis it is stored in the single
+bin $j_d = N/2$ but represents the conjugate pair, so it must be split evenly
+between $+N/2$ and $-N/2$; the two halves combine to
+\begin{equation}\label{eq:ns-interp-nyquist}
+  W^{(\mathrm{f})}_{n,\, N/2} = (-1)^{N/2}
+    \cos\!\left( \frac{\pi N \tilde L_{k+1} x_n}{H} \right),
+\end{equation}
+the same cosine that closes \eqref{eq:1d-interp}. With
+\eqref{eq:ns-interp-nyquist} in place the contraction
+\eqref{eq:ns-interp-contractions} reproduces the direct sum
+\eqref{eq:ns-interp} to roundoff for either parity of $N$.
+
+\paragraph{The out-of-box cutoff.}
+The box indicator $\chi$ of \eqref{eq:fw-dilate-cutoff} is a product of one
+factor per axis, like the kernel, so it separates the same way. It is imposed by
+zeroing row $n$ of each interpolation matrix \eqref{eq:ns-interp-matrices}
+whenever the query of that axis leaves the box,
+\begin{equation}\label{eq:ns-interp-cutoff}
+  W^{(1)}_{n j_1} \gets 0, \quad W^{(\mathrm{f})}_{n j} \gets 0
+  \qquad \text{whenever } |x_n \tilde L_{k+1}| > H/2 .
+\end{equation}
+After the three contractions \eqref{eq:ns-interp-contractions} the point
+$\mathbf{x_n}$ then carries the product of the three row factors, which is
+$\chi(\mathbf{x_n}\tilde L_{k+1})$ exactly. The cutoff is thus applied at no
+cost beyond building the matrices, and the direct sum it is tested against
+applies $\chi$ pointwise. For $\tilde L_{k+1}$ within a few percent of unity
+the zeroed rows are the outermost one or two grid points per side, most of
+which \textsc{ApplyBC} clamps anyway (\S\ref{ssec:ns-boundary}). Zeroing a
+region in physical space is not a solenoidal operation, so, like the clamp, it
+reintroduces a divergence proportional to the amplitude it removes.
+
+\paragraph{Interaction with dealiasing.}
+The dilation maps each represented wavenumber to $\tilde L_{k+1} \mathbf{k}$,
+so a field that fills the spectrum up to the Nyquist wavenumber would wrap
+under any $\tilde L_{k+1} > 1$. The $2/3$ rule already required by the
+pseudo-spectral product \eqref{eq:ns-fourier-convection} supplies the margin:
+the top retained mode sits at $N/3$ and moves to $\tilde L_{k+1} N/3$, which
+stays below $N/2$ for every $\tilde L_{k+1} < 3/2$. Runs in the self-similar
+frame hold $\tilde L_{k+1}$ within a few percent of unity, so the margin is
+not approached, but it is the condition under which the interpolation stays
+free of aliasing. Finally, \eqref{eq:ns-interp-contractions} is applied to
+each velocity component independently and mixes neither components nor the
+wavenumbers within an axis; at the exceptional value $\tilde L_{k+1} = 1$ it
+reduces to the plain inverse transform, which is taken instead at
+$O(N^d \log N)$.
+
 \subsection{Boundary treatment}\label{ssec:ns-boundary}
 
-The domain is a periodic box, so no boundary condition is imposed beyond
-periodicity itself and the substep \textsc{ApplyBC} of
-\S\ref{ssec:alg-substeps} is the identity. The tension noted in
-\S\ref{ssec:1d-boundary} between a spectral discretization and a clamped edge
-therefore does not arise here.
+The substep \textsc{ApplyBC} of \S\ref{ssec:alg-substeps} imposes a homogeneous
+Dirichlet condition on the velocity by clamping the outer layer of grid points
+of the centred domain \eqref{eq:alg-grid} after each completed step,
+\begin{equation}\label{eq:ns-clamp}
+  u_i(\mathbf{x_n}) \gets 0 \qquad \text{whenever } n_d \in \{0,\, N-1\}
+  \text{ for some direction } d,
+\end{equation}
+for every component $i = 1, 2, 3$. As in one dimension, on the centred grid
+$x_d \in [-H/2, H/2)$ the layers $n_d = 0$ and $n_d = N-1$ are distinct grid
+points rather than periodic images of one another, so both are clamped; the
+six layers together are the boundary of the box.
+
+\emph{Open.} This carries the tension of \S\ref{ssec:1d-boundary} over to the
+Navier--Stokes case, and sharpens it. As in one dimension, the discretization
+presumes periodicity --- the pseudo-spectral evaluation of
+\eqref{eq:ns-fourier-final} does, and the spectral interpolation
+\eqref{eq:ns-interp} does inside the box, though its cutoff
+\eqref{eq:ns-interp-cutoff} returns zero outside it --- while
+\eqref{eq:ns-clamp} imposes a Dirichlet condition, and the two are consistent only so long as $u_i$ is
+negligible near the faces. Beyond that, the clamp is not a solenoidal
+perturbation: \eqref{eq:ns-fourier-continuity} is enforced in Fourier space,
+and zeroing a layer of grid points in physical space reintroduces a
+divergence, so the field delivered to the next step no longer satisfies the
+continuity equation exactly. The size of that violation is set by the
+amplitude the clamp removes, and therefore by the same localization
+assumption the constraint pair of \S\ref{ssec:ns-constraints} already makes:
+for a puff held several widths inside the box it is at roundoff, and it grows
+with the fraction of $E_0$ the boundary layer carries.
+
+\paragraph{Optional Leray projection.}
+The violation can instead be removed outright. With the Leray option enabled,
+\textsc{ApplyBC} follows the clamp \eqref{eq:ns-clamp} by projecting the
+clamped field back onto the solenoidal subspace with the projection tensor
+\eqref{eq:ns-projection-tensor},
+\begin{equation}\label{eq:ns-leray-bc}
+  \hat{u}_i(\mathbf{k}) \gets P_{il}(\mathbf{k})\, \hat{u}_l(\mathbf{k})
+  = \hat{u}_i - \frac{k_i k_l \hat{u}_l}{k^2},
+  \qquad \mathbf{k} \neq \mathbf{0},
+\end{equation}
+and transforming back to physical space. The mean mode $\mathbf{k} = \mathbf{0}$
+is left unchanged, and the Nyquist bins --- which have no representable
+derivative, and on which $P_{il}$ does not respect the conjugate symmetry of
+the real transform --- are set to zero. The 2/3 dealiasing mask is not applied
+here: the next physics step dealiases its input anyway
+(\S\ref{ssec:ns-physics-step}), and applying the mask here would remove far more
+than the clamp changed. After \eqref{eq:ns-leray-bc} the discrete divergence
+$k_i \hat{u}_i$ is at roundoff, and because $P_{il}$ is an orthogonal
+projection it can only lower $E_0$.
+
+What this gives up is the clamp itself. $P_{il}$ is nonlocal in physical space:
+the gradient part it removes is the gradient of a potential $\phi$ solving
+$\nabla^2 \phi = \nabla \cdot \mathbf{u}$, and that potential is spread
+over the whole box. So the boundary layers of \eqref{eq:ns-clamp} come back
+out of \eqref{eq:ns-leray-bc} with small nonzero values, and a slowly decaying
+potential-flow tail is added to the field --- the same effect
+\S\ref{ssec:ns-ic} notes for projecting a windowed initial condition. The two
+treatments are therefore complementary: the clamp alone keeps the faces exactly
+at zero and allows a divergence proportional to the amplitude it removes, while
+the clamp followed by \eqref{eq:ns-leray-bc} keeps the field exactly solenoidal
+and lets the faces move away from zero by the same order. Both are small only
+when $u_i$ is negligible near the faces, so the localization monitored by
+\texttt{leakage} is still needed either way. The option is off by default.
+
+\appendix
+
+\section{The RK4 physics step}\label{app:rk4}
+
+This appendix sets out the scheme used for the Navier--Stokes physics operator
+$\Phi^{(\mathrm{P})}$ of \S\ref{ssec:ns-physics-step}: one step of the classical
+fourth-order Runge--Kutta method. Throughout we abbreviate the step as
+$h \equiv \Delta t$, reserving $\Delta$ for the turbulent viscosity coefficient
+of \S\ref{ssec:ns-viscosity}.
+
+\subsection{The scheme}\label{ssec:rk4-scheme}
+
+Written out mode by mode, the physics flow \eqref{eq:ns-physics-flow} is the
+system of ordinary differential equations
+\begin{equation}\label{eq:rk4-rhs}
+  \frac{\mathrm{d}\hat{u}_i}{\mathrm{d}t} = R_i(\hat{u}),
+  \qquad
+  R_i(\hat{u}) = -P_{il}(\mathbf{k})\, \hat{N}_l - \Delta k^2 \hat{u}_i ,
+\end{equation}
+the bracketed physical terms of \eqref{eq:ns-fourier-final}. RK4 advances it
+through four evaluations of $R$,
+\begin{equation}\label{eq:rk4-stages}
+  \begin{aligned}
+    \hat{k}^{(1)}_i &= R_i\bigl(\hat{u}^{(n)}\bigr), &
+    \hat{k}^{(2)}_i &= R_i\bigl(\hat{u}^{(n)} + \tfrac{h}{2}\hat{k}^{(1)}\bigr), \\
+    \hat{k}^{(3)}_i &= R_i\bigl(\hat{u}^{(n)} + \tfrac{h}{2}\hat{k}^{(2)}\bigr), &
+    \hat{k}^{(4)}_i &= R_i\bigl(\hat{u}^{(n)} + h\,\hat{k}^{(3)}\bigr),
+  \end{aligned}
+\end{equation}
+combined with Simpson weights,
+\begin{equation}\label{eq:rk4-update}
+  \hat{u}_i^{(n+1)} = \hat{u}_i^{(n)}
+    + \frac{h}{6}\left( \hat{k}^{(1)}_i + 2\hat{k}^{(2)}_i
+      + 2\hat{k}^{(3)}_i + \hat{k}^{(4)}_i \right).
+\end{equation}
+The convective part of each evaluation is computed pseudo-spectrally in
+rotational form, $u_j \partial_j u_i = -(\mathbf{u} \times \boldsymbol{\omega})_i
++ \partial_i (u_k u_k/2)$, whose gradient part $P_{il}$ annihilates; this costs
+six inverse and three forward transforms, so a step costs $36$ transforms in
+all. The scheme has no coefficients beyond the four weights, so nothing is
+precomputed or cached.
+
+\paragraph{Order.} The scheme is fourth order in $h$, so it satisfies the
+second-order requirement \S\ref{ssec:alg-substeps} places on \textsc{Evolve}
+for the Strang composition with a margin.
+
+\subsection{Stability}\label{ssec:rk4-stability}
+
+Applied to the linear model $\mathrm{d}\hat{u}/\mathrm{d}t = \lambda \hat{u}$,
+\eqref{eq:rk4-stages}--\eqref{eq:rk4-update} multiply $\hat{u}$ by the
+amplification factor
+\begin{equation}\label{eq:rk4-polynomial}
+  A(z) = 1 + z + \frac{z^2}{2} + \frac{z^3}{6} + \frac{z^4}{24},
+  \qquad z = \lambda h,
+\end{equation}
+the degree-four Taylor polynomial of $e^{z}$, and the step is stable while
+$|A(z)| \le 1$. Two directions of the $z$-plane matter here.
+
+\paragraph{The viscous limit.} The viscous term contributes the real, negative
+eigenvalue $\lambda = -\Delta k^2$, and along the negative real axis
+$|A(z)| \le 1$ holds for $-2.785 \lesssim z \le 0$. The most negative
+eigenvalue belongs to the top mode retained by the $2/3$ rule,
+$k_{\max} = 2\pi (N/3)/H$, so
+\begin{equation}\label{eq:rk4-viscous-limit}
+  h\, \Delta\, k_{\max}^2 \le 2.785 .
+\end{equation}
+Since the viscous term is marched rather than integrated exactly, the modes
+below this limit are also damped at the polynomial rate $A(-\Delta k^2 h)$
+rather than at the exact rate $e^{-\Delta k^2 h}$. The two agree to
+$O(z^5)$, which is the local error of the scheme itself.
+
+\paragraph{The advective limit.} The convective term is, locally, a
+transport at speed $|\mathbf{u}|$, whose eigenvalues on the retained band lie
+on the imaginary axis with $|\lambda| \le \max|\mathbf{u}|\, k_{\max}$. Along the
+imaginary axis $|A(z)| \le 1$ holds for $|z| \le 2\sqrt{2}$, so
+\begin{equation}\label{eq:rk4-advective-limit}
+  h\, \max|\mathbf{u}|\, k_{\max} \le 2\sqrt{2} .
+\end{equation}
+The two limits \eqref{eq:rk4-viscous-limit} and \eqref{eq:rk4-advective-limit}
+bind in the ratio $\max|\mathbf{u}| / (\Delta k_{\max})$, up to a factor of
+order one: the viscous limit is the tighter only when the viscous rate at the
+cutoff outpaces the advective one. The self-similar frame pins
+$\max|\mathbf{u}| = O(1)$ on average, so neither limit drifts over a run as it
+would in a decaying simulation in physical variables. It does not pin it
+pointwise in time, however: the field can momentarily concentrate into a
+high-amplitude structure whose $\max|\mathbf{u}|$ carries a step that is
+stable in the settled regime past \eqref{eq:rk4-advective-limit}.
+
+\paragraph{The CFL time step.} The advective limit is therefore enforced, by
+the step rule \eqref{eq:alg-dt-rule} of \S\ref{ssec:alg-timestep}. Its CFL
+term, \textsc{MaxStableDt}, is the step that puts
+\eqref{eq:rk4-advective-limit} at the fraction $C$ of its limit,
+\begin{equation}\label{eq:rk4-cfl-dt}
+  \Delta t_{\mathrm{CFL}}(u; C) = \frac{C\, 2\sqrt{2}}{\max|\mathbf{u}|\, k_{\max}},
+\end{equation}
+and the realized CFL \eqref{eq:alg-realized-cfl} is
+$\Delta t_k \max|\mathbf{u}_{k+1}|\, k_{\max} / 2\sqrt{2}$. The viscous limit
+\eqref{eq:rk4-viscous-limit} does not depend on the state; it is reported as
+$h \Delta k_{\max}^2 / 2.785$ and kept below $1$ by the choice of
+$\Delta t_{\max}$.
+
+\paragraph{A resolution margin.} A structure that concentrates below the
+grid scale also raises $\max|\mathbf{u}|$, and so looks like a CFL problem;
+but a smaller step only delays it. To tell the two apart the run also records
+the fraction of the dealiased energy $\tfrac12 \sum |\hat{u}|^2$ carried by
+$|\mathbf{k}| > \tfrac23 k_{\max}$. It stays small while the field is
+resolved and rises as energy piles up against the $2/3$ cutoff. A realized CFL
+excursion with a small tail fraction is a time-step problem; one preceded by a
+rising tail fraction is a resolution problem.
+
+\subsection{Solenoidality}\label{ssec:rk4-divergence}
+
+The step contributes nothing of its own to the continuity residual. Every
+convective contribution to $R_i$ has had $P_{il}$ applied, and
+$k_i P_{il} = k_l - k_l k^2/k^2 = 0$, so contracting \eqref{eq:rk4-rhs} with
+$k_i$ leaves only the viscous term, $k_i R_i(\hat{u}) = -\Delta k^2\, k_i
+\hat{u}_i$. The divergence of each mode therefore evolves under the linear
+model alone, and RK4 advances it by exactly the factor
+\eqref{eq:rk4-polynomial},
+\begin{equation}\label{eq:rk4-divergence}
+  k_i \hat{u}_i^{(n+1)} = A\!\left(-\Delta k^2 h\right) k_i \hat{u}_i^{(n)} .
+\end{equation}
+Within the viscous limit \eqref{eq:rk4-viscous-limit}, $|A| \le 1$, so whatever
+divergence enters the field is damped by the step, never amplified, and if
+\eqref{eq:ns-fourier-continuity} holds on input it holds on output. The residual
+the run log records is therefore entirely the boundary clamp's
+(\S\ref{ssec:ns-boundary}), not the time stepper's.
+
+\subsection{Dealiasing}\label{ssec:rk4-dealiasing}
+
+The $2/3$ mask of \S\ref{ssec:ns-fourier} is applied to the incoming field
+before the first stage. No stage then leaves the retained band: the convective
+term is masked after its forward transform, the projection $P_{il}$ and the
+viscous term are both diagonal in $\mathbf{k}$, and each stage argument in
+\eqref{eq:rk4-stages} is a linear combination of band-limited fields. The mask
+is applied once more to $\hat{u}^{(n+1)}$, which changes nothing in exact
+arithmetic but makes explicit that no content reaches the band the next scaling
+step will stretch.
 
 \end{document}
