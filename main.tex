@@ -899,9 +899,12 @@ marked as such below.
 
 \subsection{Governing equations and clock}\label{ssec:ns-clock}
 
-The dimensional equations are
+The equations are solved as a large-eddy simulation (LES): $u_i^*$ and $p^*$
+denote the filtered (resolved) velocity and pressure, and the effect of the
+unresolved scales enters through the kinematic subgrid-scale stress
+$\tau_{ij}^*$. The dimensional filtered equations are
 \begin{equation}\label{eq:ns-momentum}
-  \frac{\partial u_i^*}{\partial t^*} + u_j^* \frac{\partial u_i^*}{\partial x_j^*}= -\frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*} + \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*},
+  \frac{\partial u_i^*}{\partial t^*} + u_j^* \frac{\partial u_i^*}{\partial x_j^*}= -\frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*} + \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*} - \frac{\partial \tau_{ij}^*}{\partial x_j^*},
 \end{equation}
 together with the continuity equation,
 \begin{equation}\label{eq:ns-continuity}
@@ -911,18 +914,27 @@ so that, in the notation of \eqref{eq:fw-general-pde},
 \begin{equation}\label{eq:ns-R}
   R_i^*(u^*) = - u_j^* \frac{\partial u_i^*}{\partial x_j^*}
   - \frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*}
-  + \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*}.
+  + \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*}
+  - \frac{\partial \tau_{ij}^*}{\partial x_j^*}.
 \end{equation}
 In addition to the rescaling \eqref{eq:fw-nondim} of $u_i$ and $x_j$, the
 pressure is nondimensionalized by the dynamic pressure,
 \begin{equation}\label{eq:ns-pressure-nondim}
-  p = \frac{p^*}{\rho U^2}.
+  p = \frac{p^*}{\rho U^2},
 \end{equation}
-Term by term, the convective and pressure terms scale as $U^2/L$,
+and the subgrid-scale stress, which carries units of velocity squared, by
+$U^2$,
+\begin{equation}\label{eq:ns-sgs-nondim}
+  \tau_{ij} = \frac{\tau_{ij}^*}{U^2}.
+\end{equation}
+Term by term, the convective, pressure, and subgrid-scale terms scale as
+$U^2/L$,
 \begin{equation}\label{eq:ns-convection}
   u_j^* \frac{\partial u_i^*}{\partial x_j^*} = \frac{U^2}{L} u_j \frac{\partial u_i}{\partial x_j},
   \qquad
   \frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*} = \frac{U^2}{L} \frac{\partial p}{\partial x_i},
+  \qquad
+  \frac{\partial \tau_{ij}^*}{\partial x_j^*} = \frac{U^2}{L} \frac{\partial \tau_{ij}}{\partial x_j},
 \end{equation}
 while the viscous term scales as $\nu U / L^2$,
 \begin{equation}\label{eq:ns-viscous}
@@ -953,26 +965,45 @@ equation
   - \sigma_U\, u_i
   - u_j \frac{\partial u_i}{\partial x_j}
   - \frac{\partial p}{\partial x_i}
-  + \frac{1}{Re} \frac{\partial^2 u_i}{\partial x_j \partial x_j},
+  + \frac{1}{Re} \frac{\partial^2 u_i}{\partial x_j \partial x_j}
+  - \frac{\partial \tau_{ij}}{\partial x_j},
 \end{equation}
 and the continuity equation is unchanged by the rescaling,
 \begin{equation}\label{eq:ns-nondim-continuity}
   \frac{\partial u_i}{\partial x_i} = 0.
 \end{equation}
 
-\subsection{Viscosity}\label{ssec:ns-viscosity}
-Let the kinematic viscosity be given by
-\begin{equation}\label{eq:ns-viscosity-split}
-  \nu = \nu_{\mathrm{turb}} + \nu_{\mathrm{mol}},
+\subsection{Subgrid stress model}\label{ssec:ns-viscosity}
+The subgrid-scale stress $\tau_{ij}^*$ of \eqref{eq:ns-momentum} is closed with
+the standard Smagorinsky model. Its deviatoric part is taken proportional to the
+resolved strain rate,
+\begin{equation}\label{eq:ns-smagorinsky}
+  \tau_{ij}^* - \frac{1}{3}\tau_{kk}^*\delta_{ij} = -2\nu_{\mathrm{t}}^* S_{ij}^*,
+  \qquad
+  S_{ij}^* = \frac{1}{2}\left(\frac{\partial u_i^*}{\partial x_j^*} + \frac{\partial u_j^*}{\partial x_i^*}\right),
 \end{equation}
-where $\nu_{\mathrm{mol}}$ is the molecular viscosity and $\nu_{\mathrm{turb}}$
-is a turbulent viscosity representing under-resolved eddies, approximated as
-\begin{equation}\label{eq:ns-turb-viscosity}
-  \nu_{\mathrm{turb}} = \Delta \cdot U L,
+with the isotropic part $\frac{1}{3}\tau_{kk}^*\delta_{ij}$ absorbed into the
+pressure, and the eddy viscosity
+\begin{equation}\label{eq:ns-eddy-viscosity}
+  \nu_{\mathrm{t}}^* = (C_s \Delta^*)^2 |S^*|,
+  \qquad
+  |S^*| = \sqrt{2 S_{ij}^* S_{ij}^*},
 \end{equation}
-where $\Delta$ is a parameter related to the resolution of the mesh. In the
-limit of infinite Reynolds number, where $\nu_{\mathrm{mol}} = 0$, we have
-$1/Re = \Delta$ and the momentum equation
+where $C_s$ is the Smagorinsky constant and $\Delta^*$ is the filter width.
+Nondimensionalizing the filter width with the length scale, $\Delta = \Delta^*/L$,
+which we take equal to the grid spacing, $\Delta = \Delta x$, and noting that
+$S_{ij}^* = (U/L)\, S_{ij}$, the eddy viscosity becomes
+\begin{equation}\label{eq:ns-eddy-viscosity-nondim}
+  \nu_{\mathrm{t}}^* = U L\, (C_s \Delta)^2 |S|,
+\end{equation}
+so that the nondimensional subgrid stress \eqref{eq:ns-sgs-nondim} is
+\begin{equation}\label{eq:ns-smagorinsky-nondim}
+  \tau_{ij} - \frac{1}{3}\tau_{kk}\delta_{ij}
+  = -2 (C_s \Delta)^2 |S|\, S_{ij}.
+\end{equation}
+The stress carries no dependence on $U$ or $L$: the Smagorinsky model is
+compatible with the self-similar rescaling. In the limit of infinite Reynolds
+number, $1/Re = 0$, and the momentum equation
 \eqref{eq:ns-nondim-momentum-base} becomes
 \begin{equation}\label{eq:ns-nondim-momentum}
   \frac{\partial u_i}{\partial t}
@@ -980,16 +1011,14 @@ $1/Re = \Delta$ and the momentum equation
   - \sigma_U\, u_i
   - u_j \frac{\partial u_i}{\partial x_j}
   - \frac{\partial p}{\partial x_i}
-  + \Delta \cdot \frac{\partial^2 u_i}{\partial x_j \partial x_j}.
+  + \frac{\partial}{\partial x_j}\left[ 2 (C_s \Delta)^2 |S|\, S_{ij} \right],
 \end{equation}
+where $p$ now denotes the modified pressure that includes
+$\frac{1}{3}\tau_{kk}$.
 
 \subsection{Fourier representation}\label{ssec:ns-fourier}
-Using the Fourier convention \eqref{eq:fw-fourier-convention}, the viscous
-term becomes
-\begin{equation}\label{eq:ns-fourier-viscous}
-  \widehat{\frac{\partial^2 u_i}{\partial x_j \partial x_j}} = -k^2 \hat{u}_i,
-\end{equation}
-and the pressure gradient becomes
+Using the Fourier convention \eqref{eq:fw-fourier-convention}, the pressure
+gradient becomes
 \begin{equation}\label{eq:ns-fourier-pressure}
   \widehat{\frac{\partial p}{\partial x_i}} = \mathrm{i} k_i \hat{p}.
 \end{equation}
@@ -997,7 +1026,23 @@ The convective term
 \begin{equation}\label{eq:ns-fourier-convection}
   \hat{N}_i = \widehat{u_j \frac{\partial u_i}{\partial x_j}},
 \end{equation}
-will be evaluated pseudo-spectrally. The scaling terms transform as in
+will be evaluated pseudo-spectrally, and so will the subgrid stress term.
+Writing
+\begin{equation}\label{eq:ns-eddy-viscosity-field}
+  \nu_{\mathrm{t}} = (C_s \Delta)^2 |S|
+\end{equation}
+for the nondimensional eddy viscosity of \eqref{eq:ns-eddy-viscosity-nondim},
+the strain rate is formed spectrally,
+\begin{equation}\label{eq:ns-fourier-strain}
+  \hat{S}_{ij} = \frac{\mathrm{i}}{2}\left( k_j \hat{u}_i + k_i \hat{u}_j \right),
+\end{equation}
+the products $|S|$ and $T_{ij} = 2 \nu_{\mathrm{t}} S_{ij}$ are formed in physical
+space, and the divergence is taken spectrally,
+\begin{equation}\label{eq:ns-fourier-sgs}
+  \hat{G}_i = \widehat{\frac{\partial T_{ij}}{\partial x_j}} = \mathrm{i} k_j \hat{T}_{ij}.
+\end{equation}
+Since $|S|$ is not a polynomial in $u$, $\hat{G}_i$ carries aliasing that the
+$2/3$ rule does not remove entirely. The scaling terms transform as in
 \eqref{eq:fw-scaling-pde-fourier} with $d = 3$, so the transform of
 \eqref{eq:ns-nondim-momentum} is
 \begin{equation}\label{eq:ns-nondim-momentum-fourier}
@@ -1006,7 +1051,7 @@ will be evaluated pseudo-spectrally. The scaling terms transform as in
   - \sigma_U\, \hat{u}_i
   - \hat{N}_i
   - \mathrm{i} k_i \hat{p}
-  - \Delta \cdot k^2 \hat{u}_i,
+  + \hat{G}_i,
 \end{equation}
 and the transform of the continuity equation
 \eqref{eq:ns-nondim-continuity} is
@@ -1022,7 +1067,7 @@ continuity constraint gives
   - \sigma_U\, k_i \hat{u}_i
   - k_i \hat{N}_i
   - \mathrm{i} k^2 \hat{p}
-  - \Delta \cdot k^2 k_i \hat{u}_i.
+  + k_i \hat{G}_i.
 \end{equation}
 The remaining scaling contribution also vanishes: differentiating
 \eqref{eq:ns-fourier-continuity} with respect to $k_j$ gives
@@ -1035,21 +1080,24 @@ The remaining scaling contribution also vanishes: differentiating
 so that $k_i k_j \partial \hat{u}_i / \partial k_j = -k_j \hat{u}_j = 0$.
 Hence the scaling terms are divergence free on their own --- the self-similar
 frame does not generate pressure --- and \eqref{eq:ns-pressure-contracted}
-reduces to a Poisson equation for the pressure,
+reduces to a Poisson equation for the pressure. Unlike a constant-coefficient
+viscous term, the subgrid stress is not divergence free, $k_i \hat{G}_i =
+\mathrm{i} k_i k_j \hat{T}_{ij} \neq 0$ in general, so it enters the source
+alongside the convection,
 \begin{equation}\label{eq:ns-fourier-poisson}
-  \mathrm{i} k^2 \hat{p} = -k_i \hat{N}_i
+  \mathrm{i} k^2 \hat{p} = -k_i \left( \hat{N}_i - \hat{G}_i \right)
   \quad\Longrightarrow\quad
-  \hat{p} = \mathrm{i}\,\frac{k_l \hat{N}_l}{k^2},
+  \hat{p} = \mathrm{i}\,\frac{k_l \left( \hat{N}_l - \hat{G}_l \right)}{k^2},
   \qquad k \neq 0,
 \end{equation}
 with $\hat{p}$ at $k = 0$ fixed arbitrarily, since only its gradient enters
 the momentum equation. Substituting \eqref{eq:ns-fourier-poisson} into
 \eqref{eq:ns-nondim-momentum-fourier}, the pressure term becomes
 \begin{equation}\label{eq:ns-fourier-pressure-substituted}
-  -\mathrm{i} k_i \hat{p} = \frac{k_i k_l}{k^2} \hat{N}_l,
+  -\mathrm{i} k_i \hat{p} = \frac{k_i k_l}{k^2} \left( \hat{N}_l - \hat{G}_l \right),
 \end{equation}
-which combines with $-\hat{N}_i$ to give the solenoidal projection of the
-convective term. Defining the projection tensor
+which combines with $-\hat{N}_i + \hat{G}_i$ to give the solenoidal projection
+of the convective and subgrid stress terms together. Defining the projection tensor
 \begin{equation}\label{eq:ns-projection-tensor}
   P_{il}(\mathbf{k}) = \delta_{il} - \frac{k_i k_l}{k^2},
 \end{equation}
@@ -1059,8 +1107,7 @@ the evolution equation splits exactly along the lines of the lemma
   \frac{\partial \hat{u}_i}{\partial t}
   = \underbrace{-\sigma_L \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
   - \sigma_U\, \hat{u}_i}_{\text{scaling terms}}
-  \underbrace{- P_{il}(\mathbf{k})\, \hat{N}_l
-  - \Delta \cdot k^2 \hat{u}_i}_{\text{physical terms}}.
+  \underbrace{- P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l \right)}_{\text{physical terms}}.
 \end{equation}
 
 \subsection{The physics step}\label{ssec:ns-physics-step}
@@ -1070,23 +1117,24 @@ physical terms of \eqref{eq:ns-fourier-final},
 \begin{equation}\label{eq:ns-physics-flow}
   \Phi_{\Delta t}^{(\mathrm{P})}\bigl(\hat{u}_i(t)\bigr)
   = \hat{u}_i(t) - \int_{t}^{t+\Delta t}
-    \left[ P_{il}(\mathbf{k})\, \hat{N}_l + \Delta \cdot k^2 \hat{u}_i \right] \mathrm{d}t .
+    P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l \right) \mathrm{d}t .
 \end{equation}
 
 Unlike the 1D case, \eqref{eq:ns-physics-flow} has no closed form: the
-convective term is nonlinear, so $\Phi^{(\mathrm{P})}$ must be realized by an
+convective and subgrid stress terms are both nonlinear, so $\Phi^{(\mathrm{P})}$ must be realized by an
 actual time-marching scheme. Two things constrain the choice. It must meet the
 accuracy requirement of \S\ref{ssec:alg-substeps} --- second order for the
 Strang composition to retain its order --- and it must handle the dealiasing of
-the pseudo-spectral product \eqref{eq:ns-fourier-convection}.
+the pseudo-spectral products \eqref{eq:ns-fourier-convection} and
+\eqref{eq:ns-fourier-sgs}.
 
 We take $\Phi^{(\mathrm{P})}$ to be a single step of the classical fourth-order
 Runge--Kutta method (RK4) applied to the full physical right-hand side, the
-viscous term $-\Delta k^2 \hat{u}_i$ marched together with the convection. It
-is set out in Appendix~\ref{app:rk4}, together with the stability limits it
-places on $\Delta t$. The advective limit is enforced by the CFL time step of
-\S\ref{ssec:alg-timestep}, through \textsc{MaxStableDt} \eqref{eq:rk4-cfl-dt};
-the viscous one is state-independent and is only reported.
+subgrid stress term $\hat{G}_i$ marched together with the convection. It
+is set out in Appendix~\ref{app:rk4}, together with the advective stability
+limit it places on $\Delta t$. The limit depends on the state, and is enforced by
+the CFL time step of \S\ref{ssec:alg-timestep}, through \textsc{MaxStableDt}
+\eqref{eq:rk4-cfl-dt}.
 
 \subsection{Constraint functionals}\label{ssec:ns-constraints}
 
@@ -1372,8 +1420,8 @@ when $u_i$ is negligible near the faces, so the localization monitored by
 This appendix sets out the scheme used for the Navier--Stokes physics operator
 $\Phi^{(\mathrm{P})}$ of \S\ref{ssec:ns-physics-step}: one step of the classical
 fourth-order Runge--Kutta method. Throughout we abbreviate the step as
-$h \equiv \Delta t$, reserving $\Delta$ for the turbulent viscosity coefficient
-of \S\ref{ssec:ns-viscosity}.
+$h \equiv \Delta t$, reserving $\Delta$ for the filter width of the subgrid
+stress model of \S\ref{ssec:ns-viscosity}.
 
 \subsection{The scheme}\label{ssec:rk4-scheme}
 
@@ -1382,7 +1430,7 @@ system of ordinary differential equations
 \begin{equation}\label{eq:rk4-rhs}
   \frac{\mathrm{d}\hat{u}_i}{\mathrm{d}t} = R_i(\hat{u}),
   \qquad
-  R_i(\hat{u}) = -P_{il}(\mathbf{k})\, \hat{N}_l - \Delta k^2 \hat{u}_i ,
+  R_i(\hat{u}) = -P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l \right) ,
 \end{equation}
 the bracketed physical terms of \eqref{eq:ns-fourier-final}. RK4 advances it
 through four evaluations of $R$,
@@ -1403,8 +1451,10 @@ combined with Simpson weights,
 The convective part of each evaluation is computed pseudo-spectrally in
 rotational form, $u_j \partial_j u_i = -(\mathbf{u} \times \boldsymbol{\omega})_i
 + \partial_i (u_k u_k/2)$, whose gradient part $P_{il}$ annihilates; this costs
-six inverse and three forward transforms, so a step costs $36$ transforms in
-all. The scheme has no coefficients beyond the four weights, so nothing is
+six inverse and three forward transforms. The subgrid stress term
+\eqref{eq:ns-fourier-sgs} costs six further inverse transforms, one per
+independent component of $S_{ij}$, and six forward transforms of $T_{ij}$, so
+an evaluation costs $21$ transforms and a step $84$ in all. The scheme has no coefficients beyond the four weights, so nothing is
 precomputed or cached.
 
 \paragraph{Order.} The scheme is fourth order in $h$, so it satisfies the
@@ -1421,50 +1471,32 @@ amplification factor
   \qquad z = \lambda h,
 \end{equation}
 the degree-four Taylor polynomial of $e^{z}$, and the step is stable while
-$|A(z)| \le 1$. Two directions of the $z$-plane matter here.
-
-\paragraph{The viscous limit.} The viscous term contributes the real, negative
-eigenvalue $\lambda = -\Delta k^2$, and along the negative real axis
-$|A(z)| \le 1$ holds for $-2.785 \lesssim z \le 0$. The most negative
-eigenvalue belongs to the top mode retained by the $2/3$ rule,
-$k_{\max} = 2\pi (N/3)/H$, so
-\begin{equation}\label{eq:rk4-viscous-limit}
-  h\, \Delta\, k_{\max}^2 \le 2.785 .
-\end{equation}
-Since the viscous term is marched rather than integrated exactly, the modes
-below this limit are also damped at the polynomial rate $A(-\Delta k^2 h)$
-rather than at the exact rate $e^{-\Delta k^2 h}$. The two agree to
-$O(z^5)$, which is the local error of the scheme itself.
+$|A(z)| \le 1$.
 
 \paragraph{The advective limit.} The convective term is, locally, a
 transport at speed $|\mathbf{u}|$, whose eigenvalues on the retained band lie
-on the imaginary axis with $|\lambda| \le \max|\mathbf{u}|\, k_{\max}$. Along the
-imaginary axis $|A(z)| \le 1$ holds for $|z| \le 2\sqrt{2}$, so
+on the imaginary axis with $|\lambda| \le \max|\mathbf{u}|\, k_{\max}$, where
+$k_{\max} = 2\pi (N/3)/H$ is the top mode retained by the $2/3$ rule. Along
+the imaginary axis $|A(z)| \le 1$ holds for $|z| \le 2\sqrt{2}$, so
 \begin{equation}\label{eq:rk4-advective-limit}
   h\, \max|\mathbf{u}|\, k_{\max} \le 2\sqrt{2} .
 \end{equation}
-The two limits \eqref{eq:rk4-viscous-limit} and \eqref{eq:rk4-advective-limit}
-bind in the ratio $\max|\mathbf{u}| / (\Delta k_{\max})$, up to a factor of
-order one: the viscous limit is the tighter only when the viscous rate at the
-cutoff outpaces the advective one. The self-similar frame pins
-$\max|\mathbf{u}| = O(1)$ on average, so neither limit drifts over a run as it
-would in a decaying simulation in physical variables. It does not pin it
-pointwise in time, however: the field can momentarily concentrate into a
-high-amplitude structure whose $\max|\mathbf{u}|$ carries a step that is
-stable in the settled regime past \eqref{eq:rk4-advective-limit}.
+The self-similar frame pins $\max|\mathbf{u}| = O(1)$ on average, so the
+limit does not drift over a run as it would in a decaying simulation in
+physical variables. It does not pin it pointwise in time, however: the field
+can momentarily concentrate into a high-amplitude structure whose
+$\max|\mathbf{u}|$ carries a step that is stable in the settled regime past
+\eqref{eq:rk4-advective-limit}.
 
-\paragraph{The CFL time step.} The advective limit is therefore enforced, by
-the step rule \eqref{eq:alg-dt-rule} of \S\ref{ssec:alg-timestep}. Its CFL
-term, \textsc{MaxStableDt}, is the step that puts
+\paragraph{The CFL time step.} The limit is therefore enforced, by the
+step rule \eqref{eq:alg-dt-rule} of \S\ref{ssec:alg-timestep}. Its CFL term,
+\textsc{MaxStableDt}, is the step that puts
 \eqref{eq:rk4-advective-limit} at the fraction $C$ of its limit,
 \begin{equation}\label{eq:rk4-cfl-dt}
-  \Delta t_{\mathrm{CFL}}(u; C) = \frac{C\, 2\sqrt{2}}{\max|\mathbf{u}|\, k_{\max}},
+  \Delta t_{\mathrm{CFL}}(u; C) = C\, \frac{2\sqrt{2}}{\max|\mathbf{u}|\, k_{\max}},
 \end{equation}
 and the realized CFL \eqref{eq:alg-realized-cfl} is
-$\Delta t_k \max|\mathbf{u}_{k+1}|\, k_{\max} / 2\sqrt{2}$. The viscous limit
-\eqref{eq:rk4-viscous-limit} does not depend on the state; it is reported as
-$h \Delta k_{\max}^2 / 2.785$ and kept below $1$ by the choice of
-$\Delta t_{\max}$.
+$\Delta t_k \max|\mathbf{u}_{k+1}|\, k_{\max} / 2\sqrt{2}$.
 
 \paragraph{A resolution margin.} A structure that concentrates below the
 grid scale also raises $\max|\mathbf{u}|$, and so looks like a CFL problem;
@@ -1478,18 +1510,17 @@ rising tail fraction is a resolution problem.
 \subsection{Solenoidality}\label{ssec:rk4-divergence}
 
 The step contributes nothing of its own to the continuity residual. Every
-convective contribution to $R_i$ has had $P_{il}$ applied, and
-$k_i P_{il} = k_l - k_l k^2/k^2 = 0$, so contracting \eqref{eq:rk4-rhs} with
-$k_i$ leaves only the viscous term, $k_i R_i(\hat{u}) = -\Delta k^2\, k_i
-\hat{u}_i$. The divergence of each mode therefore evolves under the linear
-model alone, and RK4 advances it by exactly the factor
-\eqref{eq:rk4-polynomial},
+contribution to $R_i$, convective and subgrid alike, has had $P_{il}$ applied,
+and $k_i P_{il} = k_l - k_l k^2/k^2 = 0$, so contracting \eqref{eq:rk4-rhs}
+with $k_i$ gives $k_i R_i(\hat{u}) = 0$. Each stage of \eqref{eq:rk4-stages}
+is then divergence free, and the divergence of each mode is carried through the
+step unchanged,
 \begin{equation}\label{eq:rk4-divergence}
-  k_i \hat{u}_i^{(n+1)} = A\!\left(-\Delta k^2 h\right) k_i \hat{u}_i^{(n)} .
+  k_i \hat{u}_i^{(n+1)} = k_i \hat{u}_i^{(n)} .
 \end{equation}
-Within the viscous limit \eqref{eq:rk4-viscous-limit}, $|A| \le 1$, so whatever
-divergence enters the field is damped by the step, never amplified, and if
-\eqref{eq:ns-fourier-continuity} holds on input it holds on output. The residual
+Whatever divergence enters the field is therefore neither amplified nor
+damped by the step, and if \eqref{eq:ns-fourier-continuity} holds on input it
+holds on output. The residual
 the run log records is therefore entirely the boundary clamp's
 (\S\ref{ssec:ns-boundary}), not the time stepper's.
 
@@ -1497,8 +1528,8 @@ the run log records is therefore entirely the boundary clamp's
 
 The $2/3$ mask of \S\ref{ssec:ns-fourier} is applied to the incoming field
 before the first stage. No stage then leaves the retained band: the convective
-term is masked after its forward transform, the projection $P_{il}$ and the
-viscous term are both diagonal in $\mathbf{k}$, and each stage argument in
+and subgrid stress terms are masked after their forward transforms, the
+projection $P_{il}$ is diagonal in $\mathbf{k}$, and each stage argument in
 \eqref{eq:rk4-stages} is a linear combination of band-limited fields. The mask
 is applied once more to $\hat{u}^{(n+1)}$, which changes nothing in exact
 arithmetic but makes explicit that no content reaches the band the next scaling
