@@ -513,7 +513,10 @@ has been assembled. Both equations treated here clamp the domain boundary to zer
 diffusion equation its two edge grid points (\S\ref{ssec:1d-boundary}), the
 Navier--Stokes equations the six faces of the box
 (\S\ref{ssec:ns-boundary}), optionally followed by a Leray projection back
-onto the divergence-free fields \eqref{eq:ns-leray-bc}.
+onto the divergence-free fields \eqref{eq:ns-leray-bc}. For Navier--Stokes the
+clamp is itself optional: with it disabled \textsc{ApplyBC} is the identity,
+and the far-field condition is left to the sponge forcing of
+\S\ref{ssec:ns-sponge}, which acts inside \textsc{Evolve}.
 
 \subsection{\textsc{LieTrotter}: Lie--Trotter splitting}\label{ssec:alg-lie-trotter}
 A Lie--Trotter step composes a full physics step with a full scaling step,
@@ -1016,6 +1019,113 @@ number, $1/Re = 0$, and the momentum equation
 where $p$ now denotes the modified pressure that includes
 $\frac{1}{3}\tau_{kk}$.
 
+\subsection{Sponge forcing}\label{ssec:ns-sponge}
+The condition we want at the edge of the domain is that of an unbounded,
+quiescent far field, $u_i \to 0$ as $r \to \infty$, with $r = \sqrt{x_j x_j}$
+the distance from the centre of the domain \eqref{eq:alg-grid}. The
+pseudo-spectral discretization, however, presumes a periodic field, and cannot
+impose that condition directly. We approximate it instead by a sponge (fringe)
+layer: a forcing that damps the velocity towards zero in a spherical shell
+near the edge of the box and vanishes in its interior,
+\begin{equation}\label{eq:ns-sponge-force}
+  f_i = -W(r)\, u_i .
+\end{equation}
+The layer is meant to absorb whatever reaches it without reflecting it. It is
+not a Brinkman penalization of a solid wall: $W$ ramps up smoothly to a
+moderate value rather than jumping to a stiff one, and no no-slip condition is
+imposed at any radius.
+
+\paragraph{The weight function.} The weight is the fringe function of
+Nordstr\"om, Nordin \& Henningson (1999), applied radially,
+\begin{equation}\label{eq:ns-sponge-W}
+  W(r) = W_{\max}\, S\!\left( \frac{r - r_0}{r_1 - r_0} \right),
+\end{equation}
+where the smooth step $S$ is
+\begin{equation}\label{eq:ns-sponge-S}
+  S(\xi) =
+  \begin{cases}
+    0, & \xi \le 0, \\[4pt]
+    \dfrac{1}{1 + \exp\!\left( \dfrac{1}{\xi - 1} + \dfrac{1}{\xi} \right)}, & 0 < \xi < 1, \\[10pt]
+    1, & \xi \ge 1 .
+  \end{cases}
+\end{equation}
+The function $S$ is $C^\infty$ on the whole real line. Every derivative of it
+vanishes at $\xi = 0$ and at $\xi = 1$, it rises monotonically between them,
+and it is antisymmetric about its midpoint, $S(1 - \xi) = 1 - S(\xi)$, so that
+$S(1/2) = 1/2$. The weight \eqref{eq:ns-sponge-W} is therefore exactly zero in
+the sphere $r \le r_0$, rises smoothly across the shell $r_0 < r < r_1$, and
+is exactly $W_{\max}$ for $r \ge r_1$. It has three parameters:
+\begin{itemize}
+  \item $W_{\max}$, the damping rate in the fully developed layer, in units of
+  $1/\tau$, i.e.\ per eddy turnover time \eqref{eq:ns-clock}. Default
+  $W_{\max} = 10$, which damps the velocity by a factor $e$ in a tenth of a
+  turnover. Setting $W_{\max} = 0$ switches the sponge off.
+  \item $r_0$, the radius at which the ramp begins. Default $r_0 = 0.35\, H$.
+  \item $r_1$, the radius at which the ramp ends. Default $r_1 = H/2$.
+\end{itemize}
+
+\paragraph{Smoothness.} The sponge must not introduce Gibbs oscillations into
+the pseudo-spectral evaluation of $W u_i$, so $W$ must be smooth not only on
+the box but on its periodic extension. With $r_1 \le H/2$ the sphere
+$r \le r_1$ lies inside the box, and $W = W_{\max}$ on every face and corner.
+At $r_1 = H/2$ the sphere touches the centre of each face, where the periodic
+image just across the face lies at $r$ slightly below $H/2$; since every
+derivative of $S$ vanishes at $\xi = 1$, the periodic extension of $W$ is still
+$C^\infty$ there. The default $r_1 = H/2$ is thus the largest admissible value,
+and it leaves the largest interior. The ramp $S$ climbs more steeply than its
+nominal width $r_1 - r_0$ suggests, so that width must be resolved by several
+grid cells: we require $r_1 - r_0 \gtrsim 10\, \Delta x$. The defaults give
+$r_1 - r_0 = 0.15\, H$, about $19\, \Delta x$ at $N = 128$ and about
+$10\, \Delta x$ at $N = 64$.
+
+\paragraph{The sponge in the self-similar frame.} The weight
+\eqref{eq:ns-sponge-W} is fixed in the nondimensional coordinates $x_j$, and
+$W$ is a rate in units of $1/\tau$. In physical variables
+\eqref{eq:ns-sponge-force} is therefore the forcing
+\begin{equation}\label{eq:ns-sponge-dimensional}
+  f_i^* = -\frac{U}{L}\, W\!\left( \frac{r^*}{L} \right) u_i^*,
+\end{equation}
+since $f_i^* = -(U^2/L)\, W(r)\, u_i$ and the lemma \eqref{eq:fw-lemma}
+multiplies it by $\tau/U = L/U^2$, recovering \eqref{eq:ns-sponge-force}. In
+physical space the layer thus moves outwards with the length scale $L$, and
+its damping rate follows the eddy turnover rate $U/L$. Like the
+Smagorinsky stress, the sponge carries no explicit dependence on $U$ or $L$ in
+the self-similar frame.
+
+\paragraph{The forced equation.} Adding \eqref{eq:ns-sponge-force} to
+\eqref{eq:ns-nondim-momentum}, the momentum equation actually solved is
+\begin{equation}\label{eq:ns-nondim-momentum-sponge}
+  \frac{\partial u_i}{\partial t}
+  = \sigma_L\, x_j \frac{\partial u_i}{\partial x_j}
+  - \sigma_U\, u_i
+  - u_j \frac{\partial u_i}{\partial x_j}
+  - \frac{\partial p}{\partial x_i}
+  + \frac{\partial}{\partial x_j}\left[ 2 (C_s \Delta)^2 |S|\, S_{ij} \right]
+  - W(r)\, u_i .
+\end{equation}
+The forcing is not divergence free: with $\partial_i u_i = 0$,
+$\partial_i (W u_i) = u_i\, \partial_i W$, which is nonzero wherever the flow
+crosses the ramp. It is not required to be. It enters the pressure Poisson
+equation alongside the convective and subgrid stress terms
+(\S\ref{ssec:ns-projection}), and the solenoidal projection then removes its
+gradient part, so the velocity update stays divergence free. The projected
+forcing is no longer strictly confined to the shell --- its gradient part is
+taken up by the pressure, which is nonlocal --- but it remains purely
+dissipative: $P_{il}$ is an orthogonal projection and $u_i$ is solenoidal, so
+the rate at which it changes $E_0$ of \eqref{eq:ns-functionals} is
+$-2 \int W\, u_i u_i\, \mathrm{d}\mathbf{x} \le 0$.
+
+\paragraph{Initial condition.} The puff must start well inside the undamped
+sphere $r \le r_0$, or the sponge will act on it from the first step. With the
+window \eqref{eq:ns-ic-window} of width $\sigma$, we take
+$\sigma \lesssim r_0 / 4$ as a guideline; it is not enforced.
+
+\paragraph{Scaling drift.} The scaling term $\sigma_L x_j \partial_j u_i$ of
+\eqref{eq:ns-nondim-momentum-sponge} is an advection with velocity
+$-\sigma_L \mathbf{x}$. For $\sigma_L > 0$ it points inwards, so the
+self-similar frame itself carries content away from the sponge, and the layer
+has only to absorb what the turbulence carries outwards against that drift.
+
 \subsection{Fourier representation}\label{ssec:ns-fourier}
 Using the Fourier convention \eqref{eq:fw-fourier-convention}, the pressure
 gradient becomes
@@ -1042,16 +1152,26 @@ space, and the divergence is taken spectrally,
   \hat{G}_i = \widehat{\frac{\partial T_{ij}}{\partial x_j}} = \mathrm{i} k_j \hat{T}_{ij}.
 \end{equation}
 Since $|S|$ is not a polynomial in $u$, $\hat{G}_i$ carries aliasing that the
-$2/3$ rule does not remove entirely. The scaling terms transform as in
+$2/3$ rule does not remove entirely. The sponge forcing
+\eqref{eq:ns-sponge-force} is likewise formed as a product in physical space
+and transformed,
+\begin{equation}\label{eq:ns-fourier-sponge}
+  \hat{F}_i = \widehat{W u_i},
+\end{equation}
+with $W$ tabulated once on the grid \eqref{eq:alg-grid}. Because $W$ is smooth
+but not band-limited, $\hat{F}_i$ also carries content beyond the retained
+band, which the $2/3$ mask removes along with that of $\hat{N}_i$ and
+$\hat{G}_i$. The scaling terms transform as in
 \eqref{eq:fw-scaling-pde-fourier} with $d = 3$, so the transform of
-\eqref{eq:ns-nondim-momentum} is
+\eqref{eq:ns-nondim-momentum-sponge} is
 \begin{equation}\label{eq:ns-nondim-momentum-fourier}
   \frac{\partial \hat{u}_i}{\partial t}
   = -\sigma_L \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
   - \sigma_U\, \hat{u}_i
   - \hat{N}_i
   - \mathrm{i} k_i \hat{p}
-  + \hat{G}_i,
+  + \hat{G}_i
+  - \hat{F}_i,
 \end{equation}
 and the transform of the continuity equation
 \eqref{eq:ns-nondim-continuity} is
@@ -1067,7 +1187,8 @@ continuity constraint gives
   - \sigma_U\, k_i \hat{u}_i
   - k_i \hat{N}_i
   - \mathrm{i} k^2 \hat{p}
-  + k_i \hat{G}_i.
+  + k_i \hat{G}_i
+  - k_i \hat{F}_i.
 \end{equation}
 The remaining scaling contribution also vanishes: differentiating
 \eqref{eq:ns-fourier-continuity} with respect to $k_j$ gives
@@ -1082,22 +1203,23 @@ Hence the scaling terms are divergence free on their own --- the self-similar
 frame does not generate pressure --- and \eqref{eq:ns-pressure-contracted}
 reduces to a Poisson equation for the pressure. Unlike a constant-coefficient
 viscous term, the subgrid stress is not divergence free, $k_i \hat{G}_i =
-\mathrm{i} k_i k_j \hat{T}_{ij} \neq 0$ in general, so it enters the source
-alongside the convection,
+\mathrm{i} k_i k_j \hat{T}_{ij} \neq 0$ in general, and neither is the sponge
+forcing, $k_i \hat{F}_i = -\mathrm{i}\, \widehat{u_i \partial_i W}$
+(\S\ref{ssec:ns-sponge}), so both enter the source alongside the convection,
 \begin{equation}\label{eq:ns-fourier-poisson}
-  \mathrm{i} k^2 \hat{p} = -k_i \left( \hat{N}_i - \hat{G}_i \right)
+  \mathrm{i} k^2 \hat{p} = -k_i \left( \hat{N}_i - \hat{G}_i + \hat{F}_i \right)
   \quad\Longrightarrow\quad
-  \hat{p} = \mathrm{i}\,\frac{k_l \left( \hat{N}_l - \hat{G}_l \right)}{k^2},
+  \hat{p} = \mathrm{i}\,\frac{k_l \left( \hat{N}_l - \hat{G}_l + \hat{F}_l \right)}{k^2},
   \qquad k \neq 0,
 \end{equation}
 with $\hat{p}$ at $k = 0$ fixed arbitrarily, since only its gradient enters
 the momentum equation. Substituting \eqref{eq:ns-fourier-poisson} into
 \eqref{eq:ns-nondim-momentum-fourier}, the pressure term becomes
 \begin{equation}\label{eq:ns-fourier-pressure-substituted}
-  -\mathrm{i} k_i \hat{p} = \frac{k_i k_l}{k^2} \left( \hat{N}_l - \hat{G}_l \right),
+  -\mathrm{i} k_i \hat{p} = \frac{k_i k_l}{k^2} \left( \hat{N}_l - \hat{G}_l + \hat{F}_l \right),
 \end{equation}
-which combines with $-\hat{N}_i + \hat{G}_i$ to give the solenoidal projection
-of the convective and subgrid stress terms together. Defining the projection tensor
+which combines with $-\hat{N}_i + \hat{G}_i - \hat{F}_i$ to give the solenoidal
+projection of the convective, subgrid stress, and sponge terms together. Defining the projection tensor
 \begin{equation}\label{eq:ns-projection-tensor}
   P_{il}(\mathbf{k}) = \delta_{il} - \frac{k_i k_l}{k^2},
 \end{equation}
@@ -1107,7 +1229,7 @@ the evolution equation splits exactly along the lines of the lemma
   \frac{\partial \hat{u}_i}{\partial t}
   = \underbrace{-\sigma_L \left( k_j \frac{\partial \hat{u}_i}{\partial k_j} + 3\, \hat{u}_i \right)
   - \sigma_U\, \hat{u}_i}_{\text{scaling terms}}
-  \underbrace{- P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l \right)}_{\text{physical terms}}.
+  \underbrace{- P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l + \hat{F}_l \right)}_{\text{physical terms}}.
 \end{equation}
 
 \subsection{The physics step}\label{ssec:ns-physics-step}
@@ -1117,8 +1239,11 @@ physical terms of \eqref{eq:ns-fourier-final},
 \begin{equation}\label{eq:ns-physics-flow}
   \Phi_{\Delta t}^{(\mathrm{P})}\bigl(\hat{u}_i(t)\bigr)
   = \hat{u}_i(t) - \int_{t}^{t+\Delta t}
-    P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l \right) \mathrm{d}t .
+    P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l + \hat{F}_l \right) \mathrm{d}t .
 \end{equation}
+The sponge is thus part of the physics operator, not a separate substep: it is
+switched off by setting $W_{\max} = 0$, independently of \textsc{ApplyBC}
+(\S\ref{ssec:ns-boundary}).
 
 Unlike the 1D case, \eqref{eq:ns-physics-flow} has no closed form: the
 convective and subgrid stress terms are both nonlinear, so $\Phi^{(\mathrm{P})}$ must be realized by an
@@ -1130,11 +1255,13 @@ the pseudo-spectral products \eqref{eq:ns-fourier-convection} and
 
 We take $\Phi^{(\mathrm{P})}$ to be a single step of the classical fourth-order
 Runge--Kutta method (RK4) applied to the full physical right-hand side, the
-subgrid stress term $\hat{G}_i$ marched together with the convection. It
-is set out in Appendix~\ref{app:rk4}, together with the advective stability
-limit it places on $\Delta t$. The limit depends on the state, and is enforced by
-the CFL time step of \S\ref{ssec:alg-timestep}, through \textsc{MaxStableDt}
-\eqref{eq:rk4-cfl-dt}.
+subgrid stress term $\hat{G}_i$ and the sponge forcing $\hat{F}_i$ marched
+together with the convection. It is set out in Appendix~\ref{app:rk4},
+together with the stability limits it places on $\Delta t$. The advective limit
+depends on the state, and is enforced by the CFL time step of
+\S\ref{ssec:alg-timestep}, through \textsc{MaxStableDt}
+\eqref{eq:rk4-cfl-dt}. The sponge limit \eqref{eq:rk4-sponge-limit} is fixed
+by $W_{\max}$ and is assumed rather than enforced.
 
 \subsection{Constraint functionals}\label{ssec:ns-constraints}
 
@@ -1328,10 +1455,12 @@ $\mathbf{x_n}$ then carries the product of the three row factors, which is
 $\chi(\mathbf{x_n}\tilde L_{k+1})$ exactly. The cutoff is thus applied at no
 cost beyond building the matrices, and the direct sum it is tested against
 applies $\chi$ pointwise. For $\tilde L_{k+1}$ within a few percent of unity
-the zeroed rows are the outermost one or two grid points per side, most of
-which \textsc{ApplyBC} clamps anyway (\S\ref{ssec:ns-boundary}). Zeroing a
-region in physical space is not a solenoidal operation, so, like the clamp, it
-reintroduces a divergence proportional to the amplitude it removes.
+the zeroed rows are the outermost one or two grid points per side. These lie
+deep in the sponge layer (\S\ref{ssec:ns-sponge}), where the field has already
+been damped, and \textsc{ApplyBC}, when enabled, clamps most of them anyway
+(\S\ref{ssec:ns-boundary}). Zeroing a region in physical space is not a
+solenoidal operation, so, like the clamp, it reintroduces a divergence
+proportional to the amplitude it removes.
 
 \paragraph{Interaction with dealiasing.}
 The dilation maps each represented wavenumber to $\tilde L_{k+1} \mathbf{k}$,
@@ -1350,7 +1479,19 @@ $O(N^d \log N)$.
 
 \subsection{Boundary treatment}\label{ssec:ns-boundary}
 
-The substep \textsc{ApplyBC} of \S\ref{ssec:alg-substeps} imposes a homogeneous
+Two boundary treatments are available, and each can be switched on or off
+independently of the other. The first is the sponge forcing of
+\S\ref{ssec:ns-sponge}, which is part of the physics step and is switched off
+by $W_{\max} = 0$. The second is the clamp described below, applied by
+\textsc{ApplyBC} after each step and switched off by a run flag, in which case
+\textsc{ApplyBC} is the identity. The clamp was the original treatment; the
+sponge is intended to replace it. The intended configuration is therefore
+sponge on, clamp off, and the clamp is retained so that the two can be
+compared: if the sponge alone keeps $u_i$ negligible at the faces, the clamp,
+and the divergence it introduces, are no longer needed.
+
+\paragraph{The clamp.}
+When enabled, \textsc{ApplyBC} imposes a homogeneous
 Dirichlet condition on the velocity by clamping the outer layer of grid points
 of the centred domain \eqref{eq:alg-grid} after each completed step,
 \begin{equation}\label{eq:ns-clamp}
@@ -1362,8 +1503,8 @@ $x_d \in [-H/2, H/2)$ the layers $n_d = 0$ and $n_d = N-1$ are distinct grid
 points rather than periodic images of one another, so both are clamped; the
 six layers together are the boundary of the box.
 
-\emph{Open.} This carries the tension of \S\ref{ssec:1d-boundary} over to the
-Navier--Stokes case, and sharpens it. As in one dimension, the discretization
+\emph{Open.} The clamp carries the tension of \S\ref{ssec:1d-boundary} over
+to the Navier--Stokes case, and sharpens it. As in one dimension, the discretization
 presumes periodicity --- the pseudo-spectral evaluation of
 \eqref{eq:ns-fourier-final} does, and the spectral interpolation
 \eqref{eq:ns-interp} does inside the box, though its cutoff
@@ -1377,7 +1518,9 @@ continuity equation exactly. The size of that violation is set by the
 amplitude the clamp removes, and therefore by the same localization
 assumption the constraint pair of \S\ref{ssec:ns-constraints} already makes:
 for a puff held several widths inside the box it is at roundoff, and it grows
-with the fraction of $E_0$ the boundary layer carries.
+with the fraction of $E_0$ the boundary layer carries. With the sponge on,
+that fraction is itself suppressed by the damping in the layer, so the clamp
+has little left to remove.
 
 \paragraph{Optional Leray projection.}
 The violation can instead be removed outright. With the Leray option enabled,
@@ -1430,7 +1573,7 @@ system of ordinary differential equations
 \begin{equation}\label{eq:rk4-rhs}
   \frac{\mathrm{d}\hat{u}_i}{\mathrm{d}t} = R_i(\hat{u}),
   \qquad
-  R_i(\hat{u}) = -P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l \right) ,
+  R_i(\hat{u}) = -P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l + \hat{F}_l \right) ,
 \end{equation}
 the bracketed physical terms of \eqref{eq:ns-fourier-final}. RK4 advances it
 through four evaluations of $R$,
@@ -1453,8 +1596,11 @@ rotational form, $u_j \partial_j u_i = -(\mathbf{u} \times \boldsymbol{\omega})_
 + \partial_i (u_k u_k/2)$, whose gradient part $P_{il}$ annihilates; this costs
 six inverse and three forward transforms. The subgrid stress term
 \eqref{eq:ns-fourier-sgs} costs six further inverse transforms, one per
-independent component of $S_{ij}$, and six forward transforms of $T_{ij}$, so
-an evaluation costs $21$ transforms and a step $84$ in all. The scheme has no coefficients beyond the four weights, so nothing is
+independent component of $S_{ij}$, and six forward transforms of $T_{ij}$.
+The sponge term \eqref{eq:ns-fourier-sponge} reuses the physical-space velocity
+already formed for the convective term and multiplies it by the tabulated $W$,
+so it costs only the three forward transforms of $W u_i$. An evaluation thus
+costs $24$ transforms and a step $96$ in all. The scheme has no coefficients beyond the four weights, so nothing is
 precomputed or cached.
 
 \paragraph{Order.} The scheme is fourth order in $h$, so it satisfies the
@@ -1488,6 +1634,22 @@ can momentarily concentrate into a high-amplitude structure whose
 $\max|\mathbf{u}|$ carries a step that is stable in the settled regime past
 \eqref{eq:rk4-advective-limit}.
 
+\paragraph{The sponge limit.} The sponge forcing \eqref{eq:ns-sponge-force}
+is, pointwise, a linear decay at rate $W(r) \in [0, W_{\max}]$, whose
+eigenvalues lie on the negative real axis with $|\lambda| \le W_{\max}$. Along
+the negative real axis $|A(z)| \le 1$ holds for $-2.785 \lesssim z \le 0$, so
+\begin{equation}\label{eq:rk4-sponge-limit}
+  h\, W_{\max} \le 2.785 .
+\end{equation}
+Unlike \eqref{eq:rk4-advective-limit}, this limit does not depend on the state:
+it is fixed by the run parameter $W_{\max}$. It is not enforced by
+\textsc{MaxStableDt}, but assumed. At the default $W_{\max} = 10$ and a
+CFL-limited step of $h \approx 0.05$, $h\, W_{\max} \approx 0.5$, well inside
+both \eqref{eq:rk4-sponge-limit} and the range $h\, W_{\max} \lesssim 1$ in
+which the step also follows the exponential decay $e^{-W h}$ accurately. A run
+with a larger $W_{\max}$ or a longer step must check
+\eqref{eq:rk4-sponge-limit} by hand.
+
 \paragraph{The CFL time step.} The limit is therefore enforced, by the
 step rule \eqref{eq:alg-dt-rule} of \S\ref{ssec:alg-timestep}. Its CFL term,
 \textsc{MaxStableDt}, is the step that puts
@@ -1510,7 +1672,8 @@ rising tail fraction is a resolution problem.
 \subsection{Solenoidality}\label{ssec:rk4-divergence}
 
 The step contributes nothing of its own to the continuity residual. Every
-contribution to $R_i$, convective and subgrid alike, has had $P_{il}$ applied,
+contribution to $R_i$ --- convective, subgrid, and sponge alike --- has had
+$P_{il}$ applied,
 and $k_i P_{il} = k_l - k_l k^2/k^2 = 0$, so contracting \eqref{eq:rk4-rhs}
 with $k_i$ gives $k_i R_i(\hat{u}) = 0$. Each stage of \eqref{eq:rk4-stages}
 is then divergence free, and the divergence of each mode is carried through the
@@ -1521,14 +1684,14 @@ step unchanged,
 Whatever divergence enters the field is therefore neither amplified nor
 damped by the step, and if \eqref{eq:ns-fourier-continuity} holds on input it
 holds on output. The residual
-the run log records is therefore entirely the boundary clamp's
-(\S\ref{ssec:ns-boundary}), not the time stepper's.
+the run log records is therefore entirely the boundary clamp's, when the clamp
+is enabled (\S\ref{ssec:ns-boundary}), and not the time stepper's.
 
 \subsection{Dealiasing}\label{ssec:rk4-dealiasing}
 
 The $2/3$ mask of \S\ref{ssec:ns-fourier} is applied to the incoming field
-before the first stage. No stage then leaves the retained band: the convective
-and subgrid stress terms are masked after their forward transforms, the
+before the first stage. No stage then leaves the retained band: the convective,
+subgrid stress, and sponge terms are masked after their forward transforms, the
 projection $P_{il}$ is diagonal in $\mathbf{k}$, and each stage argument in
 \eqref{eq:rk4-stages} is a linear combination of band-limited fields. The mask
 is applied once more to $\hat{u}^{(n+1)}$, which changes nothing in exact
