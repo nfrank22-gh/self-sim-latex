@@ -893,13 +893,7 @@ of it, and is not currently monitored.
 \section{The Navier--Stokes equations}\label{sec:ns}
 
 The second instantiation is the incompressible Navier--Stokes equations, with
-$d = 3$ and $u_i$ the velocity field. The framework applies unchanged; what
-this section supplies is the clock, the nondimensional right-hand side, the
-structure of the physics operator, and the constraint functionals. One item
-needed to actually run the algorithm of \S\ref{sec:algorithm} --- the
-time-marching scheme inside $\Phi^{(\mathrm{P})}$ --- remains open, and is
-marked as such below.
-
+$d = 3$ and $u_i$ the velocity field.
 \subsection{Governing equations and clock}\label{ssec:ns-clock}
 
 The equations are solved as a large-eddy simulation (LES): $u_i^*$ and $p^*$
@@ -943,15 +937,11 @@ while the viscous term scales as $\nu U / L^2$,
 \begin{equation}\label{eq:ns-viscous}
   \nu \frac{\partial^2 u_i^*}{\partial x_j^* \partial x_j^*} = \frac{\nu U}{L^2}\frac{\partial^2 u_i}{\partial x_j \partial x_j}.
 \end{equation}
-The clock is chosen so that the dominant, advective part of the physical term
-of the lemma \eqref{eq:fw-lemma} carries unit coefficient,
+The clock is chosen as the inverse of the advection timescale
 \begin{equation}\label{eq:ns-clock}
-  \frac{\tau}{U} \cdot \frac{U^2}{L} = 1
-  \quad\Longrightarrow\quad
-  \tau = \frac{L}{U},
+  \tau = \frac{L}{U}.
 \end{equation}
-which is the eddy turnover time of the current scales. In log form, as
-required by \eqref{eq:fw-ln-dtstar},
+In log form, as required by \eqref{eq:fw-ln-dtstar},
 \begin{equation}\label{eq:ns-ln-clock}
   \ln \tau_k = \ln L_k - \ln U_k .
 \end{equation}
@@ -1004,9 +994,7 @@ so that the nondimensional subgrid stress \eqref{eq:ns-sgs-nondim} is
   \tau_{ij} - \frac{1}{3}\tau_{kk}\delta_{ij}
   = -2 (C_s \Delta)^2 |S|\, S_{ij}.
 \end{equation}
-The stress carries no dependence on $U$ or $L$: the Smagorinsky model is
-compatible with the self-similar rescaling. In the limit of infinite Reynolds
-number, $1/Re = 0$, and the momentum equation
+In the limit of infinite Reynolds number, $1/Re = 0$, and the momentum equation
 \eqref{eq:ns-nondim-momentum-base} becomes
 \begin{equation}\label{eq:ns-nondim-momentum}
   \frac{\partial u_i}{\partial t}
@@ -1020,22 +1008,14 @@ where $p$ now denotes the modified pressure that includes
 $\frac{1}{3}\tau_{kk}$.
 
 \subsection{Sponge forcing}\label{ssec:ns-sponge}
-The condition we want at the edge of the domain is that of an unbounded,
-quiescent far field, $u_i \to 0$ as $r \to \infty$, with $r = \sqrt{x_j x_j}$
-the distance from the centre of the domain \eqref{eq:alg-grid}. The
-pseudo-spectral discretization, however, presumes a periodic field, and cannot
-impose that condition directly. We approximate it instead by a sponge (fringe)
-layer: a forcing that damps the velocity towards zero in a spherical shell
-near the edge of the box and vanishes in its interior,
+The true boundary conditions we would like to enforce is $u_i = 0$ at the edge of the domain. When using a pseudo-spectral solver
+this cannot be directly enforced so we instead introduce a forcing term to the right hand side of the Navier--Stokes equation
 \begin{equation}\label{eq:ns-sponge-force}
-  f_i = -W(r)\, u_i .
+  f_i = -W(r)\, u_i,
 \end{equation}
-The layer is meant to absorb whatever reaches it without reflecting it. It is
-not a Brinkman penalization of a solid wall: $W$ ramps up smoothly to a
-moderate value rather than jumping to a stiff one, and no no-slip condition is
-imposed at any radius.
+where $r = \sqrt{x_ix_i}$ is the distance from the origin and $W(r)$ is a weighting function that increases with increasing $r$.
 
-\paragraph{The weight function.} The weight is the fringe function of
+The weighting function is the fringe function of
 Nordstr\"om, Nordin \& Henningson (1999), applied radially,
 \begin{equation}\label{eq:ns-sponge-W}
   W(r) = W_{\max}\, S\!\left( \frac{r - r_0}{r_1 - r_0} \right),
@@ -1054,45 +1034,7 @@ vanishes at $\xi = 0$ and at $\xi = 1$, it rises monotonically between them,
 and it is antisymmetric about its midpoint, $S(1 - \xi) = 1 - S(\xi)$, so that
 $S(1/2) = 1/2$. The weight \eqref{eq:ns-sponge-W} is therefore exactly zero in
 the sphere $r \le r_0$, rises smoothly across the shell $r_0 < r < r_1$, and
-is exactly $W_{\max}$ for $r \ge r_1$. It has three parameters:
-\begin{itemize}
-  \item $W_{\max}$, the damping rate in the fully developed layer, in units of
-  $1/\tau$, i.e.\ per eddy turnover time \eqref{eq:ns-clock}. Default
-  $W_{\max} = 10$, which damps the velocity by a factor $e$ in a tenth of a
-  turnover. Setting $W_{\max} = 0$ switches the sponge off.
-  \item $r_0$, the radius at which the ramp begins. Default $r_0 = 0.35\, H$.
-  \item $r_1$, the radius at which the ramp ends. Default $r_1 = H/2$.
-\end{itemize}
-
-\paragraph{Smoothness.} The sponge must not introduce Gibbs oscillations into
-the pseudo-spectral evaluation of $W u_i$, so $W$ must be smooth not only on
-the box but on its periodic extension. With $r_1 \le H/2$ the sphere
-$r \le r_1$ lies inside the box, and $W = W_{\max}$ on every face and corner.
-At $r_1 = H/2$ the sphere touches the centre of each face, where the periodic
-image just across the face lies at $r$ slightly below $H/2$; since every
-derivative of $S$ vanishes at $\xi = 1$, the periodic extension of $W$ is still
-$C^\infty$ there. The default $r_1 = H/2$ is thus the largest admissible value,
-and it leaves the largest interior. The ramp $S$ climbs more steeply than its
-nominal width $r_1 - r_0$ suggests, so that width must be resolved by several
-grid cells: we require $r_1 - r_0 \gtrsim 10\, \Delta x$. The defaults give
-$r_1 - r_0 = 0.15\, H$, about $19\, \Delta x$ at $N = 128$ and about
-$10\, \Delta x$ at $N = 64$.
-
-\paragraph{The sponge in the self-similar frame.} The weight
-\eqref{eq:ns-sponge-W} is fixed in the nondimensional coordinates $x_j$, and
-$W$ is a rate in units of $1/\tau$. In physical variables
-\eqref{eq:ns-sponge-force} is therefore the forcing
-\begin{equation}\label{eq:ns-sponge-dimensional}
-  f_i^* = -\frac{U}{L}\, W\!\left( \frac{r^*}{L} \right) u_i^*,
-\end{equation}
-since $f_i^* = -(U^2/L)\, W(r)\, u_i$ and the lemma \eqref{eq:fw-lemma}
-multiplies it by $\tau/U = L/U^2$, recovering \eqref{eq:ns-sponge-force}. In
-physical space the layer thus moves outwards with the length scale $L$, and
-its damping rate follows the eddy turnover rate $U/L$. Like the
-Smagorinsky stress, the sponge carries no explicit dependence on $U$ or $L$ in
-the self-similar frame.
-
-\paragraph{The forced equation.} Adding \eqref{eq:ns-sponge-force} to
+is exactly $W_{\max}$ for $r \ge r_1$. Adding \eqref{eq:ns-sponge-force} to
 \eqref{eq:ns-nondim-momentum}, the momentum equation actually solved is
 \begin{equation}\label{eq:ns-nondim-momentum-sponge}
   \frac{\partial u_i}{\partial t}
@@ -1103,29 +1045,6 @@ the self-similar frame.
   + \frac{\partial}{\partial x_j}\left[ 2 (C_s \Delta)^2 |S|\, S_{ij} \right]
   - W(r)\, u_i .
 \end{equation}
-The forcing is not divergence free: with $\partial_i u_i = 0$,
-$\partial_i (W u_i) = u_i\, \partial_i W$, which is nonzero wherever the flow
-crosses the ramp. It is not required to be. It enters the pressure Poisson
-equation alongside the convective and subgrid stress terms
-(\S\ref{ssec:ns-projection}), and the solenoidal projection then removes its
-gradient part, so the velocity update stays divergence free. The projected
-forcing is no longer strictly confined to the shell --- its gradient part is
-taken up by the pressure, which is nonlocal --- but it remains purely
-dissipative: $P_{il}$ is an orthogonal projection and $u_i$ is solenoidal, so
-the rate at which it changes $E_0$ of \eqref{eq:ns-functionals} is
-$-2 \int W\, u_i u_i\, \mathrm{d}\mathbf{x} \le 0$.
-
-\paragraph{Initial condition.} The puff must start well inside the undamped
-sphere $r \le r_0$, or the sponge will act on it from the first step. With the
-window \eqref{eq:ns-ic-window} of width $\sigma$, we take
-$\sigma \lesssim r_0 / 4$ as a guideline; it is not enforced.
-
-\paragraph{Scaling drift.} The scaling term $\sigma_L x_j \partial_j u_i$ of
-\eqref{eq:ns-nondim-momentum-sponge} is an advection with velocity
-$-\sigma_L \mathbf{x}$. For $\sigma_L > 0$ it points inwards, so the
-self-similar frame itself carries content away from the sponge, and the layer
-has only to absorb what the turbulence carries outwards against that drift.
-
 \subsection{Fourier representation}\label{ssec:ns-fourier}
 Using the Fourier convention \eqref{eq:fw-fourier-convention}, the pressure
 gradient becomes
@@ -1198,14 +1117,11 @@ The remaining scaling contribution also vanishes: differentiating
   \quad\Longrightarrow\quad
   k_i \frac{\partial \hat{u}_i}{\partial k_j} = -\hat{u}_j,
 \end{equation}
-so that $k_i k_j \partial \hat{u}_i / \partial k_j = -k_j \hat{u}_j = 0$.
-Hence the scaling terms are divergence free on their own --- the self-similar
-frame does not generate pressure --- and \eqref{eq:ns-pressure-contracted}
-reduces to a Poisson equation for the pressure. Unlike a constant-coefficient
-viscous term, the subgrid stress is not divergence free, $k_i \hat{G}_i =
-\mathrm{i} k_i k_j \hat{T}_{ij} \neq 0$ in general, and neither is the sponge
-forcing, $k_i \hat{F}_i = -\mathrm{i}\, \widehat{u_i \partial_i W}$
-(\S\ref{ssec:ns-sponge}), so both enter the source alongside the convection,
+so that
+\begin{equation}
+  k_i k_j \partial \hat{u}_i / \partial k_j = -k_j \hat{u}_j = 0.
+\end{equation}
+Therefore, the equation for pressure is
 \begin{equation}\label{eq:ns-fourier-poisson}
   \mathrm{i} k^2 \hat{p} = -k_i \left( \hat{N}_i - \hat{G}_i + \hat{F}_i \right)
   \quad\Longrightarrow\quad
@@ -1223,7 +1139,7 @@ projection of the convective, subgrid stress, and sponge terms together. Definin
 \begin{equation}\label{eq:ns-projection-tensor}
   P_{il}(\mathbf{k}) = \delta_{il} - \frac{k_i k_l}{k^2},
 \end{equation}
-the evolution equation splits exactly along the lines of the lemma
+the evolution equation in fourier space is
 \eqref{eq:fw-lemma},
 \begin{equation}\label{eq:ns-fourier-final}
   \frac{\partial \hat{u}_i}{\partial t}
@@ -1241,18 +1157,6 @@ physical terms of \eqref{eq:ns-fourier-final},
   = \hat{u}_i(t) - \int_{t}^{t+\Delta t}
     P_{il}(\mathbf{k}) \left( \hat{N}_l - \hat{G}_l + \hat{F}_l \right) \mathrm{d}t .
 \end{equation}
-The sponge is thus part of the physics operator, not a separate substep: it is
-switched off by setting $W_{\max} = 0$, independently of \textsc{ApplyBC}
-(\S\ref{ssec:ns-boundary}).
-
-Unlike the 1D case, \eqref{eq:ns-physics-flow} has no closed form: the
-convective and subgrid stress terms are both nonlinear, so $\Phi^{(\mathrm{P})}$ must be realized by an
-actual time-marching scheme. Two things constrain the choice. It must meet the
-accuracy requirement of \S\ref{ssec:alg-substeps} --- second order for the
-Strang composition to retain its order --- and it must handle the dealiasing of
-the pseudo-spectral products \eqref{eq:ns-fourier-convection} and
-\eqref{eq:ns-fourier-sgs}.
-
 We take $\Phi^{(\mathrm{P})}$ to be a single step of the classical fourth-order
 Runge--Kutta method (RK4) applied to the full physical right-hand side, the
 subgrid stress term $\hat{G}_i$ and the sponge forcing $\hat{F}_i$ marched
@@ -1260,16 +1164,11 @@ together with the convection. It is set out in Appendix~\ref{app:rk4},
 together with the stability limits it places on $\Delta t$. The advective limit
 depends on the state, and is enforced by the CFL time step of
 \S\ref{ssec:alg-timestep}, through \textsc{MaxStableDt}
-\eqref{eq:rk4-cfl-dt}. The sponge limit \eqref{eq:rk4-sponge-limit} is fixed
-by $W_{\max}$ and is assumed rather than enforced.
+\eqref{eq:rk4-cfl-dt}.
 
 \subsection{Constraint functionals}\label{ssec:ns-constraints}
-
-The moments \eqref{eq:1d-functionals} used for the 1D equation do not carry
-over: a velocity field in a periodic box has
-$\int u_i\, \mathrm{d}\mathbf{x} \approx 0$, so $F_1$ as written is not usable
-as a scale. We therefore take the corresponding moments of the energy density
-$u_i u_i$, which is non-negative and so cannot cancel,
+The length and velocity scales will be set such that the 0th and 2nd order moment of the turbulent kinetic energy
+$k = u_iu_i$ are constant. Mathetmically, these moments are defined as
 \begin{equation}\label{eq:ns-functionals}
   F_1[u] = \int u_i u_i\, \mathrm{d}\mathbf{x} \equiv E_0,
   \qquad
@@ -1309,19 +1208,6 @@ The length ratio \eqref{eq:ns-Ltilde} is identical in form to its 1D
 counterpart \eqref{eq:1d-Ltilde}: in both cases $\tilde L$ is the square root
 of a ratio of mean square widths.
 
-\emph{Open.} Two properties of this pair are assumptions rather than
-consequences. First, the homogeneity \eqref{eq:fw-homogeneity} is exact only
-for integrals over $\mathbb{R}^d$; on the finite box the substitution
-$\mathbf{y} = \mathbf{x}\, \tilde L$ rescales the domain of integration as
-well, so \eqref{eq:ns-E0-homogeneity} and \eqref{eq:ns-E2-homogeneity} hold
-only to the extent that the energy is concentrated well inside the box. This
-is the same assumption the 1D moments make, and like it is not currently
-monitored. Second, $r$ is measured from a fixed origin and is not periodic, so
-$E_2$ is meaningful only for a field that stays centred and localized: for a
-statistically homogeneous field filling the box, $u_i u_i$ is uniform on
-average and $E_2 / E_0$ reduces to the mean square radius of the box itself,
-carrying no information about the field. Which of these two regimes the
-intended runs occupy should be settled before the pair is used.
 
 \subsection{Initial condition}\label{ssec:ns-ic}
 Because the curl of a vector feild is divergence-free we will define $u_i$ as the curl of some feild $A_i$
@@ -1347,10 +1233,7 @@ by a rescaling.
   \eqref{eq:ns-functionals}.  
   \item \emph{Rescaling.} Finally $u_i \gets u_i \sqrt{E_0 / F_1[u]}$, with
   $F_1$ evaluated as the Riemann sum \eqref{eq:alg-riemann}, so that the field
-  delivered to the integrator carries a prescribed $E_0$. The constraint
-  targets \eqref{eq:alg-targets} are then $F_1 = E_0$ by construction and
-  $F_2 = E_2[u_0]$, the latter set by $\sigma$ rather than chosen
-  independently.
+  delivered to the integrator carries a prescribed $E_0$. 
 \end{enumerate}
 \subsection{Spectral interpolation in three dimensions}\label{ssec:ns-interpolation}
 
@@ -1479,17 +1362,6 @@ $O(N^d \log N)$.
 
 \subsection{Boundary treatment}\label{ssec:ns-boundary}
 
-Two boundary treatments are available, and each can be switched on or off
-independently of the other. The first is the sponge forcing of
-\S\ref{ssec:ns-sponge}, which is part of the physics step and is switched off
-by $W_{\max} = 0$. The second is the clamp described below, applied by
-\textsc{ApplyBC} after each step and switched off by a run flag, in which case
-\textsc{ApplyBC} is the identity. The clamp was the original treatment; the
-sponge is intended to replace it. The intended configuration is therefore
-sponge on, clamp off, and the clamp is retained so that the two can be
-compared: if the sponge alone keeps $u_i$ negligible at the faces, the clamp,
-and the divergence it introduces, are no longer needed.
-
 \paragraph{The clamp.}
 When enabled, \textsc{ApplyBC} imposes a homogeneous
 Dirichlet condition on the velocity by clamping the outer layer of grid points
@@ -1503,28 +1375,9 @@ $x_d \in [-H/2, H/2)$ the layers $n_d = 0$ and $n_d = N-1$ are distinct grid
 points rather than periodic images of one another, so both are clamped; the
 six layers together are the boundary of the box.
 
-\emph{Open.} The clamp carries the tension of \S\ref{ssec:1d-boundary} over
-to the Navier--Stokes case, and sharpens it. As in one dimension, the discretization
-presumes periodicity --- the pseudo-spectral evaluation of
-\eqref{eq:ns-fourier-final} does, and the spectral interpolation
-\eqref{eq:ns-interp} does inside the box, though its cutoff
-\eqref{eq:ns-interp-cutoff} returns zero outside it --- while
-\eqref{eq:ns-clamp} imposes a Dirichlet condition, and the two are consistent only so long as $u_i$ is
-negligible near the faces. Beyond that, the clamp is not a solenoidal
-perturbation: \eqref{eq:ns-fourier-continuity} is enforced in Fourier space,
-and zeroing a layer of grid points in physical space reintroduces a
-divergence, so the field delivered to the next step no longer satisfies the
-continuity equation exactly. The size of that violation is set by the
-amplitude the clamp removes, and therefore by the same localization
-assumption the constraint pair of \S\ref{ssec:ns-constraints} already makes:
-for a puff held several widths inside the box it is at roundoff, and it grows
-with the fraction of $E_0$ the boundary layer carries. With the sponge on,
-that fraction is itself suppressed by the damping in the layer, so the clamp
-has little left to remove.
 
 \paragraph{Optional Leray projection.}
-The violation can instead be removed outright. With the Leray option enabled,
-\textsc{ApplyBC} follows the clamp \eqref{eq:ns-clamp} by projecting the
+With the Leray option enabled, \textsc{ApplyBC} follows the clamp \eqref{eq:ns-clamp} by projecting the
 clamped field back onto the solenoidal subspace with the projection tensor
 \eqref{eq:ns-projection-tensor},
 \begin{equation}\label{eq:ns-leray-bc}
@@ -1533,37 +1386,14 @@ clamped field back onto the solenoidal subspace with the projection tensor
   \qquad \mathbf{k} \neq \mathbf{0},
 \end{equation}
 and transforming back to physical space. The mean mode $\mathbf{k} = \mathbf{0}$
-is left unchanged, and the Nyquist bins --- which have no representable
-derivative, and on which $P_{il}$ does not respect the conjugate symmetry of
-the real transform --- are set to zero. The 2/3 dealiasing mask is not applied
-here: the next physics step dealiases its input anyway
-(\S\ref{ssec:ns-physics-step}), and applying the mask here would remove far more
-than the clamp changed. After \eqref{eq:ns-leray-bc} the discrete divergence
-$k_i \hat{u}_i$ is at roundoff, and because $P_{il}$ is an orthogonal
-projection it can only lower $E_0$.
-
-What this gives up is the clamp itself. $P_{il}$ is nonlocal in physical space:
-the gradient part it removes is the gradient of a potential $\phi$ solving
-$\nabla^2 \phi = \nabla \cdot \mathbf{u}$, and that potential is spread
-over the whole box. So the boundary layers of \eqref{eq:ns-clamp} come back
-out of \eqref{eq:ns-leray-bc} with small nonzero values, and a slowly decaying
-potential-flow tail is added to the field --- the same effect
-\S\ref{ssec:ns-ic} notes for projecting a windowed initial condition. The two
-treatments are therefore complementary: the clamp alone keeps the faces exactly
-at zero and allows a divergence proportional to the amplitude it removes, while
-the clamp followed by \eqref{eq:ns-leray-bc} keeps the field exactly solenoidal
-and lets the faces move away from zero by the same order. Both are small only
-when $u_i$ is negligible near the faces, so the localization monitored by
-\texttt{leakage} is still needed either way. The option is off by default.
-
+is left unchanged.
 \subsection{Dissipation rate post-processing}\label{ssec:ns-dissipation}
 With $1/Re = 0$ all dissipation is subgrid: the rate at which kinetic energy is
 transferred from resolved to subgrid scales is
 \begin{equation}\label{eq:ns-dissipation}
-  \epsilon = -\tau_{ij}^* S_{ij}^* = 2\nu_{\mathrm{t}}^* S_{ij}^* S_{ij}^* = \nu_{\mathrm{t}}^* |S^*|^2 ,
+  \epsilon = -\tau_{ij}^* S_{ij}^* = 2\nu_{\mathrm{t}}^* S_{ij}^* S_{ij}^* = \nu_{\mathrm{t}}^* |S^*|^2 .
 \end{equation}
-where only the deviatoric part \eqref{eq:ns-smagorinsky} of $\tau_{ij}^*$
-contributes, since $S_{kk}^* = 0$. Writing this in nondimensional variables with
+Writing this in nondimensional variables with
 \eqref{eq:ns-eddy-viscosity-nondim} and $S_{ij}^* = (U/L)\,S_{ij}$,
 \begin{equation}\label{eq:ns-dissipation-nondim}
   \epsilon = \left[ U L\, (C_s \Delta)^2 |S| \right] \frac{U^2}{L^2} |S|^2
@@ -1608,74 +1438,12 @@ therefore follows the power law
   \qquad
   \gamma_\epsilon = 3\beta_U - \beta_L .
 \end{equation}
+If in addition we assume that the system is ergodic the ensemble average is equivalent to time averaging and we have
+\begin{equation}
+  \overline{|S(0)|^3} = \frac{1}{T}\int_0^T |S(0, t)|^3 \mathrm{d}t,
+\end{equation}
+and it is enough to look at a single long time horizon simulation.
 
-\paragraph{Numerical experiment.}
-To test \eqref{eq:ns-dissipation-scaling} we run an ensemble of $M$
-simulations, $m = 1, \dots, M$, that differ only in the seed of the noise in
-step 1 of \S\ref{ssec:ns-ic}; the parameters $k_p, \sigma, E_0$, the grid, and
-the constants $C_s$ and $\Delta$ are held fixed, so that every member carries
-the same constraint targets. For each run the following are recorded at every
-step $k$:
-\begin{itemize}
-  \item the physical time $t_k^{*(m)}$, accumulated as in
-  \eqref{eq:pp-tstar-cumsum} with a common origin $t_0^* = 0$;
-  \item the dissipation rate at the origin, stored as its logarithm to avoid
-  overflow (\S\ref{ssec:fw-powerlaw}),
-  \begin{equation}\label{eq:ns-dissipation-log}
-    \ln \epsilon_k^{(m)} = 3 \ln U_k - \ln L_k + 2 \ln (C_s \Delta) + 3 \ln |S(0, t_k)| ;
-  \end{equation}
-  \item the fitted parameters $\alpha_X^{(m)}, \beta_X^{(m)}$ of
-  \S\ref{ssec:pp-fit}.
-\end{itemize}
-Since each run takes its own steps, the samples $t_k^{*(m)}$ do not coincide
-across the ensemble. Each history is therefore interpolated, linearly in
-$\ln \epsilon$ against $\ln t^*$, onto a common logarithmically spaced grid
-$t_j^*$ covering the range reached by every run, and the ensemble mean and its
-standard error are formed there,
-\begin{equation}\label{eq:ns-dissipation-mean}
-  \overline{\epsilon}_j = \frac{1}{M} \sum_{m=1}^{M} \epsilon^{(m)}(t_j^*),
-  \qquad
-  s_j = \left[ \frac{1}{M(M-1)} \sum_{m=1}^{M} \bigl(\epsilon^{(m)}(t_j^*) - \overline{\epsilon}_j\bigr)^2 \right]^{1/2}.
-\end{equation}
-The average is of $\epsilon$ itself, not of $\ln \epsilon$, to match
-\eqref{eq:ns-dissipation-ensemble}; the sums are evaluated in the logarithmic
-number system \eqref{eq:fw-log-sum-exp}.
-
-A power law with an offset,
-\begin{equation}\label{eq:ns-dissipation-fit}
-  \ln \overline{\epsilon}_j = \ln A + \hat{\gamma}_\epsilon \ln (t_j^* + \alpha_\epsilon),
-\end{equation}
-is then fitted to the mean by weighted nonlinear least squares in
-$(\ln A, \hat{\gamma}_\epsilon, \alpha_\epsilon)$, with weights
-$(\overline{\epsilon}_j / s_j)^2$ (the inverse variance of
-$\ln \overline{\epsilon}_j$), over a range $t_j^* \geq t_{\min}^*$ that
-excludes the initial transient. A confidence interval on
-$\hat{\gamma}_\epsilon$ is obtained by bootstrap resampling of the $M$ runs.
-The fitted exponent is compared with the prediction
-\eqref{eq:ns-dissipation-scaling}, evaluated with the ensemble means
-$\overline{\beta}_U, \overline{\beta}_L$ of the per-run fits,
-\begin{equation}\label{eq:ns-dissipation-predicted}
-  \gamma_\epsilon = 3\overline{\beta}_U - \overline{\beta}_L ,
-\end{equation}
-whose uncertainty follows from the spread of $\beta_U^{(m)}, \beta_L^{(m)}$.
-The spread of $\alpha_X^{(m)}, \beta_X^{(m)}$ across the ensemble is itself a
-direct check on assumption 1.
-
-Beyond the asymptotic exponent, \eqref{eq:ns-dissipation-ensemble} predicts
-the whole curve up to the single constant $(C_s\Delta)^2\overline{|S(0)|^3}$.
-We therefore also plot, against $t^*$, the compensated dissipation rate
-\begin{equation}\label{eq:ns-dissipation-compensated}
-  \overline{\epsilon}_j\,
-  \frac{(t_j^* + \overline{\alpha}_L)^{\overline{\beta}_L}}{(t_j^* + \overline{\alpha}_U)^{3\overline{\beta}_U}},
-\end{equation}
-which should be flat and equal to $(C_s\Delta)^2\overline{|S(0)|^3}$ once the
-transient has passed. A residual trend in \eqref{eq:ns-dissipation-compensated}
-indicates that one of the two assumptions fails --- most likely that
-$\overline{|S(0,t)|^3}$ has not become stationary in the self-similar frame.
-The raw curve $\overline{\epsilon}_j$, the fit \eqref{eq:ns-dissipation-fit},
-and the prediction \eqref{eq:ns-dissipation-ensemble} are shown together on
-logarithmic axes, with the reference slope $\gamma_\epsilon$ of
-\eqref{eq:ns-dissipation-predicted}.
 
 \appendix
 
