@@ -1319,12 +1319,13 @@ eddy viscosity, the diffusive limit are fixed by the run parameters and are
 assumed rather than enforced.
 
 \subsection{Post-processing}\label{ssec:ns-postproc}
-We extract two point statistics from the runs, the dissipation rate and the
-kinetic energy (\S\ref{sssec:ns-pp-quantities}), both at the origin. Each is a dimensional
+We extract two point statistics from the runs, the dissipation rate
+(\S\ref{sssec:ns-pp-dissipation}) and the kinetic energy
+(\S\ref{sssec:ns-pp-kinetic-energy}), both at the origin. Each is a dimensional
 prefactor built from $U$ and $L$ times a nondimensional quantity computed from
 the self-similar field, so both follow from the same scaling argument, which
 \S\ref{sssec:ns-pp-scaling} sets out once. The split of the kinetic energy into resolved and
-subgrid parts set out in \S\ref{sssec:ns-pp-quantities} also supplies the
+subgrid parts set out in \S\ref{sssec:ns-pp-kinetic-energy} also supplies the
 integrand of the constraint functionals of \S\ref{ssec:ns-constraints}, which
 is why this subsection precedes them.
 
@@ -1349,15 +1350,31 @@ conditions. We make two assumptions:
 \begin{enumerate}
   \item The parameters $\alpha_U, \beta_U, \alpha_L, \beta_L$ are the same for
   every member of the ensemble, i.e.\ $U(t^*)$ and $L(t^*)$ are invariant to
-  the initial condition. 
+  the initial condition. Then the clock $\tau = L/U$ is too, and so is the map
+  between physical and self-similar time, $t(t^*) = \int_0^{t^*} \mathrm{d}s/\tau(s)$;
+  averaging at fixed $t^*$ is therefore the same as averaging at fixed $t$, and
+  the prefactor of \eqref{eq:ns-pp-powerlaw} comes out of the average.
   \item In the self-similar frame the flow is statistically stationary, so
-  that $\overline{Q(0,t)}$ is independent of $t$. 
+  that $\overline{Q(0,t)}$ is independent of $t$. This is the
+  content of the flow being self-similar; without it $\overline{Q}$
+  would contribute its own time dependence to the exponent below.
 \end{enumerate}
 Under these assumptions
 \begin{equation}\label{eq:ns-pp-ensemble}
   \overline{Q^*}(0, t^*) = (t^* + \alpha_U)^{m_U \beta_U} (t^* + \alpha_L)^{m_L \beta_L}
   \,\overline{Q(0)} .
 \end{equation}
+For $t^* \gg \max(|\alpha_U|, |\alpha_L|)$ the ensemble average therefore
+follows the power law
+\begin{equation}\label{eq:ns-pp-scaling}
+  \overline{Q^*}(0, t^*) \sim (t^*)^{\gamma_Q},
+  \qquad
+  \gamma_Q = m_U \beta_U + m_L \beta_L .
+\end{equation}
+The exponent $\gamma_Q$ comes from the prefactor $U^{m_U} L^{m_L}$ alone, so
+its form is the same for both subgrid stress models; the model enters only
+through the values of $\beta_U$ and $\beta_L$ the run produces, and through the
+coefficient $\overline{Q(0)}$.
 \par
 If in addition we assume that the system is ergodic the ensemble average is
 equivalent to time averaging and we have
@@ -1370,53 +1387,150 @@ $T$ is finite and the initial transient must be discarded, so
 $\overline{Q(0)}$; Appendix~\ref{app:stat-error} describes how
 its statistical error is computed.
 
-\subsubsection{Dissipation rate and kinetic energy}\label{sssec:ns-pp-quantities}
-The dissipation rate is not resolved by the LES, and in the limit $1/Re = 0$
-its resolved part vanishes. Assuming the subgrid scales are in local
-equilibrium, we take it equal to the transfer of energy from resolved to
-subgrid scales \cite{pope2000turbulent},
+\subsubsection{Dissipation rate}\label{sssec:ns-pp-dissipation}
+The quantity of interest is the dissipation rate of the full field,
+$\epsilon^* = 2\nu S_{ij}^* S_{ij}^*$, with $S_{ij}^*$ the strain rate of
+$u_i^*$. The LES does not resolve it, and its resolved counterpart
+$\tilde\epsilon^* = 2\nu \tilde S_{ij}^* \tilde S_{ij}^*$ vanishes identically
+in the limit $1/Re = 0$ in which we run. What the LES does provide is the rate
+at which kinetic energy is transferred from resolved to subgrid scales, which
+for either eddy-viscosity model of \S\ref{ssec:ns-viscosity} is
 \begin{equation}\label{eq:ns-sgs-transfer}
-  \Pi^* = -\tau_{ij}^* \tilde S_{ij}^* = \nu_{\mathrm{t}}^* |\tilde S^*|^2,
-  \qquad
-  \overline{\epsilon^*} = \overline{\Pi^*},
+  \Pi^* = -\tau_{ij}^* \tilde S_{ij}^* = 2\nu_{\mathrm{t}}^* \tilde S_{ij}^* \tilde S_{ij}^* = \nu_{\mathrm{t}}^* |\tilde S^*|^2 ,
 \end{equation}
+by \eqref{eq:ns-eddy-closure}, the isotropic part of $\tau_{ij}^*$ dropping
+out because $\tilde S_{ii}^* = 0$. We assume that the subgrid scales are in
+local equilibrium, so that energy reaching them is dissipated at the rate it
+arrives, and that $\tilde\epsilon^* = 0$ leaves the transfer as the only route
+to dissipation. Under these assumptions the two agree in the ensemble average,
+\begin{equation}\label{eq:ns-dissipation-equilibrium}
+  \overline{\epsilon^*} = \overline{\Pi^*} .
+\end{equation}
+They do not agree pointwise: the subgrid energy is transported before it is
+dissipated, and a real flow carries backscatter that an eddy-viscosity model
+does not represent. Writing \eqref{eq:ns-sgs-transfer} in nondimensional
+variables with $\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$ and
+$\tilde S_{ij}^* = (U/L)\,\tilde S_{ij}$,
 \begin{equation}\label{eq:ns-sgs-transfer-nondim}
   \Pi^* = \frac{U^3}{L}\, \Pi,
   \qquad
-  \Pi = \nu_{\mathrm{t}} |\tilde S|^2 =
+  \Pi = \nu_{\mathrm{t}} |\tilde S|^2 ,
+\end{equation}
+where $\Pi$ is the nondimensional transfer, evaluated pointwise from the
+spectrally computed $\tilde S_{ij}$ of \eqref{eq:ns-fourier-strain}, and
+$\epsilon^* = (U^3/L)\,\epsilon$ likewise. The model enters only through $\Pi$,
+which by \eqref{eq:ns-eddy-viscosity-nondim} and
+\eqref{eq:ns-constant-viscosity} is
+\begin{equation}\label{eq:ns-sgs-transfer-models}
+  \Pi =
   \begin{cases}
     (C_s \Delta)^2 |\tilde S|^3, & \text{Smagorinsky model}, \\[4pt]
-    C_\nu \Delta^2 |\tilde S|^2, & \text{self-similar constant eddy viscosity},
+    C_\nu \Delta^2 |\tilde S|^2, & \text{self-similar constant eddy viscosity}.
   \end{cases}
 \end{equation}
-by \eqref{eq:ns-eddy-viscosity-nondim} and \eqref{eq:ns-constant-viscosity}.
+For the constant eddy viscosity the Laplacian form
+\eqref{eq:ns-constant-viscosity-laplacian} suggests the pseudo-dissipation
+$C_\nu \Delta^2\, \partial_j \tilde u_i\, \partial_j \tilde u_i$ instead. The
+two differ by a divergence, so they agree as volume integrals but not
+pointwise; we use $\Pi$ of \eqref{eq:ns-sgs-transfer-models}, which is the
+transfer $-\tau_{ij} \tilde S_{ij}$ itself and keeps the two models comparable.
 \par
-The resolved kinetic energy is
+The dissipation rate $\epsilon^* = (U^3/L)\,\epsilon$ is of the form
+\eqref{eq:ns-pp-generic} with $m_U = 3$ and $m_L = -1$, so by
+\eqref{eq:ns-pp-scaling}
+\begin{equation}\label{eq:ns-dissipation-scaling}
+  \overline{\epsilon^*}(0, t^*) \sim (t^*)^{\gamma_\epsilon},
+  \qquad
+  \gamma_\epsilon = 3\beta_U - \beta_L ,
+\end{equation}
+with the coefficient $\overline{\epsilon(0)} = \overline{\Pi(0)}$ measured
+through the transfer by \eqref{eq:ns-dissipation-equilibrium}.
+
+\subsubsection{Kinetic energy}\label{sssec:ns-pp-kinetic-energy}
+The kinetic energy per unit mass of the full field and of the resolved field
+are
+\begin{equation}\label{eq:ns-kinetic-energy}
+  k^* = \frac{1}{2} u_i^* u_i^* ,
+  \qquad
+  \tilde k^* = \frac{1}{2} \tilde u_i^* \tilde u_i^* .
+\end{equation}
+Writing these in nondimensional variables with $u_i^* = U u_i$ and
+$\tilde u_i^* = U \tilde u_i$,
 \begin{equation}\label{eq:ns-kinetic-energy-nondim}
+  k^* = U^2\, k,
+  \qquad
   \tilde k^* = U^2\, \tilde k,
   \qquad
   \tilde k = \frac{1}{2} \tilde u_i \tilde u_i ,
 \end{equation}
-and contracting \eqref{eq:ns-sgs-def} gives the filtered kinetic energy of the
-full field \cite{pope2000turbulent},
+where $\tilde k$ is evaluated pointwise from the velocity on the grid. Unlike
+$\Pi$, $\tilde k$ has the same form for both subgrid stress models, which
+affect it only through the velocity field they produce. The full energy $k$ is
+not available from the LES, but its filtered value is: contracting
+\eqref{eq:ns-sgs-def},
 \begin{equation}\label{eq:ns-kinetic-energy-split}
   \mathcal{G}_\Delta(k) = \tilde k + k_{\mathrm{sgs}},
   \qquad
-  k_{\mathrm{sgs}} = \frac{1}{2}\tau_{kk}.
+  k_{\mathrm{sgs}} = \frac{1}{2}\tau_{kk},
 \end{equation}
-The isotropic part of $\tau_{ij}$ is absorbed into the pressure, so
-$k_{\mathrm{sgs}}$ is not computed and must be estimated. For both subgrid
-stress models we estimate it with the Smagorinsky eddy viscosity
-\eqref{eq:ns-eddy-viscosity-nondim}, so that the estimate is the same function
-of the resolved field in either case. Equating the production
-$\nu_{\mathrm{t}} |\tilde S|^2 = C_s^2 \Delta^2 |\tilde S|^3$ to the dissipation
-$C_\epsilon k_{\mathrm{sgs}}^{3/2}/\Delta$, with $C_\epsilon$ a constant of
-order one,
-\begin{equation}\label{eq:ns-sgs-energy}
-  k_{\mathrm{sgs}} = \left( \frac{C_s^2}{C_\epsilon} \right)^{2/3} \Delta^2 |\tilde S|^2,
-\end{equation}
-with $k_{\mathrm{sgs}}^* = U^2 k_{\mathrm{sgs}}$.\par
+with $k_{\mathrm{sgs}}^* = U^2 k_{\mathrm{sgs}}$ the kinetic energy of the
+unresolved scales. Note that $\mathcal{G}_\Delta(k) \ne \tilde k$: the
+resolved energy is the energy of the filtered velocity, not the filtered
+energy.
 
+\paragraph{Subgrid kinetic energy.}
+Both models of \S\ref{ssec:ns-viscosity} close only the deviatoric part of
+$\tau_{ij}^*$, and the isotropic part is absorbed into the modified pressure,
+so $k_{\mathrm{sgs}}$ is never computed and must be estimated. We again assume
+local equilibrium of the subgrid scales, so that the transfer $\Pi^*$ of
+\eqref{eq:ns-sgs-transfer} into them is balanced by their dissipation, and
+close the latter with the filter width as the length scale
+\cite{yoshizawa1986statistical},
+\begin{equation}\label{eq:ns-sgs-energy-equilibrium}
+  \Pi^* = C_\epsilon \frac{(k_{\mathrm{sgs}}^*)^{3/2}}{\Delta^*},
+\end{equation}
+with $C_\epsilon$ a constant of order one. Writing
+$k_{\mathrm{sgs}}^* = U^2 k_{\mathrm{sgs}}$, $\Delta^* = L\Delta$ and
+$\Pi^* = (U^3/L)\,\Pi$ by \eqref{eq:ns-sgs-transfer-nondim}, the scales cancel
+and
+\begin{equation}\label{eq:ns-sgs-energy}
+  k_{\mathrm{sgs}} = \left( \frac{\Delta\, \Pi}{C_\epsilon} \right)^{2/3}
+  =
+  \begin{cases}
+    (C_s^2 / C_\epsilon)^{2/3}\, \Delta^2 |\tilde S|^2, & \text{Smagorinsky model}, \\[4pt]
+    (C_\nu / C_\epsilon)^{2/3}\, \Delta^2 |\tilde S|^{4/3}, & \text{self-similar constant eddy viscosity},
+  \end{cases}
+\end{equation}
+by \eqref{eq:ns-sgs-transfer-models}. For the Smagorinsky model this is
+Yoshizawa's form $k_{\mathrm{sgs}} = C_I \Delta^2 |\tilde S|^2$, with
+$C_I = (C_s^2/C_\epsilon)^{2/3} \approx 0.09$ for $C_s = 0.17$ and
+$C_\epsilon = 1$. The estimate is computed pointwise from $|\tilde S|$; it is
+used at the origin for the statistics here, and over the whole domain in the
+constraint functionals of \S\ref{ssec:ns-constraints}.
+\par
+The estimate \eqref{eq:ns-sgs-energy} is used to check that the LES resolves
+most of the energy at the origin, the usual criterion being
+$\tilde k/(\tilde k + k_{\mathrm{sgs}}) \gtrsim 0.8$
+\cite{pope2000turbulent}. Because $\Delta$ is fixed in the self-similar frame,
+the filter width stays a fixed fraction of $L$, and this ratio should be
+statistically stationary once the flow is self-similar. Its volume-integrated counterpart, the
+resolved fraction $w_1$ of $E_0$, enters the constraint solve
+(\S\ref{ssec:ns-constraints}).
+
+\paragraph{Scaling.}
+The full kinetic energy $k^* = U^2 k$ is of the form \eqref{eq:ns-pp-generic}
+with $m_U = 2$ and $m_L = 0$, and so are $\tilde k^*$ and
+$k_{\mathrm{sgs}}^*$. By \eqref{eq:ns-pp-scaling}
+\begin{equation}\label{eq:ns-kinetic-energy-scaling}
+  \overline{k^*}(0, t^*) \sim (t^*)^{\gamma_k},
+  \qquad
+  \gamma_k = 2\beta_U .
+\end{equation}
+The resolved and subgrid parts share the exponent and differ only in the
+coefficient. If the ensemble-mean energy varies slowly over the filter width,
+filtering commutes with the average and
+$\overline{k(0)} \approx \overline{\tilde k(0)} + \overline{k_{\mathrm{sgs}}(0)}$
+by \eqref{eq:ns-kinetic-energy-split}.
 
 \subsection{Constraint functionals}\label{ssec:ns-constraints}
 The length and velocity scales will be set such that the zeroth and normalized
@@ -1442,14 +1556,17 @@ $3\sigma_\Delta^2$, of order $\Delta^2$. As in the 1D case, $E_0$ measures the
 amplitude of the field and $E_2$ its spread.
 \par
 The subgrid energy is evaluated pointwise from the estimate
-\eqref{eq:ns-sgs-energy}, which is the same for both models,
+\eqref{eq:ns-sgs-energy}, which for both models has the form
 \begin{equation}\label{eq:ns-sgs-energy-power}
-  k_{\mathrm{sgs}} = c_k\, \Delta^2 |\tilde S|^{2},
+  k_{\mathrm{sgs}} = c_k\, \Delta^2 |\tilde S|^{s},
   \qquad
-  c_k = \left( \frac{C_s^2}{C_\epsilon} \right)^{2/3},
+  (s, c_k) =
+  \begin{cases}
+    \bigl(2,\ (C_s^2/C_\epsilon)^{2/3}\bigr), & \text{Smagorinsky model}, \\[4pt]
+    \bigl(\tfrac43,\ (C_\nu/C_\epsilon)^{2/3}\bigr), & \text{self-similar constant eddy viscosity},
+  \end{cases}
 \end{equation}
-so $C_s$ and $C_\epsilon$ are parameters of the run, not only of the
-post-processing, also under the self-similar constant eddy viscosity.
+so $C_\epsilon$ is a parameter of the run, not only of the post-processing.
 $|\tilde S|$ is formed in physical space from the strain
 \eqref{eq:ns-fourier-strain} of the field being constrained, at the cost of
 six inverse transforms per \textsc{ConstrainedScale}; \textsc{Evolve}
@@ -1478,17 +1595,17 @@ The filter width $\Delta$ is fixed in the self-similar frame, so it does not
 scale with the field. The strain of the scaled field is
 $(\lambda_L / \lambda_U)\, \tilde S_{ij}(\mathbf{x}\, \lambda_L)$, and by
 \eqref{eq:ns-sgs-energy-power} its subgrid energy is
-$(\lambda_L / \lambda_U)^{2}\, k_{\mathrm{sgs}}(\mathbf{x}\, \lambda_L)$, so the
+$(\lambda_L / \lambda_U)^{s}\, k_{\mathrm{sgs}}(\mathbf{x}\, \lambda_L)$, so the
 subgrid terms give
 \begin{equation}\label{eq:ns-sgs-homogeneity}
-  F_{12} \to \lambda_U^{-2} \lambda_L^{-1}\, F_{12}^{\mathrm{in}},
+  F_{12} \to \lambda_U^{-s} \lambda_L^{-(3 - s)}\, F_{12}^{\mathrm{in}},
   \qquad
-  F_{22} \to \lambda_U^{-2} \lambda_L^{-3}\, F_{22}^{\mathrm{in}} .
+  F_{22} \to \lambda_U^{-s} \lambda_L^{-(5 - s)}\, F_{22}^{\mathrm{in}} .
 \end{equation}
 The homogeneity exponents of \eqref{eq:fw-homogeneity} are therefore
 \begin{equation}\label{eq:ns-exponents}
-  (p_{11}, q_{11}) = (2, 3), \quad (p_{12}, q_{12}) = (2, 1), \qquad
-  (p_{21}, q_{21}) = (2, 5), \quad (p_{22}, q_{22}) = (2, 3).
+  (p_{11}, q_{11}) = (2, 3), \quad (p_{12}, q_{12}) = (s, 3 - s), \qquad
+  (p_{21}, q_{21}) = (2, 5), \quad (p_{22}, q_{22}) = (s, 5 - s).
 \end{equation}
 The resolved and subgrid terms scale differently, so the constraints are no
 longer the linear system \eqref{eq:fw-constraint-system} and are solved
@@ -1498,18 +1615,22 @@ through the residuals \eqref{eq:fw-constraint-residual}.
 Write $w_1 = w_{11}$ and $w_2 = w_{21}$ for the resolved fractions of the two
 functionals in \eqref{eq:fw-constraint-jacobian}; $w_1$ is the
 volume-integrated form of the resolution criterion of
-\S\ref{sssec:ns-pp-quantities}. The weighted exponents are
-$\bar p_m = 2$, $\bar q_1 = 1 + 2 w_1$ and $\bar q_2 = 3 + 2 w_2$, so the
-determinant is
-$\bar p_1 \bar q_2 - \bar p_2 \bar q_1 = 4 + 4 (w_2 - w_1)$, which on
-$[0, 1]^2$ vanishes only at $(w_1, w_2) = (1, 0)$. That corner is not
-attained: $k_{\mathrm{sgs}} \ge 0$, so $w_1 = 1$ forces
-$k_{\mathrm{sgs}} = 0$ and with it $w_2 = 1$. The Jacobian is therefore
-nonsingular at every iterate, and the Newton iteration of
-\S\ref{ssec:fw-constraints} is well defined.
+\S\ref{sssec:ns-pp-kinetic-energy}. The weighted exponents are
+$\bar p_m = 2 w_m + s (1 - w_m)$,
+$\bar q_1 = 3 w_1 + (3 - s)(1 - w_1)$ and
+$\bar q_2 = 5 w_2 + (5 - s)(1 - w_2)$, and the determinant
+$\bar p_1 \bar q_2 - \bar p_2 \bar q_1$ is bilinear in $(w_1, w_2)$, so it takes
+its extreme values at the corners of $[0, 1]^2$. For the Smagorinsky model it is
+$4 + 4 (w_2 - w_1)$, which vanishes only at $(w_1, w_2) = (1, 0)$. That corner
+is not attained: $k_{\mathrm{sgs}} \ge 0$, so $w_1 = 1$ forces
+$k_{\mathrm{sgs}} = 0$ and with it $w_2 = 1$. For the self-similar constant
+eddy viscosity the corners give $4$, $10/3$, $10/3$ and $8/3$, so the
+determinant is positive throughout. In both cases the Jacobian is nonsingular
+at every iterate, and the Newton iteration of \S\ref{ssec:fw-constraints} is
+well defined.
 
-\paragraph{Closed form.}
-All four terms share $p = 2$, so $\lambda_U$ factors out of both
+\paragraph{Closed form under the Smagorinsky model.}
+With $s = 2$ all four terms share $p = 2$, so $\lambda_U$ factors out of both
 functionals. Their ratio fixes $\lambda_L$ alone, and with $\mu = \lambda_L^2$
 it is the quadratic
 \begin{equation}\label{eq:ns-smag-quadratic}
@@ -1533,7 +1654,8 @@ $\lambda_L^2 = E_0 F_{21}^{\mathrm{in}} / (E_2 F_{11}^{\mathrm{in}})$ and
 $\lambda_U^2 = F_{11}^{\mathrm{in}} \lambda_L^{-3} / E_0$, the solution of the
 linear system \eqref{eq:fw-constraint-system} for the resolved energy alone,
 whose length ratio is identical in form to its 1D counterpart
-\eqref{eq:1d-length-ratio}.
+\eqref{eq:1d-length-ratio}. Under the self-similar constant eddy viscosity no
+such factorization exists, and the ratios are found by Newton's method.
 
 
 \subsection{Initial condition}\label{ssec:ns-ic}
@@ -1560,11 +1682,14 @@ by a rescaling.
   \eqref{eq:ns-functionals}.  
   \item \emph{Rescaling.} Finally $\tilde u_i \gets A\, \tilde u_i$, with the
   amplitude $A > 0$ chosen so that the field delivered to the integrator
-  carries a prescribed $E_0$. By \eqref{eq:ns-sgs-energy-power} both terms
-  of $F_1$ scale as $A^2$,
-  $F_1[A \tilde u] = A^2 \bigl( F_{11}[\tilde u] + F_{12}[\tilde u] \bigr)$, with both
-  terms evaluated as the Riemann sum \eqref{eq:alg-riemann}, so
-  $A = \sqrt{E_0 / F_1[\tilde u]}$.
+  carries a prescribed $E_0$. By \eqref{eq:ns-sgs-energy-power} the two terms
+  of $F_1$ scale differently with amplitude,
+  $F_1[A \tilde u] = A^2 F_{11}[\tilde u] + A^{s} F_{12}[\tilde u]$, with both
+  terms evaluated as the Riemann sum \eqref{eq:alg-riemann}. Under the
+  Smagorinsky model $s = 2$ and $A = \sqrt{E_0 / F_1[\tilde u]}$; under the
+  self-similar constant eddy viscosity $A$ is the unique positive root of
+  $A^2 F_{11} + A^{4/3} F_{12} = E_0$, whose left-hand side increases
+  monotonically in $A$.
 \end{enumerate}
 \subsection{Spectral interpolation in three dimensions}\label{ssec:ns-interpolation}
 
@@ -1752,7 +1877,7 @@ $\overline{\,\cdot\,}$ of \S\ref{sssec:ns-pp-scaling}, and assume that the
 ensemble-mean velocity vanishes, $\overline{u_i^*} = 0$. Then $u_i^*$ is the fluctuating velocity,
 the mean-advection and production terms of the turbulent
 kinetic energy equation \cite{pope2000turbulent} drop out, and the mean of the
-kinetic energy
+kinetic energy \eqref{eq:ns-kinetic-energy},
 $\overline{k^*} = \tfrac12 \overline{u_i^* u_i^*}$, obeys
 \begin{equation}\label{eq:res-k-dim}
   \frac{\partial \overline{k^*}}{\partial t^*} = \overline{T^*} - \overline{\epsilon^*},
@@ -1763,7 +1888,7 @@ $\overline{k^*} = \tfrac12 \overline{u_i^* u_i^*}$, obeys
 \end{equation}
 where $\overline{T^*}$ is the transport, $S_{ij}^*$ is the strain rate of $u_i^*$, and
 $\overline{\epsilon^*} = 2\nu\, \overline{S_{ij}^* S_{ij}^*}$ is the mean of
-the dissipation rate of \S\ref{sssec:ns-pp-quantities}.
+the dissipation rate of \S\ref{sssec:ns-pp-dissipation}.
 \par
 We nondimensionalize with \eqref{eq:fw-nondim}, the pressure scale
 \eqref{eq:ns-pressure-nondim}, and
@@ -1773,7 +1898,7 @@ We nondimensionalize with \eqref{eq:fw-nondim}, the pressure scale
   \overline{\epsilon^*} = \frac{U^3}{L}\, \overline{\epsilon},
 \end{equation}
 as in \eqref{eq:ns-kinetic-energy-nondim} and
-\S\ref{sssec:ns-pp-quantities}. Since $U$ and $L$ are the same for every
+\S\ref{sssec:ns-pp-dissipation}. Since $U$ and $L$ are the same for every
 member of the ensemble (assumption~1 of \S\ref{sssec:ns-pp-scaling}), they
 pass through the averages, e.g.\
 $\overline{u_i^* u_i^* u_j^*} = U^3\, \overline{u_i u_i u_j}$. The pressure and
@@ -1788,9 +1913,8 @@ $\partial/\partial x_j^* = L^{-1}\, \partial/\partial x_j$, so that
     - \frac{2}{Re} \overline{u_i S_{ij}} \right),
 \end{equation}
 with $Re$ the Reynolds number \eqref{eq:ns-reynolds}. In the limit $1/Re = 0$
-in which we run, the viscous term drops out of $\overline{T}$, while
-$\overline{\epsilon}$ stays finite and is measured through the subgrid
-transfer by \eqref{eq:ns-sgs-transfer}.
+in which we run, the viscous term drops out of $\overline{T}$.
+\eqref{eq:ns-dissipation-equilibrium}.
 \par
 The left-hand side of \eqref{eq:res-k-dim} follows from the chain rule exactly
 as in \eqref{eq:fw-lhs-chain}, with the amplitude $U^2$ in place of $U$, so
@@ -1815,17 +1939,16 @@ With the clock \eqref{eq:ns-clock}, $U^2/\tau = U^3/L$, so the prefactors of
 \end{equation}
 
 \subsection{Stationary budget}\label{ssec:res-stationary}
-In the self-similar frame the flow is statistically stationary, so
-$\overline{k}$, $\overline{T}$, and $\overline{\epsilon}$ are independent of
-$t$ and \eqref{eq:res-k-nondim} reduces to
+In the self-similar frame the flow is statistically stationary so $\overline{k}$, $\overline{T}$, and $\overline{\epsilon}$ are
+independent of $t$ and \eqref{eq:res-k-nondim} reduces to
 \begin{equation}\label{eq:res-k-stationary}
   0 = \sigma_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
   - 2\sigma_U\, \overline{k}
   + \overline{T}
   - \overline{\epsilon} .
 \end{equation}
-Since $\overline{T} - \overline{\epsilon}$ is independent of $t$, so are the
-scaling terms. Under the power-law ansatz the rates are
+Since $\overline{T} - \overline{\epsilon}$ is independent of $t$, so are the scaling
+terms. Under the power-law ansatz the rates are
 $\sigma_X = \beta_X \tau/(t^* + \alpha_X)$ by \eqref{eq:pp-rate-chain}.
 Taking $\alpha_U = \alpha_L = \alpha$, the clock \eqref{eq:ns-clock} is
 $\tau = (t^* + \alpha)^{\beta_L - \beta_U}$, and
@@ -1836,73 +1959,44 @@ $\tau = (t^* + \alpha)^{\beta_L - \beta_U}$, and
     \left( \beta_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
     - 2\beta_U\, \overline{k} \right).
 \end{equation}
-Either the bracket vanishes identically, which by \eqref{eq:res-k-stationary}
-would require $\overline{T} = \overline{\epsilon}$ everywhere, or the
-prefactor is constant, $\beta_L - \beta_U = 1$; the numerical experiments
-confirm the latter. The clock is then $\tau = t^* + \alpha$, the rates
-$\sigma_X = \beta_X$ are constant, the self-similar time is
-$t = \ln(t^* + \alpha)$ up to a constant, and \eqref{eq:res-k-stationary}
-holds with constant coefficients,
+\par
+From numerical experiments $\beta_L + \beta_U = 1$. Therefore,
+the clock is $\tau = t^* + \alpha$, the rates $\sigma_X = \beta_X$ are
+constant, and the self-similar time is $t = \ln(t^* + \alpha)$ up to a
+constant. Equation \eqref{eq:res-k-stationary} now holds
+with constant coefficients,
 \begin{equation}\label{eq:res-k-stationary-const}
   0 = \beta_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
   - 2\beta_U\, \overline{k}
   + \overline{T}
   - \overline{\epsilon}.
 \end{equation}
-\par
-In physical variables, $\overline{T^*} - \overline{\epsilon^*}
-= (U^3/L)(\overline{T} - \overline{\epsilon})$ by \eqref{eq:res-k-scales} and
-\eqref{eq:res-transport-nondim}, and $U^3/L = U^2/\tau = (t^* + \alpha)^{2\beta_U - 1}$,
-so \eqref{eq:res-k-dim} and \eqref{eq:res-k-stationary-const} give
+Substituting \eqref{eq:res-k-stationary-const} into the dimensional budget
+\eqref{eq:res-k-dim}, with $\overline{T^*} - \overline{\epsilon^*}
+= (U^3/L)(\overline{T} - \overline{\epsilon})$ from
+\eqref{eq:res-k-scales} and \eqref{eq:res-transport-nondim}, gives the rate
+of change of the kinetic energy,
 \begin{equation}\label{eq:res-origin-rate}
-  \frac{\partial \overline{k^*}}{\partial t^*}
-  = (t^* + \alpha)^{2\beta_U - 1}
-    \left( 2\beta_U\, \overline{k} - \beta_L\, x_j \frac{\partial \overline{k}}{\partial x_j} \right).
+  \frac{\partial \overline{k^*}}{\partial t^*}(0)
+  = \frac{U^3}{L}\left( \overline{T}(0) - \overline{\epsilon}(0) \right)
+  = 2\beta_U\, \frac{U^3}{L}\, \overline{k}(0).
 \end{equation}
-\par
-At the origin $x_j\, \partial \overline{k}/\partial x_j = 0$, and
-\eqref{eq:res-k-stationary-const} gives the energy there directly,
-\begin{equation}\label{eq:res-k-origin}
-  \overline{k}(0) = \frac{\overline{T}(0) - \overline{\epsilon}(0)}{2\beta_U}.
+With the clock $\tau = L/U = t^* + \alpha$ and the ansatz
+\eqref{eq:fw-powerlaw}, $U^3/L = U^2/\tau = (t^* + \alpha)^{2\beta_U - 1}$, so
+\begin{equation}\label{eq:res-origin-rate-tstar}
+  \frac{\partial \overline{k^*}}{\partial t^*}(0)
+  = 2\beta_U\, \overline{k}(0)\, (t^* + \alpha)^{2\beta_U - 1}.
 \end{equation}
-Then \eqref{eq:res-origin-rate} integrates to
-$\overline{k^*}(0, t^*) = (t^* + \alpha)^{2\beta_U}\, \overline{k}(0)$, the
-scaling \eqref{eq:ns-kinetic-energy-scaling}.
-\par
-Away from the origin we assume that the ensemble statistics are spherically
-symmetric about it, so that $\overline{k}$, $\overline{T}$, and
-$\overline{\epsilon}$ depend only on $r = \sqrt{x_i x_i}$. Then
-$x_j\, \partial \overline{k}/\partial x_j = r\, \mathrm{d}\overline{k}/\mathrm{d}r$,
-and \eqref{eq:res-k-stationary-const} becomes the ordinary differential
-equation
-\begin{equation}\label{eq:res-k-ode}
-  \beta_L\, r \frac{\mathrm{d} \overline{k}}{\mathrm{d} r}
-  - 2\beta_U\, \overline{k}
-  = \overline{\epsilon} - \overline{T} .
+Since $\overline{k}(0)$ is independent of $t$, this integrates to
+\begin{equation}\label{eq:res-origin-k}
+  \overline{k^*}(0) = \overline{k}(0)\, (t^* + \alpha)^{2\beta_U},
 \end{equation}
-With the integrating factor $r^{-2\beta_U/\beta_L}$ it becomes
-\begin{equation}\label{eq:res-k-ode-integrating}
-  \frac{\mathrm{d}}{\mathrm{d} r}\left( r^{-2\beta_U/\beta_L}\, \overline{k} \right)
-  = \frac{1}{\beta_L}\, r^{-2\beta_U/\beta_L - 1}
-    \left( \overline{\epsilon} - \overline{T} \right).
-\end{equation}
-The homogeneous solution is $\overline{k} = C\, r^{2\beta_U/\beta_L}$. For a
-flow whose length scale grows and whose velocity scale decays,
-$\beta_L > 0 > \beta_U$, and this is singular at the origin. Requiring
-$\overline{k}$ to be finite there sets $C = 0$, and integrating
-\eqref{eq:res-k-ode-integrating} from $0$ to $r$ gives
-\begin{equation}\label{eq:res-k-solution}
-  \overline{k}(r)
-  = \frac{1}{\beta_L} \int_0^r \left( \frac{s}{r} \right)^{-2\beta_U/\beta_L}
-    \left( \overline{\epsilon}(s) - \overline{T}(s) \right) \frac{\mathrm{d}s}{s} .
-\end{equation}
-Finally, with $\overline{k^*} = U^2\, \overline{k}$ and $r = r^*/L$, the
-physical energy is
-\begin{equation}\label{eq:res-k-solution-dim}
-  \overline{k^*}(r^*, t^*)
-  = (t^* + \alpha)^{2\beta_U}\,
-    \overline{k}\!\left( \frac{r^*}{(t^* + \alpha)^{\beta_L}} \right).
-\end{equation}
+where the constant of integration vanishes by
+$\overline{k^*} = U^2\, \overline{k}$ \eqref{eq:res-k-scales}. The kinetic
+energy at the origin therefore decays as a power law in $t^*$ with exponent
+$2\beta_U < 0$, at a rate set by the imbalance between transport and
+dissipation in \eqref{eq:res-origin-balance}.
+
 \appendix
 
 \section{The RK4 physics step}\label{app:rk4}
@@ -2076,7 +2170,7 @@ This appendix sets out how the statistical error of a time-averaged quantity
 such as \eqref{eq:ns-pp-time-average} is estimated, following
 \cite{shirian2023convergence}. Let $q(t)$ be a statistically stationary signal,
 here the nondimensional subgrid transfer at the origin, $q(t) = \Pi(0, t)$ of
-\eqref{eq:ns-sgs-transfer-nondim},
+\eqref{eq:ns-sgs-transfer-models},
 or the resolved kinetic energy there, $q(t) = \tilde k(0, t)$ of
 \eqref{eq:ns-kinetic-energy-nondim},
 both in the self-similar frame, with mean $\langle q \rangle$, fluctuation

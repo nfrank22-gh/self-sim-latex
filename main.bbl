@@ -1,0 +1,12 @@
+\begin{thebibliography}{1}
+
+\bibitem{nordstrom1999fringe}
+J.~Nordstr{\"o}m, N.~Nordin, and D.~Henningson, \enquote{The fringe region technique and the fourier method used in the direct numerical simulation of spatially evolving viscous flows,} SIAM Journal on Scientific Computing \textbf{20}, 1365--1393 (1999).
+
+\bibitem{pope2000turbulent}
+S.~B. Pope, \emph{Turbulent Flows} (Cambridge University Press, Cambridge, 2000).
+
+\bibitem{shirian2023convergence}
+Y.~Shirian, J.~A.~K. Horwitz, and A.~Mani, \enquote{On the convergence of statistics in simulations of stationary incompressible turbulent flows,} Computers \& Fluids \textbf{266}, 106046 (2023).
+
+\end{thebibliography}
