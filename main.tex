@@ -1319,8 +1319,8 @@ eddy viscosity, the diffusive limit are fixed by the run parameters and are
 assumed rather than enforced.
 
 \subsection{Post-processing}\label{ssec:ns-postproc}
-We extract two point statistics from the runs, the dissipation rate and the
-kinetic energy (\S\ref{sssec:ns-pp-quantities}), both at the origin. Each is a dimensional
+We extract two point statistics from the runs, the trace of the dissipation
+tensor and the kinetic energy (\S\ref{sssec:ns-pp-quantities}), both at the origin. Each is a dimensional
 prefactor built from $U$ and $L$ times a nondimensional quantity computed from
 the self-similar field, so both follow from the same scaling argument, which
 \S\ref{sssec:ns-pp-scaling} sets out once. The split of the kinetic energy into resolved and
@@ -1370,26 +1370,80 @@ $T$ is finite and the initial transient must be discarded, so
 $\overline{Q(0)}$; Appendix~\ref{app:stat-error} describes how
 its statistical error is computed.
 
-\subsubsection{Dissipation rate and kinetic energy}\label{sssec:ns-pp-quantities}
-The dissipation rate is not resolved by the LES, and in the limit $1/Re = 0$
-its resolved part vanishes. Assuming the subgrid scales are in local
-equilibrium, we take it equal to the transfer of energy from resolved to
-subgrid scales \cite{pope2000turbulent},
-\begin{equation}\label{eq:ns-sgs-transfer}
-  \Pi^* = -\tau_{ij}^* \tilde S_{ij}^* = \nu_{\mathrm{t}}^* |\tilde S^*|^2,
-  \qquad
-  \overline{\epsilon^*} = \overline{\Pi^*},
+\subsubsection{Dissipation and kinetic energy}\label{sssec:ns-pp-quantities}
+\paragraph{The dissipation tensor and its trace.}
+As in \S\ref{ssec:res-k-budget}, the ensemble-mean velocity vanishes, so
+$u_i^*$ is the fluctuating velocity. The evolution equation for the Reynolds
+stress tensor $\overline{u_i^* u_j^*}$, with $\overline{\,\cdot\,}$ the ensemble
+average of \S\ref{sssec:ns-pp-scaling}, contains the sink $-\varepsilon_{ij}^*$,
+where
+\begin{equation}\label{eq:ns-pp-diss-tensor}
+  \varepsilon_{ij}^* = 2\nu\, \overline{\frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_j^*}{\partial x_k^*}}
 \end{equation}
-\begin{equation}\label{eq:ns-sgs-transfer-nondim}
-  \Pi^* = \frac{U^3}{L}\, \Pi,
+is the dissipation tensor \cite{pope2000turbulent}. We report its trace,
+\begin{equation}\label{eq:ns-pp-diss-trace}
+  \epsilon^* = \varepsilon_{ii}^* = 2\nu\, \overline{\frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_i^*}{\partial x_k^*}},
+\end{equation}
+the sink in the equation for $\overline{u_i^* u_i^*} = 2\overline{k^*}$.
+It is twice the pseudo-dissipation and differs from twice the dissipation
+rate $2\nu\, \overline{S_{ij}^* S_{ij}^*}$ by a divergence, which
+vanishes in homogeneous turbulence but not here.
+
+\paragraph{Estimate from the filtered field.}
+The LES does not resolve the gradients in \eqref{eq:ns-pp-diss-trace}, so, as
+for the kinetic energy below, we estimate the filtered field
+$\mathcal{G}_{\Delta^*}$ of its integrand. Splitting it into a resolved and a
+subgrid part,
+\begin{equation}\label{eq:ns-pp-diss-split}
+  \mathcal{G}_{\Delta^*}\!\left( 2\nu\, \frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_j^*}{\partial x_k^*} \right)
+  = 2\nu\, \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*}
+  + 2\nu \left[ \mathcal{G}_{\Delta^*}\!\left( \frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_j^*}{\partial x_k^*} \right)
+  - \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*} \right],
+\end{equation}
+where the bracket is the unclosed subgrid gradient correlation. Consistent
+with the eddy-viscosity closure \eqref{eq:ns-eddy-closure}, in which the
+subgrid scales act on the resolved field as an additional viscosity
+$\nu_{\mathrm{t}}^*$, we close it by gradient transport,
+\begin{equation}\label{eq:ns-pp-diss-closure}
+  \mathcal{G}_{\Delta^*}\!\left( \frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_j^*}{\partial x_k^*} \right)
+  \approx \left( 1 + \frac{\nu_{\mathrm{t}}^*}{\nu} \right)
+  \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*},
+\end{equation}
+so that the bracket in \eqref{eq:ns-pp-diss-split} becomes
+$(\nu_{\mathrm{t}}^*/\nu)\, (\partial \tilde u_i^*/\partial x_k^*)(\partial \tilde u_j^*/\partial x_k^*)$
+and
+\begin{equation}\label{eq:ns-pp-diss-tensor-les}
+  \mathcal{G}_{\Delta^*}\!\left( 2\nu\, \frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_j^*}{\partial x_k^*} \right)
+  \approx 2\nu\, \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*}
+  + 2\nu_{\mathrm{t}}^*\, \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*}
+  = 2\left( \nu + \nu_{\mathrm{t}}^* \right) \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*}.
+\end{equation}
+Taking the trace, the pointwise estimate of the integrand of
+\eqref{eq:ns-pp-diss-trace} is
+\begin{equation}\label{eq:ns-pp-diss-trace-les}
+  \epsilon^* = 2\left( \nu + \nu_{\mathrm{t}}^* \right) \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_i^*}{\partial x_k^*},
+\end{equation}
+and its ensemble average estimates \eqref{eq:ns-pp-diss-trace}, since the
+filter commutes with the average. With $\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$,
+$\nu = UL/Re$, and
+$\partial \tilde u_i^*/\partial x_k^* = (U/L)\, \partial \tilde u_i/\partial x_k$,
+\begin{equation}\label{eq:ns-pp-diss-nondim}
+  \epsilon^* = \frac{U^3}{L}\, \epsilon,
   \qquad
-  \Pi = \nu_{\mathrm{t}} |\tilde S|^2 =
+  \epsilon = 2\left( \frac{1}{Re} + \nu_{\mathrm{t}} \right) \frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_k},
+\end{equation}
+which is of the form \eqref{eq:ns-pp-generic} with $m_U = 3$, $m_L = -1$. In
+the limit $1/Re = 0$ the resolved part vanishes and only the subgrid part
+remains,
+\begin{equation}\label{eq:ns-pp-diss-models}
+  \epsilon = 2\nu_{\mathrm{t}}\, \frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_k} =
   \begin{cases}
-    (C_s \Delta)^2 |\tilde S|^3, & \text{Smagorinsky model}, \\[4pt]
-    C_\nu \Delta^2 |\tilde S|^2, & \text{self-similar constant eddy viscosity},
+    2 (C_s \Delta)^2 |\tilde S|\, \dfrac{\partial \tilde u_i}{\partial x_k} \dfrac{\partial \tilde u_i}{\partial x_k}, & \text{Smagorinsky model}, \\[10pt]
+    2 C_\nu \Delta^2\, \dfrac{\partial \tilde u_i}{\partial x_k} \dfrac{\partial \tilde u_i}{\partial x_k}, & \text{self-similar constant eddy viscosity},
   \end{cases}
 \end{equation}
 by \eqref{eq:ns-eddy-viscosity-nondim} and \eqref{eq:ns-constant-viscosity}.
+
 \par
 The resolved kinetic energy is
 \begin{equation}\label{eq:ns-kinetic-energy-nondim}
@@ -1814,7 +1868,7 @@ With the clock \eqref{eq:ns-clock}, $U^2/\tau = U^3/L$, so the prefactors of
   - \overline{\epsilon}.
 \end{equation}
 
-\subsection{Stationary budget}\label{ssec:res-stationary}
+\subsubsection{Stationary budget}\label{ssec:res-stationary}
 In the self-similar frame the flow is statistically stationary, so
 $\overline{k}$, $\overline{T}$, and $\overline{\epsilon}$ are independent of
 $t$ and \eqref{eq:res-k-nondim} reduces to
@@ -1903,6 +1957,203 @@ physical energy is
   = (t^* + \alpha)^{2\beta_U}\,
     \overline{k}\!\left( \frac{r^*}{(t^* + \alpha)^{\beta_L}} \right).
 \end{equation}
+\subsection{Dissipation budget}\label{ssec:res-eps-budget}
+We take the self-similar constant eddy viscosity
+\eqref{eq:ns-constant-viscosity}, so that $\nu_{\mathrm{t}}^*$ depends on $t^*$
+only and passes through the average, take $1/Re = 0$, and work inside the
+sphere $r \le r_0$, where the sponge forcing vanishes. As in
+\S\ref{ssec:res-k-budget}, the ensemble-mean velocity vanishes,
+$\overline{\tilde u_i^*} = 0$, so the resolved velocity $\tilde u_i^*$ is the
+fluctuating velocity. The quantity whose budget we form is the trace of the
+dissipation tensor, $\epsilon^*$ of \S\ref{sssec:ns-pp-quantities}, which by
+\eqref{eq:ns-pp-diss-trace-les} with $1/Re = 0$ is
+\begin{equation}\label{eq:res-eps-def}
+  \epsilon^* = 2 \nu_{\mathrm{t}}^* \frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_i^*}{\partial x_m^*},
+  \qquad
+  \overline{\epsilon^*} = 2 \nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_i^*}{\partial x_m^*}}.
+\end{equation}
+It is twice the pseudo-dissipation of \cite{mansour1987reynolds}, which they
+denote $\epsilon$, with $\nu_{\mathrm{t}}^*$ in place of $\nu$.
+Differentiating \eqref{eq:res-eps-def} with respect to $t^*$ and eliminating
+$\partial \tilde u_i^* / \partial t^*$ with \eqref{eq:ns-momentum},
+\eqref{eq:ns-continuity}, and \eqref{eq:ns-constant-viscosity-laplacian} gives
+\begin{equation}\label{eq:res-eps-rate}
+  \frac{\partial \overline{\epsilon^*}}{\partial t^*}
+  = \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}\, \overline{\epsilon^*}
+  + \tilde P_\epsilon^* + \tilde T_\epsilon^* + \tilde \Pi_\epsilon^* + \tilde D_\epsilon^* - \tilde \Upsilon^*,
+\end{equation}
+where, in the notation of \cite{mansour1987reynolds} and with the factor of two
+of \eqref{eq:res-eps-def},
+\begin{equation}\label{eq:res-eps-terms}
+\begin{aligned}
+  \tilde P_\epsilon^* &= -4\nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
+  && \text{turbulent production,} \\
+  \tilde T_\epsilon^* &= -\frac{\partial}{\partial x_k^*}\, \overline{\tilde u_k^* \epsilon^*}
+  && \text{turbulent transport,} \\
+  \tilde \Pi_\epsilon^* &= -\frac{4\nu_{\mathrm{t}}^*}{\rho}\, \frac{\partial}{\partial x_k^*}\, \overline{\frac{\partial \tilde p^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
+  && \text{pressure transport,} \\
+  \tilde D_\epsilon^* &= \nu_{\mathrm{t}}^* \frac{\partial^2 \overline{\epsilon^*}}{\partial x_k^* \partial x_k^*}
+  && \text{viscous diffusion,} \\
+  \tilde \Upsilon^* &= 4 \left(\nu_{\mathrm{t}}^*\right)^2 \overline{\frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*} \frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*}}
+  && \text{dissipation of } \epsilon^* .
+\end{aligned}
+\end{equation}
+The tilde marks terms computed from the filtered velocity and pressure with
+the eddy viscosity $\nu_{\mathrm{t}}^*$. The equivalent terms of a DNS follow
+from the same derivation with the full velocity $u_i^*$, the full pressure
+$p^*$, and the molecular viscosity $\nu$, with $\epsilon^*$ replaced by the
+integrand of \eqref{eq:ns-pp-diss-trace},
+$\epsilon_{\mathrm{DNS}}^* = 2\nu\, (\partial u_i^*/\partial x_m^*)(\partial u_i^*/\partial x_m^*)$;
+they are the terms of \cite{mansour1987reynolds}, again with the factor of two.
+The differences between the two sets are
+\begin{equation}\label{eq:res-eps-terms-diff}
+\begin{aligned}
+  \tilde P_\epsilon^* - P_\epsilon^* &= -4 \left(
+    \nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
+    - \nu\, \overline{\frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_i^*}{\partial x_m^*} \frac{\partial u_k^*}{\partial x_m^*}} \right), \\
+  \tilde T_\epsilon^* - T_\epsilon^* &= -\frac{\partial}{\partial x_k^*} \left(
+    \overline{\tilde u_k^* \epsilon^*} - \overline{u_k^* \epsilon_{\mathrm{DNS}}^*} \right), \\
+  \tilde \Pi_\epsilon^* - \Pi_\epsilon^* &= -\frac{4}{\rho} \frac{\partial}{\partial x_k^*} \left(
+    \nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde p^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
+    - \nu\, \overline{\frac{\partial p^*}{\partial x_m^*} \frac{\partial u_k^*}{\partial x_m^*}} \right), \\
+  \tilde D_\epsilon^* - D_\epsilon^* &= \frac{\partial^2}{\partial x_k^* \partial x_k^*} \left(
+    \nu_{\mathrm{t}}^*\, \overline{\epsilon^*} - \nu\, \overline{\epsilon_{\mathrm{DNS}}^*} \right), \\
+  \tilde \Upsilon^* - \Upsilon^* &= 4 \left(
+    \left(\nu_{\mathrm{t}}^*\right)^2 \overline{\frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*} \frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*}}
+    - \nu^2\, \overline{\frac{\partial^2 u_i^*}{\partial x_k^* \partial x_m^*} \frac{\partial^2 u_i^*}{\partial x_k^* \partial x_m^*}} \right).
+\end{aligned}
+\end{equation}
+Each difference has two sources: $\nu_{\mathrm{t}}^*$ in place of $\nu$, and
+the filtered fields in place of the full fields. The closure
+\eqref{eq:ns-pp-diss-closure} makes $\overline{\epsilon^*}$ an estimate of
+$\overline{\epsilon_{\mathrm{DNS}}^*}$, but it does not constrain the
+higher-order correlations, so the differences
+\eqref{eq:res-eps-terms-diff} need not vanish.
+\par
+Here $\tilde P_\epsilon^*$ is the turbulent production $P_\epsilon^4$ of
+\cite{mansour1987reynolds}; their mean-advection term and the productions
+$P_\epsilon^1$, $P_\epsilon^2$, and $P_\epsilon^3$ involve the mean velocity
+and vanish. The terms $\tilde T_\epsilon^*$, $\tilde \Pi_\epsilon^*$, and $\tilde D_\epsilon^*$ are
+divergences and only redistribute $\overline{\epsilon^*}$ in space. With
+$\nu_{\mathrm{t}}^*$ replaced by a constant molecular viscosity $\nu$, the
+eddy-viscosity change drops out and \eqref{eq:res-eps-rate} is twice the
+dissipation equation of \cite{mansour1987reynolds} for zero mean flow; the
+eddy-viscosity change is the only term the LES adds.
+\par
+For the eddy-viscosity change, the filter width of
+\eqref{eq:ns-constant-viscosity} is fixed in the self-similar frame,
+$\Delta^* = L\, \Delta$ with $\Delta = \Delta x$ constant, so the eddy
+viscosity is
+\begin{equation}\label{eq:res-eps-nut}
+  \nu_{\mathrm{t}}^* = C_\nu \Delta^2\, U L ,
+\end{equation}
+and its logarithmic rate is the sum of those of $U$ and $L$. Under the
+power-law ansatz \eqref{eq:fw-powerlaw},
+\begin{equation}\label{eq:res-eps-nut-rate}
+  \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}
+  = \frac{1}{U}\frac{\mathrm{d}U}{\mathrm{d}t^*} + \frac{1}{L}\frac{\mathrm{d}L}{\mathrm{d}t^*}
+  = \frac{\beta_U}{t^* + \alpha_U} + \frac{\beta_L}{t^* + \alpha_L} .
+\end{equation}
+Taking $\alpha_U = \alpha_L = \alpha$ as in \S\ref{ssec:res-stationary},
+\eqref{eq:res-eps-rate} becomes
+\begin{equation}\label{eq:res-eps-rate-compact}
+  \frac{\partial \overline{\epsilon^*}}{\partial t^*}
+  = \frac{\beta_U + \beta_L}{t^* + \alpha}\, \overline{\epsilon^*}
+  + \tilde P_\epsilon^* + \tilde T_\epsilon^* + \tilde \Pi_\epsilon^* + \tilde D_\epsilon^* - \tilde \Upsilon^* .
+\end{equation}
+\par
+In nondimensional variables \eqref{eq:res-eps-rate-compact} becomes
+\begin{equation}\label{eq:res-eps-rate-nondim}
+  \frac{\partial \overline{\epsilon}}{\partial t}
+  = \sigma_L\, x_j \frac{\partial \overline{\epsilon}}{\partial x_j}
+  - 2\left( \sigma_U - \sigma_L \right) \overline{\epsilon}
+  + \tilde P_\epsilon + \tilde T_\epsilon + \tilde \Pi_\epsilon + \tilde D_\epsilon - \tilde \Upsilon .
+\end{equation}
+To obtain it, each dimensional quantity in \eqref{eq:res-eps-rate-compact} is
+written in terms of its nondimensional counterpart with
+\eqref{eq:fw-nondim}, the pressure scale \eqref{eq:ns-pressure-nondim},
+$\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$ with
+$\nu_{\mathrm{t}} = C_\nu \Delta^2$, and \eqref{eq:ns-pp-diss-nondim}; as in
+\S\ref{ssec:res-k-budget}, $U$ and $L$ pass through the averages. The left-hand
+side follows from the chain rule as in \eqref{eq:fw-lhs-chain}, with the
+amplitude $U^3/L$ in place of $U$, so that $\sigma_U$ is replaced by
+$(U^3/L)^\prime/(U^3/L) = 3\sigma_U - \sigma_L$; the rate of the eddy
+viscosity follows from \eqref{eq:res-eps-nut-rate} and
+$\mathrm{d}t^*/\mathrm{d}t = \tau$; and in the remaining terms each velocity
+gradient contributes $U/L$, each further derivative $1/L$, and the pressure
+$\rho U^2$. With the clock \eqref{eq:ns-clock}, $\tau = L/U$,
+\begin{equation}\label{eq:res-eps-scales}
+\begin{aligned}
+  \frac{\partial \overline{\epsilon^*}}{\partial t^*}
+  &= \frac{U^4}{L^2}\left( \frac{\partial \overline{\epsilon}}{\partial t}
+    + (3\sigma_U - \sigma_L)\, \overline{\epsilon}
+    - \sigma_L\, x_j \frac{\partial \overline{\epsilon}}{\partial x_j} \right),
+  \\
+  \frac{\beta_U + \beta_L}{t^* + \alpha} &= \frac{U}{L}\left( \sigma_U + \sigma_L \right),
+  \qquad
+  \overline{\epsilon^*} = \frac{U^3}{L}\, \overline{\epsilon},
+  \\
+  \left( \tilde P_\epsilon^*, \tilde T_\epsilon^*, \tilde \Pi_\epsilon^*, \tilde D_\epsilon^*, \tilde \Upsilon^* \right)
+  &= \frac{U^4}{L^2} \left( \tilde P_\epsilon, \tilde T_\epsilon, \tilde \Pi_\epsilon, \tilde D_\epsilon, \tilde \Upsilon \right) .
+\end{aligned}
+\end{equation}
+Every term of \eqref{eq:res-eps-rate-compact} then carries $U^4/L^2$, which
+cancels, and collecting the terms in $\overline{\epsilon}$,
+$(\sigma_U + \sigma_L) - (3\sigma_U - \sigma_L) = -2(\sigma_U - \sigma_L)$,
+gives \eqref{eq:res-eps-rate-nondim}. The nondimensional terms are \eqref{eq:res-eps-terms} with every starred
+quantity replaced by its nondimensional counterpart and $\rho = 1$,
+\begin{equation}\label{eq:res-eps-terms-nondim}
+\begin{aligned}
+  \tilde P_\epsilon &= -4\nu_{\mathrm{t}}\, \overline{\frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_m} \frac{\partial \tilde u_k}{\partial x_m}},
+  &
+  \tilde T_\epsilon &= -\frac{\partial}{\partial x_k}\, \overline{\tilde u_k \epsilon},
+  &
+  \tilde \Pi_\epsilon &= -4\nu_{\mathrm{t}}\, \frac{\partial}{\partial x_k}\, \overline{\frac{\partial \tilde p}{\partial x_m} \frac{\partial \tilde u_k}{\partial x_m}},
+  \\
+  \tilde D_\epsilon &= \nu_{\mathrm{t}} \frac{\partial^2 \overline{\epsilon}}{\partial x_k \partial x_k},
+  &
+  \tilde \Upsilon &= 4 \nu_{\mathrm{t}}^2\, \overline{\frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m} \frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m}} .
+\end{aligned}
+\end{equation}
+\subsubsection{Residuals with respect to DNS}\label{sssec:res-eps-residuals}
+We compare the LES budget \eqref{eq:res-eps-rate-compact} with the budget of a DNS.
+The same derivation with the full velocity $u_i^*$, the full pressure $p^*$,
+and the constant molecular viscosity $\nu$ gives the budget of
+$\overline{\epsilon_{\mathrm{DNS}}^*}$, in which the eddy-viscosity change is
+absent,
+\begin{equation}\label{eq:res-eps-rate-dns}
+  \frac{\partial \overline{\epsilon_{\mathrm{DNS}}^*}}{\partial t^*}
+  = P_\epsilon^* + T_\epsilon^* + \Pi_\epsilon^* + D_\epsilon^* - \Upsilon^* ,
+\end{equation}
+with the terms of \cite{mansour1987reynolds} entering
+\eqref{eq:res-eps-terms-diff}. Subtracting \eqref{eq:res-eps-rate-dns} from
+\eqref{eq:res-eps-rate-compact},
+\begin{equation}\label{eq:res-eps-rate-les-dns}
+  \frac{\partial}{\partial t^*}\left( \overline{\epsilon^*} - \overline{\epsilon_{\mathrm{DNS}}^*} \right)
+  = \frac{\beta_U + \beta_L}{t^* + \alpha}\, \overline{\epsilon^*}
+  + \left( \tilde P_\epsilon^* - P_\epsilon^* \right)
+  + \left( \tilde T_\epsilon^* - T_\epsilon^* \right)
+  + \left( \tilde \Pi_\epsilon^* - \Pi_\epsilon^* \right)
+  + \left( \tilde D_\epsilon^* - D_\epsilon^* \right)
+  - \left( \tilde \Upsilon^* - \Upsilon^* \right) .
+\end{equation}
+We now assume that the LES estimate is exact,
+$\overline{\epsilon^*} = \overline{\epsilon_{\mathrm{DNS}}^*}$, at every point
+and time inside $r \le r_0$. The left-hand side of
+\eqref{eq:res-eps-rate-les-dns} then vanishes, and the differences
+\eqref{eq:res-eps-terms-diff} are tied to the eddy-viscosity change,
+\begin{equation}\label{eq:res-eps-residual-balance}
+  \left( \tilde P_\epsilon^* - P_\epsilon^* \right)
+  + \left( \tilde T_\epsilon^* - T_\epsilon^* \right)
+  + \left( \tilde \Pi_\epsilon^* - \Pi_\epsilon^* \right)
+  + \left( \tilde D_\epsilon^* - D_\epsilon^* \right)
+  - \left( \tilde \Upsilon^* - \Upsilon^* \right)
+  = - \frac{\beta_U + \beta_L}{t^* + \alpha}\, \overline{\epsilon^*} .
+\end{equation}
+For the LES to reproduce $\overline{\epsilon_{\mathrm{DNS}}^*}$, the residuals of
+its budget terms must therefore cancel the eddy-viscosity change, the one term
+of \eqref{eq:res-eps-rate-compact} without a DNS counterpart.
+
 \appendix
 
 \section{The RK4 physics step}\label{app:rk4}
@@ -2075,8 +2326,8 @@ step will stretch.
 This appendix sets out how the statistical error of a time-averaged quantity
 such as \eqref{eq:ns-pp-time-average} is estimated, following
 \cite{shirian2023convergence}. Let $q(t)$ be a statistically stationary signal,
-here the nondimensional subgrid transfer at the origin, $q(t) = \Pi(0, t)$ of
-\eqref{eq:ns-sgs-transfer-nondim},
+here the trace of the nondimensional dissipation tensor at the origin,
+$q(t) = \epsilon(0, t)$ of \eqref{eq:ns-pp-diss-models},
 or the resolved kinetic energy there, $q(t) = \tilde k(0, t)$ of
 \eqref{eq:ns-kinetic-energy-nondim},
 both in the self-similar frame, with mean $\langle q \rangle$, fluctuation

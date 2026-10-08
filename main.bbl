@@ -6,6 +6,9 @@ J.~Nordstr{\"o}m, N.~Nordin, and D.~Henningson, \enquote{The fringe region techn
 \bibitem{pope2000turbulent}
 S.~B. Pope, \emph{Turbulent Flows} (Cambridge University Press, Cambridge, 2000).
 
+\bibitem{mansour1987reynolds}
+N.~N. Mansour, J.~Kim, and P.~Moin, \enquote{Reynolds-stress and dissipation rate budgets in a turbulent channel flow,} NASA Technical Memorandum 89451, NASA Ames Research Center, Moffett Field, CA (1987).
+
 \bibitem{shirian2023convergence}
 Y.~Shirian, J.~A.~K. Horwitz, and A.~Mani, \enquote{On the convergence of statistics in simulations of stationary incompressible turbulent flows,} Computers \& Fluids \textbf{266}, 106046 (2023).
 
