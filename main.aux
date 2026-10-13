@@ -43,33 +43,33 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Constraint functionals}{4}{subsection.1.4}\protected@file@percent }
 \newlabel{ssec:fw-constraints}{{1.4}{4}{Constraint functionals}{subsection.1.4}{}}
 \newlabel{eq:fw-homogeneity}{{29}{4}{Constraint functionals}{equation.29}{}}
-\newlabel{eq:fw-constraint-residual}{{30}{4}{Constraint functionals}{equation.30}{}}
-\newlabel{eq:fw-constraint-jacobian}{{31}{4}{Constraint functionals}{equation.31}{}}
-\newlabel{eq:fw-constraint-system}{{32}{4}{Constraint functionals}{equation.32}{}}
+\newlabel{eq:fw-constraint-system}{{30}{4}{Constraint functionals}{equation.30}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Power-law ansatz and the step in physical time}{4}{subsection.1.5}\protected@file@percent }
 \newlabel{ssec:fw-powerlaw}{{1.5}{4}{Power-law ansatz and the step in physical time}{subsection.1.5}{}}
-\newlabel{eq:fw-powerlaw}{{33}{4}{Power-law ansatz and the step in physical time}{equation.33}{}}
-\newlabel{eq:fw-powerlaw-ratio}{{34}{4}{Power-law ansatz and the step in physical time}{equation.34}{}}
-\newlabel{eq:fw-dtstar}{{36}{5}{Power-law ansatz and the step in physical time}{equation.36}{}}
-\newlabel{eq:fw-dtstar-weights}{{37}{5}{Power-law ansatz and the step in physical time}{equation.37}{}}
+\newlabel{eq:fw-powerlaw}{{31}{4}{Power-law ansatz and the step in physical time}{equation.31}{}}
+\newlabel{eq:fw-powerlaw-ratio}{{32}{4}{Power-law ansatz and the step in physical time}{equation.32}{}}
+\newlabel{eq:fw-dtstar}{{34}{4}{Power-law ansatz and the step in physical time}{equation.34}{}}
+\newlabel{eq:fw-dtstar-weights}{{35}{4}{Power-law ansatz and the step in physical time}{equation.35}{}}
+\newlabel{eq:fw-dtstar-weights-const}{{36}{4}{Power-law ansatz and the step in physical time}{equation.36}{}}
+\newlabel{eq:fw-log-ratio-A}{{37}{5}{Power-law ansatz and the step in physical time}{equation.37}{}}
 \newlabel{eq:fw-log-ratio}{{38}{5}{Power-law ansatz and the step in physical time}{equation.38}{}}
-\@writefile{toc}{\contentsline {paragraph}{Logarithmic arithmetic.}{5}{section*.2}\protected@file@percent }
-\newlabel{eq:fw-log-sum-exp}{{39}{5}{Logarithmic arithmetic}{equation.39}{}}
-\newlabel{eq:fw-ln-dtstar}{{40}{5}{Logarithmic arithmetic}{equation.40}{}}
+\@writefile{toc}{\contentsline {paragraph}{The prefactor within a step.}{5}{section*.2}\protected@file@percent }
+\newlabel{eq:fw-ratio-expansion}{{39}{5}{The prefactor within a step}{equation.39}{}}
+\@writefile{toc}{\contentsline {paragraph}{Logarithmic arithmetic.}{5}{section*.3}\protected@file@percent }
+\newlabel{eq:fw-log-sum-exp}{{40}{5}{Logarithmic arithmetic}{equation.40}{}}
+\newlabel{eq:fw-ln-dtstar}{{41}{5}{Logarithmic arithmetic}{equation.41}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Algorithm}{5}{section.2}\protected@file@percent }
 \newlabel{sec:algorithm}{{2}{5}{Algorithm}{section.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Domain, grid, and notation}{5}{subsection.2.1}\protected@file@percent }
 \newlabel{ssec:alg-domain}{{2.1}{5}{Domain, grid, and notation}{subsection.2.1}{}}
-\newlabel{eq:alg-grid}{{41}{5}{Domain, grid, and notation}{equation.41}{}}
-\newlabel{eq:alg-riemann}{{42}{5}{Domain, grid, and notation}{equation.42}{}}
+\newlabel{eq:alg-grid}{{42}{5}{Domain, grid, and notation}{equation.42}{}}
+\newlabel{eq:alg-riemann}{{43}{5}{Domain, grid, and notation}{equation.43}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Initialization}{6}{subsection.2.2}\protected@file@percent }
 \newlabel{ssec:alg-init}{{2.2}{6}{Initialization}{subsection.2.2}{}}
-\newlabel{eq:alg-targets}{{43}{6}{Initialization}{equation.43}{}}
+\newlabel{eq:alg-targets}{{44}{6}{Initialization}{equation.44}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Time step}{6}{subsection.2.3}\protected@file@percent }
 \newlabel{ssec:alg-timestep}{{2.3}{6}{Time step}{subsection.2.3}{}}
-\newlabel{eq:alg-dt-rule}{{44}{6}{Time step}{equation.44}{}}
-\@writefile{toc}{\contentsline {paragraph}{No rejection.}{6}{section*.3}\protected@file@percent }
-\newlabel{eq:alg-realized-cfl}{{45}{6}{No rejection}{equation.45}{}}
+\newlabel{eq:alg-realized-cfl}{{45}{6}{Time step}{equation.45}{}}
 \@writefile{toc}{\contentsline {paragraph}{The end of the run.}{6}{section*.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Top-level integrator}{7}{subsection.2.4}\protected@file@percent }
 \newlabel{ssec:alg-top-level}{{2.4}{7}{Top-level integrator}{subsection.2.4}{}}
@@ -77,11 +77,10 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Substeps}{7}{subsection.2.5}\protected@file@percent }
 \newlabel{ssec:alg-substeps}{{2.5}{7}{Substeps}{subsection.2.5}{}}
 \@writefile{toc}{\contentsline {paragraph}{\textsc  {Evolve}$(u, \Delta t_k)$.}{7}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {MaxStableDt}$(u, C)$.}{7}{section*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {Scale}$(u, \ln \lambda _U, \ln \lambda _L)$.}{7}{section*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {ConstrainedScale}$(u, \ln U, \ln L)$.}{8}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {PredictScale}$(i, \ln U_k, \ln L_k, \ln \tau _{k-2:k}, \Delta t_{k-2:k}, \beta _U, \beta _L)$.}{8}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\textsc  {ApplyBC}$(u)$.}{8}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {Scale}$(u, \ln \lambda _U, \ln \lambda _L)$.}{7}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {ConstrainedScale}$(u, \ln U, \ln L)$.}{8}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {PredictScale}$(i, \ln U_k, \ln L_k, \ln \tau _{k-2:k}, \Delta t, \beta _U, \beta _L)$.}{8}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\textsc  {ApplyBC}$(u)$.}{8}{section*.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.6}\textsc  {LieTrotter}: Lie--Trotter splitting}{8}{subsection.2.6}\protected@file@percent }
 \newlabel{ssec:alg-lie-trotter}{{2.6}{8}{\textsc {LieTrotter}: Lie--Trotter splitting}{subsection.2.6}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Lie--Trotter step}}{8}{algorithm.2}\protected@file@percent }
@@ -95,261 +94,298 @@
 \newlabel{eq:alg-beta-rootfind}{{48}{9}{\textsc {EstimateBeta}: estimating \texorpdfstring {$\beta _U$}{beta\_U} and \texorpdfstring {$\beta _L$}{beta\_L}}{equation.48}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Post-processing}{9}{section.3}\protected@file@percent }
 \newlabel{sec:postproc}{{3}{9}{Post-processing}{section.3}{}}
-\newlabel{eq:pp-logs}{{49}{10}{Post-processing}{equation.49}{}}
+\newlabel{eq:pp-logs}{{49}{9}{Post-processing}{equation.49}{}}
 \newlabel{eq:pp-cumsum}{{50}{10}{Post-processing}{equation.50}{}}
+\@writefile{toc}{\contentsline {paragraph}{The fitted range.}{10}{section*.10}\protected@file@percent }
+\newlabel{eq:pp-tstar-origin}{{51}{10}{The fitted range}{equation.51}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}The scaling rates under the ansatz}{10}{subsection.3.1}\protected@file@percent }
 \newlabel{ssec:pp-rates}{{3.1}{10}{The scaling rates under the ansatz}{subsection.3.1}{}}
-\newlabel{eq:pp-rate-chain}{{51}{10}{The scaling rates under the ansatz}{equation.51}{}}
-\newlabel{eq:pp-tstar-offset}{{52}{10}{The scaling rates under the ansatz}{equation.52}{}}
-\newlabel{eq:pp-rate}{{53}{10}{The scaling rates under the ansatz}{equation.53}{}}
-\newlabel{eq:pp-rate-log}{{54}{10}{The scaling rates under the ansatz}{equation.54}{}}
-\newlabel{eq:pp-rate-fd}{{55}{10}{The scaling rates under the ansatz}{equation.55}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Recovering $\alpha _X$ and $\beta _X$}{10}{subsection.3.2}\protected@file@percent }
-\newlabel{ssec:pp-fit}{{3.2}{10}{Recovering \texorpdfstring {$\alpha _X$}{alpha\_X} and \texorpdfstring {$\beta _X$}{beta\_X}}{subsection.3.2}{}}
-\newlabel{eq:pp-regression}{{56}{10}{Recovering \texorpdfstring {$\alpha _X$}{alpha\_X} and \texorpdfstring {$\beta _X$}{beta\_X}}{equation.56}{}}
-\newlabel{eq:pp-alpha}{{57}{10}{Recovering \texorpdfstring {$\alpha _X$}{alpha\_X} and \texorpdfstring {$\beta _X$}{beta\_X}}{equation.57}{}}
-\newlabel{eq:pp-tstar-cumsum}{{58}{10}{Recovering \texorpdfstring {$\alpha _X$}{alpha\_X} and \texorpdfstring {$\beta _X$}{beta\_X}}{equation.58}{}}
-\newlabel{eq:pp-1d-length-rate}{{59}{11}{Recovering \texorpdfstring {$\alpha _X$}{alpha\_X} and \texorpdfstring {$\beta _X$}{beta\_X}}{equation.59}{}}
-\newlabel{eq:pp-1d-velocity-rate}{{60}{11}{Recovering \texorpdfstring {$\alpha _X$}{alpha\_X} and \texorpdfstring {$\beta _X$}{beta\_X}}{equation.60}{}}
+\newlabel{eq:pp-rate-chain}{{52}{10}{The scaling rates under the ansatz}{equation.52}{}}
+\newlabel{eq:pp-tstar-offset}{{53}{10}{The scaling rates under the ansatz}{equation.53}{}}
+\newlabel{eq:pp-rate}{{54}{10}{The scaling rates under the ansatz}{equation.54}{}}
+\newlabel{eq:pp-rate-log}{{55}{10}{The scaling rates under the ansatz}{equation.55}{}}
+\newlabel{eq:pp-rate-fd}{{56}{10}{The scaling rates under the ansatz}{equation.56}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Recovering $A_X$, $\alpha _X$ and $\beta _X$}{10}{subsection.3.2}\protected@file@percent }
+\newlabel{ssec:pp-fit}{{3.2}{10}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{subsection.3.2}{}}
+\newlabel{eq:pp-regression}{{57}{10}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{equation.57}{}}
+\newlabel{eq:pp-beta-A}{{58}{10}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{equation.58}{}}
+\newlabel{eq:pp-theta}{{59}{11}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{equation.59}{}}
+\newlabel{eq:pp-tstar-cumsum}{{60}{11}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{equation.60}{}}
+\newlabel{eq:pp-alpha}{{61}{11}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{equation.61}{}}
+\newlabel{eq:pp-1d-length-rate}{{62}{11}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{equation.62}{}}
+\newlabel{eq:pp-1d-velocity-rate}{{63}{11}{Recovering \texorpdfstring {$A_X$, $\alpha _X$ and $\beta _X$}{A\_X, alpha\_X and beta\_X}}{equation.63}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4}The 1D diffusion equation}{11}{section.4}\protected@file@percent }
 \newlabel{sec:1d}{{4}{11}{The 1D diffusion equation}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Governing equation and clock}{11}{subsection.4.1}\protected@file@percent }
 \newlabel{ssec:1d-clock}{{4.1}{11}{Governing equation and clock}{subsection.4.1}{}}
-\newlabel{eq:1d-dimensional}{{61}{11}{Governing equation and clock}{equation.61}{}}
-\newlabel{eq:1d-rhs}{{62}{11}{Governing equation and clock}{equation.62}{}}
-\newlabel{eq:1d-rhs-rescaled}{{63}{11}{Governing equation and clock}{equation.63}{}}
-\newlabel{eq:1d-clock}{{64}{11}{Governing equation and clock}{equation.64}{}}
-\newlabel{eq:1d-ln-clock}{{65}{11}{Governing equation and clock}{equation.65}{}}
-\newlabel{eq:1d-transformed}{{66}{11}{Governing equation and clock}{equation.66}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}The physics step}{11}{subsection.4.2}\protected@file@percent }
-\newlabel{ssec:1d-physics-step}{{4.2}{11}{The physics step}{subsection.4.2}{}}
-\newlabel{eq:1d-physics-flow}{{67}{11}{The physics step}{equation.67}{}}
-\newlabel{eq:1d-propagator}{{68}{11}{The physics step}{equation.68}{}}
+\newlabel{eq:1d-dimensional}{{64}{11}{Governing equation and clock}{equation.64}{}}
+\newlabel{eq:1d-rhs}{{65}{11}{Governing equation and clock}{equation.65}{}}
+\newlabel{eq:1d-rhs-rescaled}{{66}{12}{Governing equation and clock}{equation.66}{}}
+\newlabel{eq:1d-clock}{{67}{12}{Governing equation and clock}{equation.67}{}}
+\newlabel{eq:1d-ln-clock}{{68}{12}{Governing equation and clock}{equation.68}{}}
+\newlabel{eq:1d-transformed}{{69}{12}{Governing equation and clock}{equation.69}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}The physics step}{12}{subsection.4.2}\protected@file@percent }
+\newlabel{ssec:1d-physics-step}{{4.2}{12}{The physics step}{subsection.4.2}{}}
+\newlabel{eq:1d-physics-flow}{{70}{12}{The physics step}{equation.70}{}}
+\newlabel{eq:1d-propagator}{{71}{12}{The physics step}{equation.71}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Moment constraints}{12}{subsection.4.3}\protected@file@percent }
 \newlabel{ssec:1d-moments}{{4.3}{12}{Moment constraints}{subsection.4.3}{}}
-\newlabel{eq:1d-functionals}{{69}{12}{Moment constraints}{equation.69}{}}
-\newlabel{eq:1d-m0-homogeneity}{{70}{12}{Moment constraints}{equation.70}{}}
-\newlabel{eq:1d-m2-homogeneity}{{71}{12}{Moment constraints}{equation.71}{}}
-\newlabel{eq:1d-exponents}{{72}{12}{Moment constraints}{equation.72}{}}
-\newlabel{eq:1d-length-ratio}{{73}{12}{Moment constraints}{equation.73}{}}
-\newlabel{eq:1d-velocity-ratio}{{74}{12}{Moment constraints}{equation.74}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Spectral interpolation on the real transform}{12}{subsection.4.4}\protected@file@percent }
-\newlabel{ssec:1d-interpolation}{{4.4}{12}{Spectral interpolation on the real transform}{subsection.4.4}{}}
-\newlabel{eq:1d-interp}{{75}{12}{Spectral interpolation on the real transform}{equation.75}{}}
+\newlabel{eq:1d-functionals}{{72}{12}{Moment constraints}{equation.72}{}}
+\newlabel{eq:1d-m0-homogeneity}{{73}{12}{Moment constraints}{equation.73}{}}
+\newlabel{eq:1d-m2-homogeneity}{{74}{12}{Moment constraints}{equation.74}{}}
+\newlabel{eq:1d-exponents}{{75}{12}{Moment constraints}{equation.75}{}}
+\newlabel{eq:1d-length-ratio}{{76}{12}{Moment constraints}{equation.76}{}}
+\newlabel{eq:1d-velocity-ratio}{{77}{13}{Moment constraints}{equation.77}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Spectral interpolation on the real transform}{13}{subsection.4.4}\protected@file@percent }
+\newlabel{ssec:1d-interpolation}{{4.4}{13}{Spectral interpolation on the real transform}{subsection.4.4}{}}
+\newlabel{eq:1d-interp}{{78}{13}{Spectral interpolation on the real transform}{equation.78}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Boundary treatment}{13}{subsection.4.5}\protected@file@percent }
 \newlabel{ssec:1d-boundary}{{4.5}{13}{Boundary treatment}{subsection.4.5}{}}
-\newlabel{eq:1d-clamp}{{76}{13}{Boundary treatment}{equation.76}{}}
+\newlabel{eq:1d-clamp}{{79}{13}{Boundary treatment}{equation.79}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5}The Navier--Stokes equations}{13}{section.5}\protected@file@percent }
 \newlabel{sec:ns}{{5}{13}{The Navier--Stokes equations}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Governing equations and clock}{13}{subsection.5.1}\protected@file@percent }
-\newlabel{ssec:ns-clock}{{5.1}{13}{Governing equations and clock}{subsection.5.1}{}}
-\newlabel{eq:ns-sgs-def}{{77}{13}{Governing equations and clock}{equation.77}{}}
-\newlabel{eq:ns-momentum}{{78}{13}{Governing equations and clock}{equation.78}{}}
-\newlabel{eq:ns-continuity}{{79}{13}{Governing equations and clock}{equation.79}{}}
-\newlabel{eq:ns-rhs}{{80}{13}{Governing equations and clock}{equation.80}{}}
-\newlabel{eq:ns-pressure-nondim}{{81}{13}{Governing equations and clock}{equation.81}{}}
-\newlabel{eq:ns-sgs-nondim}{{82}{13}{Governing equations and clock}{equation.82}{}}
-\newlabel{eq:ns-convection}{{83}{13}{Governing equations and clock}{equation.83}{}}
-\newlabel{eq:ns-viscous}{{84}{14}{Governing equations and clock}{equation.84}{}}
-\newlabel{eq:ns-clock}{{85}{14}{Governing equations and clock}{equation.85}{}}
-\newlabel{eq:ns-ln-clock}{{86}{14}{Governing equations and clock}{equation.86}{}}
-\newlabel{eq:ns-reynolds}{{87}{14}{Governing equations and clock}{equation.87}{}}
-\newlabel{eq:ns-nondim-momentum-base}{{88}{14}{Governing equations and clock}{equation.88}{}}
-\newlabel{eq:ns-nondim-continuity}{{89}{14}{Governing equations and clock}{equation.89}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Subgrid stress model}{14}{subsection.5.2}\protected@file@percent }
-\newlabel{ssec:ns-viscosity}{{5.2}{14}{Subgrid stress model}{subsection.5.2}{}}
-\newlabel{eq:ns-eddy-closure}{{90}{14}{Subgrid stress model}{equation.90}{}}
-\newlabel{eq:ns-eddy-closure-nondim}{{91}{14}{Subgrid stress model}{equation.91}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Smagorinsky model}{14}{subsubsection.5.2.1}\protected@file@percent }
-\newlabel{sssec:ns-sgs-smagorinsky}{{5.2.1}{14}{Smagorinsky model}{subsubsection.5.2.1}{}}
-\newlabel{eq:ns-eddy-viscosity}{{92}{14}{Smagorinsky model}{equation.92}{}}
-\newlabel{eq:ns-eddy-viscosity-nondim}{{93}{14}{Smagorinsky model}{equation.93}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Governing equations and clock}{14}{subsection.5.1}\protected@file@percent }
+\newlabel{ssec:ns-clock}{{5.1}{14}{Governing equations and clock}{subsection.5.1}{}}
+\newlabel{eq:ns-sgs-def}{{80}{14}{Governing equations and clock}{equation.80}{}}
+\newlabel{eq:ns-momentum}{{81}{14}{Governing equations and clock}{equation.81}{}}
+\newlabel{eq:ns-continuity}{{82}{14}{Governing equations and clock}{equation.82}{}}
+\newlabel{eq:ns-rhs}{{83}{14}{Governing equations and clock}{equation.83}{}}
+\newlabel{eq:ns-pressure-nondim}{{84}{14}{Governing equations and clock}{equation.84}{}}
+\newlabel{eq:ns-sgs-nondim}{{85}{14}{Governing equations and clock}{equation.85}{}}
+\newlabel{eq:ns-convection}{{86}{14}{Governing equations and clock}{equation.86}{}}
+\newlabel{eq:ns-viscous}{{87}{14}{Governing equations and clock}{equation.87}{}}
+\newlabel{eq:ns-clock}{{88}{14}{Governing equations and clock}{equation.88}{}}
+\newlabel{eq:ns-ln-clock}{{89}{14}{Governing equations and clock}{equation.89}{}}
+\newlabel{eq:ns-reynolds}{{90}{14}{Governing equations and clock}{equation.90}{}}
+\newlabel{eq:ns-nondim-momentum-base}{{91}{14}{Governing equations and clock}{equation.91}{}}
+\newlabel{eq:ns-nondim-continuity}{{92}{14}{Governing equations and clock}{equation.92}{}}
 \citation{nordstrom1999fringe}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Subgrid stress model}{15}{subsection.5.2}\protected@file@percent }
+\newlabel{ssec:ns-viscosity}{{5.2}{15}{Subgrid stress model}{subsection.5.2}{}}
+\newlabel{eq:ns-eddy-closure}{{93}{15}{Subgrid stress model}{equation.93}{}}
+\newlabel{eq:ns-eddy-closure-nondim}{{94}{15}{Subgrid stress model}{equation.94}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Smagorinsky model}{15}{subsubsection.5.2.1}\protected@file@percent }
+\newlabel{sssec:ns-sgs-smagorinsky}{{5.2.1}{15}{Smagorinsky model}{subsubsection.5.2.1}{}}
+\newlabel{eq:ns-eddy-viscosity}{{95}{15}{Smagorinsky model}{equation.95}{}}
+\newlabel{eq:ns-eddy-viscosity-nondim}{{96}{15}{Smagorinsky model}{equation.96}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Self-similar constant eddy viscosity}{15}{subsubsection.5.2.2}\protected@file@percent }
 \newlabel{sssec:ns-sgs-constant}{{5.2.2}{15}{Self-similar constant eddy viscosity}{subsubsection.5.2.2}{}}
-\newlabel{eq:ns-constant-viscosity}{{94}{15}{Self-similar constant eddy viscosity}{equation.94}{}}
-\newlabel{eq:ns-constant-viscosity-laplacian}{{95}{15}{Self-similar constant eddy viscosity}{equation.95}{}}
-\newlabel{eq:ns-nondim-momentum}{{96}{15}{The momentum equation}{equation.96}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Sponge forcing}{15}{subsection.5.3}\protected@file@percent }
-\newlabel{ssec:ns-sponge}{{5.3}{15}{Sponge forcing}{subsection.5.3}{}}
-\newlabel{eq:ns-sponge-force}{{97}{15}{Sponge forcing}{equation.97}{}}
-\newlabel{eq:ns-sponge-weight}{{98}{15}{Sponge forcing}{equation.98}{}}
-\newlabel{eq:ns-sponge-step}{{99}{15}{Sponge forcing}{equation.99}{}}
-\newlabel{eq:ns-nondim-momentum-sponge}{{100}{15}{Sponge forcing}{equation.100}{}}
+\newlabel{eq:ns-constant-viscosity}{{97}{15}{Self-similar constant eddy viscosity}{equation.97}{}}
+\newlabel{eq:ns-constant-viscosity-laplacian}{{98}{15}{Self-similar constant eddy viscosity}{equation.98}{}}
+\newlabel{eq:ns-nondim-momentum}{{99}{15}{The momentum equation}{equation.99}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Sponge forcing}{16}{subsection.5.3}\protected@file@percent }
+\newlabel{ssec:ns-sponge}{{5.3}{16}{Sponge forcing}{subsection.5.3}{}}
+\newlabel{eq:ns-sponge-force}{{100}{16}{Sponge forcing}{equation.100}{}}
+\newlabel{eq:ns-sponge-weight}{{101}{16}{Sponge forcing}{equation.101}{}}
+\newlabel{eq:ns-sponge-step}{{102}{16}{Sponge forcing}{equation.102}{}}
+\newlabel{eq:ns-nondim-momentum-sponge}{{103}{16}{Sponge forcing}{equation.103}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Fourier representation}{16}{subsection.5.4}\protected@file@percent }
 \newlabel{ssec:ns-fourier}{{5.4}{16}{Fourier representation}{subsection.5.4}{}}
-\newlabel{eq:ns-fourier-pressure}{{101}{16}{Fourier representation}{equation.101}{}}
-\newlabel{eq:ns-fourier-convection}{{102}{16}{Fourier representation}{equation.102}{}}
-\newlabel{eq:ns-fourier-sgs-generic}{{103}{16}{Fourier representation}{equation.103}{}}
-\newlabel{eq:ns-fourier-strain}{{104}{16}{Fourier representation}{equation.104}{}}
+\newlabel{eq:ns-fourier-pressure}{{104}{16}{Fourier representation}{equation.104}{}}
+\newlabel{eq:ns-fourier-convection}{{105}{16}{Fourier representation}{equation.105}{}}
+\newlabel{eq:ns-fourier-sgs-generic}{{106}{16}{Fourier representation}{equation.106}{}}
+\newlabel{eq:ns-fourier-strain}{{107}{16}{Fourier representation}{equation.107}{}}
 \@writefile{toc}{\contentsline {paragraph}{Smagorinsky model.}{16}{section*.12}\protected@file@percent }
-\newlabel{eq:ns-fourier-sgs}{{105}{16}{Smagorinsky model}{equation.105}{}}
-\@writefile{toc}{\contentsline {paragraph}{Self-similar constant eddy viscosity.}{16}{section*.13}\protected@file@percent }
-\newlabel{eq:ns-fourier-sgs-constant}{{106}{16}{Self-similar constant eddy viscosity}{equation.106}{}}
-\@writefile{toc}{\contentsline {paragraph}{Sponge forcing.}{16}{section*.14}\protected@file@percent }
-\newlabel{eq:ns-fourier-sponge}{{107}{16}{Sponge forcing}{equation.107}{}}
-\newlabel{eq:ns-nondim-momentum-fourier}{{108}{16}{Sponge forcing}{equation.108}{}}
-\newlabel{eq:ns-fourier-continuity}{{109}{16}{Sponge forcing}{equation.109}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Pressure and the solenoidal projection}{16}{subsection.5.5}\protected@file@percent }
-\newlabel{ssec:ns-projection}{{5.5}{16}{Pressure and the solenoidal projection}{subsection.5.5}{}}
-\newlabel{eq:ns-pressure-contracted}{{110}{16}{Pressure and the solenoidal projection}{equation.110}{}}
-\newlabel{eq:ns-continuity-dk}{{111}{17}{Pressure and the solenoidal projection}{equation.111}{}}
-\newlabel{eq:ns-fourier-poisson}{{113}{17}{Pressure and the solenoidal projection}{equation.113}{}}
-\newlabel{eq:ns-fourier-pressure-substituted}{{114}{17}{Pressure and the solenoidal projection}{equation.114}{}}
-\newlabel{eq:ns-projection-tensor}{{115}{17}{Pressure and the solenoidal projection}{equation.115}{}}
-\newlabel{eq:ns-fourier-final}{{116}{17}{Pressure and the solenoidal projection}{equation.116}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}The physics step}{17}{subsection.5.6}\protected@file@percent }
-\newlabel{ssec:ns-physics-step}{{5.6}{17}{The physics step}{subsection.5.6}{}}
-\newlabel{eq:ns-physics-flow}{{117}{17}{The physics step}{equation.117}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Post-processing}{17}{subsection.5.7}\protected@file@percent }
-\newlabel{ssec:ns-postproc}{{5.7}{17}{Post-processing}{subsection.5.7}{}}
-\citation{pope2000turbulent}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.1}Scaling of point statistics at the origin}{18}{subsubsection.5.7.1}\protected@file@percent }
-\newlabel{sssec:ns-pp-scaling}{{5.7.1}{18}{Scaling of point statistics at the origin}{subsubsection.5.7.1}{}}
-\newlabel{eq:ns-pp-generic}{{118}{18}{Scaling of point statistics at the origin}{equation.118}{}}
-\newlabel{eq:ns-pp-powerlaw}{{119}{18}{Scaling of point statistics at the origin}{equation.119}{}}
+\newlabel{eq:ns-fourier-sgs}{{108}{16}{Smagorinsky model}{equation.108}{}}
+\@writefile{toc}{\contentsline {paragraph}{Self-similar constant eddy viscosity.}{17}{section*.13}\protected@file@percent }
+\newlabel{eq:ns-fourier-sgs-constant}{{109}{17}{Self-similar constant eddy viscosity}{equation.109}{}}
+\@writefile{toc}{\contentsline {paragraph}{Sponge forcing.}{17}{section*.14}\protected@file@percent }
+\newlabel{eq:ns-fourier-sponge}{{110}{17}{Sponge forcing}{equation.110}{}}
+\newlabel{eq:ns-nondim-momentum-fourier}{{111}{17}{Sponge forcing}{equation.111}{}}
+\newlabel{eq:ns-fourier-continuity}{{112}{17}{Sponge forcing}{equation.112}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Pressure and the solenoidal projection}{17}{subsection.5.5}\protected@file@percent }
+\newlabel{ssec:ns-projection}{{5.5}{17}{Pressure and the solenoidal projection}{subsection.5.5}{}}
+\newlabel{eq:ns-pressure-contracted}{{113}{17}{Pressure and the solenoidal projection}{equation.113}{}}
+\newlabel{eq:ns-continuity-dk}{{114}{17}{Pressure and the solenoidal projection}{equation.114}{}}
+\newlabel{eq:ns-fourier-poisson}{{116}{17}{Pressure and the solenoidal projection}{equation.116}{}}
+\newlabel{eq:ns-fourier-pressure-substituted}{{117}{17}{Pressure and the solenoidal projection}{equation.117}{}}
+\newlabel{eq:ns-projection-tensor}{{118}{17}{Pressure and the solenoidal projection}{equation.118}{}}
+\newlabel{eq:ns-fourier-final}{{119}{17}{Pressure and the solenoidal projection}{equation.119}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}The physics step}{18}{subsection.5.6}\protected@file@percent }
+\newlabel{ssec:ns-physics-step}{{5.6}{18}{The physics step}{subsection.5.6}{}}
+\newlabel{eq:ns-physics-flow}{{120}{18}{The physics step}{equation.120}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Post-processing}{18}{subsection.5.7}\protected@file@percent }
+\newlabel{ssec:ns-postproc}{{5.7}{18}{Post-processing}{subsection.5.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.1}Scaling of point statistics}{18}{subsubsection.5.7.1}\protected@file@percent }
+\newlabel{sssec:ns-pp-scaling}{{5.7.1}{18}{Scaling of point statistics}{subsubsection.5.7.1}{}}
+\newlabel{eq:ns-pp-generic}{{121}{18}{Scaling of point statistics}{equation.121}{}}
+\newlabel{eq:ns-pp-powerlaw}{{122}{18}{Scaling of point statistics}{equation.122}{}}
 \@writefile{toc}{\contentsline {paragraph}{Scaling of the ensemble average.}{18}{section*.15}\protected@file@percent }
-\newlabel{eq:ns-pp-ensemble}{{120}{18}{Scaling of the ensemble average}{equation.120}{}}
-\newlabel{eq:ns-pp-time-average}{{121}{18}{Scaling of the ensemble average}{equation.121}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.2}Dissipation and kinetic energy}{18}{subsubsection.5.7.2}\protected@file@percent }
-\newlabel{sssec:ns-pp-quantities}{{5.7.2}{18}{Dissipation and kinetic energy}{subsubsection.5.7.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{The dissipation tensor and its trace.}{18}{section*.16}\protected@file@percent }
-\newlabel{eq:ns-pp-diss-tensor}{{122}{18}{The dissipation tensor and its trace}{equation.122}{}}
-\newlabel{eq:ns-pp-diss-trace}{{123}{18}{The dissipation tensor and its trace}{equation.123}{}}
-\@writefile{toc}{\contentsline {paragraph}{Estimate from the filtered field.}{18}{section*.17}\protected@file@percent }
-\newlabel{eq:ns-pp-diss-split}{{124}{18}{Estimate from the filtered field}{equation.124}{}}
-\newlabel{eq:ns-pp-diss-closure}{{125}{18}{Estimate from the filtered field}{equation.125}{}}
+\newlabel{eq:ns-pp-ensemble}{{123}{18}{Scaling of the ensemble average}{equation.123}{}}
+\@writefile{toc}{\contentsline {paragraph}{Isotropy.}{18}{section*.16}\protected@file@percent }
+\newlabel{eq:ns-pp-ensemble-radial}{{124}{18}{Isotropy}{equation.124}{}}
 \citation{pope2000turbulent}
-\newlabel{eq:ns-pp-diss-tensor-les}{{126}{19}{Estimate from the filtered field}{equation.126}{}}
-\newlabel{eq:ns-pp-diss-trace-les}{{127}{19}{Estimate from the filtered field}{equation.127}{}}
-\newlabel{eq:ns-pp-diss-nondim}{{128}{19}{Estimate from the filtered field}{equation.128}{}}
-\newlabel{eq:ns-pp-diss-models}{{129}{19}{Estimate from the filtered field}{equation.129}{}}
-\newlabel{eq:ns-kinetic-energy-nondim}{{130}{19}{Estimate from the filtered field}{equation.130}{}}
-\newlabel{eq:ns-kinetic-energy-split}{{131}{19}{Estimate from the filtered field}{equation.131}{}}
-\newlabel{eq:ns-sgs-energy}{{132}{19}{Estimate from the filtered field}{equation.132}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}Constraint functionals}{19}{subsection.5.8}\protected@file@percent }
-\newlabel{ssec:ns-constraints}{{5.8}{19}{Constraint functionals}{subsection.5.8}{}}
-\newlabel{eq:ns-functionals}{{133}{19}{Constraint functionals}{equation.133}{}}
-\newlabel{eq:ns-sgs-energy-power}{{134}{20}{Constraint functionals}{equation.134}{}}
-\newlabel{eq:ns-functional-terms}{{135}{20}{Constraint functionals}{equation.135}{}}
-\newlabel{eq:ns-e0-homogeneity}{{136}{20}{Constraint functionals}{equation.136}{}}
-\newlabel{eq:ns-e2-homogeneity}{{137}{20}{Constraint functionals}{equation.137}{}}
-\newlabel{eq:ns-sgs-homogeneity}{{138}{20}{Constraint functionals}{equation.138}{}}
-\newlabel{eq:ns-exponents}{{139}{20}{Constraint functionals}{equation.139}{}}
-\@writefile{toc}{\contentsline {paragraph}{Solvability.}{20}{section*.18}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Closed form.}{20}{section*.19}\protected@file@percent }
-\newlabel{eq:ns-smag-quadratic}{{140}{20}{Closed form}{equation.140}{}}
-\newlabel{eq:ns-length-ratio}{{141}{20}{Closed form}{equation.141}{}}
-\newlabel{eq:ns-velocity-ratio}{{142}{20}{Closed form}{equation.142}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.9}Initial condition}{21}{subsection.5.9}\protected@file@percent }
-\newlabel{ssec:ns-ic}{{5.9}{21}{Initial condition}{subsection.5.9}{}}
-\newlabel{eq:ns-ic-curl}{{143}{21}{Initial condition}{equation.143}{}}
-\newlabel{eq:ns-ic-filter}{{144}{21}{Initial condition}{equation.144}{}}
-\newlabel{eq:ns-ic-window}{{145}{21}{Initial condition}{equation.145}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.10}Spectral interpolation in three dimensions}{21}{subsection.5.10}\protected@file@percent }
-\newlabel{ssec:ns-interpolation}{{5.10}{21}{Spectral interpolation in three dimensions}{subsection.5.10}{}}
-\@writefile{toc}{\contentsline {paragraph}{The sum on the real transform.}{21}{section*.20}\protected@file@percent }
-\newlabel{eq:ns-interp-multiplicity}{{146}{21}{The sum on the real transform}{equation.146}{}}
-\newlabel{eq:ns-interp}{{147}{21}{The sum on the real transform}{equation.147}{}}
-\@writefile{toc}{\contentsline {paragraph}{Separable evaluation.}{21}{section*.21}\protected@file@percent }
-\newlabel{eq:ns-interp-matrices}{{148}{21}{Separable evaluation}{equation.148}{}}
-\newlabel{eq:ns-interp-contractions}{{149}{22}{Separable evaluation}{equation.149}{}}
-\@writefile{toc}{\contentsline {paragraph}{The Nyquist bin.}{22}{section*.22}\protected@file@percent }
-\newlabel{eq:ns-interp-nyquist}{{150}{22}{The Nyquist bin}{equation.150}{}}
-\@writefile{toc}{\contentsline {paragraph}{The out-of-box cutoff.}{22}{section*.23}\protected@file@percent }
-\newlabel{eq:ns-interp-cutoff}{{151}{22}{The out-of-box cutoff}{equation.151}{}}
-\@writefile{toc}{\contentsline {paragraph}{Loss of solenoidality and the Leray projection.}{22}{section*.24}\protected@file@percent }
-\newlabel{eq:ns-leray-scale}{{152}{22}{Loss of solenoidality and the Leray projection}{equation.152}{}}
+\newlabel{eq:ns-pp-sphere-mean}{{125}{19}{Isotropy}{equation.125}{}}
+\newlabel{eq:ns-pp-time-average}{{126}{19}{Isotropy}{equation.126}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.2}Dissipation and kinetic energy}{19}{subsubsection.5.7.2}\protected@file@percent }
+\newlabel{sssec:ns-pp-quantities}{{5.7.2}{19}{Dissipation and kinetic energy}{subsubsection.5.7.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{The dissipation tensor and its trace.}{19}{section*.17}\protected@file@percent }
+\newlabel{eq:ns-pp-diss-tensor}{{127}{19}{The dissipation tensor and its trace}{equation.127}{}}
+\newlabel{eq:ns-pp-diss-trace}{{128}{19}{The dissipation tensor and its trace}{equation.128}{}}
+\@writefile{toc}{\contentsline {paragraph}{Estimate from the filtered field.}{19}{section*.18}\protected@file@percent }
+\newlabel{eq:ns-pp-diss-split}{{129}{19}{Estimate from the filtered field}{equation.129}{}}
+\newlabel{eq:ns-pp-diss-closure}{{130}{19}{Estimate from the filtered field}{equation.130}{}}
+\newlabel{eq:ns-pp-diss-tensor-les}{{131}{19}{Estimate from the filtered field}{equation.131}{}}
+\newlabel{eq:ns-pp-diss-trace-les}{{132}{19}{Estimate from the filtered field}{equation.132}{}}
 \citation{pope2000turbulent}
-\@writefile{toc}{\contentsline {paragraph}{Interaction with dealiasing.}{23}{section*.25}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.11}Boundary treatment}{23}{subsection.5.11}\protected@file@percent }
-\newlabel{ssec:ns-boundary}{{5.11}{23}{Boundary treatment}{subsection.5.11}{}}
-\@writefile{toc}{\contentsline {paragraph}{The clamp.}{23}{section*.26}\protected@file@percent }
-\newlabel{eq:ns-clamp}{{153}{23}{The clamp}{equation.153}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Navier--Stokes results}{23}{section.6}\protected@file@percent }
-\newlabel{sec:ns-results}{{6}{23}{Navier--Stokes results}{section.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Kinetic energy budget in the self-similar frame}{23}{subsection.6.1}\protected@file@percent }
-\newlabel{ssec:res-k-budget}{{6.1}{23}{Kinetic energy budget in the self-similar frame}{subsection.6.1}{}}
-\newlabel{eq:res-k-dim}{{154}{23}{Kinetic energy budget in the self-similar frame}{equation.154}{}}
-\newlabel{eq:res-k-scales}{{155}{23}{Kinetic energy budget in the self-similar frame}{equation.155}{}}
-\newlabel{eq:res-transport-nondim}{{156}{23}{Kinetic energy budget in the self-similar frame}{equation.156}{}}
-\newlabel{eq:res-k-lhs}{{157}{23}{Kinetic energy budget in the self-similar frame}{equation.157}{}}
-\newlabel{eq:res-k-nondim}{{158}{24}{Kinetic energy budget in the self-similar frame}{equation.158}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.1}Stationary budget}{24}{subsubsection.6.1.1}\protected@file@percent }
-\newlabel{ssec:res-stationary}{{6.1.1}{24}{Stationary budget}{subsubsection.6.1.1}{}}
-\newlabel{eq:res-k-stationary}{{159}{24}{Stationary budget}{equation.159}{}}
-\newlabel{eq:res-scaling-terms}{{160}{24}{Stationary budget}{equation.160}{}}
-\newlabel{eq:res-k-stationary-const}{{161}{24}{Stationary budget}{equation.161}{}}
-\newlabel{eq:res-origin-rate}{{162}{24}{Stationary budget}{equation.162}{}}
-\newlabel{eq:res-k-origin}{{163}{24}{Stationary budget}{equation.163}{}}
-\newlabel{eq:res-k-ode}{{164}{24}{Stationary budget}{equation.164}{}}
-\newlabel{eq:res-k-ode-integrating}{{165}{24}{Stationary budget}{equation.165}{}}
-\newlabel{eq:res-k-solution}{{166}{24}{Stationary budget}{equation.166}{}}
-\newlabel{eq:res-k-solution-dim}{{167}{24}{Stationary budget}{equation.167}{}}
+\citation{mansour1987reynolds}
+\citation{mansour1987reynolds}
+\newlabel{eq:ns-pp-diss-nondim}{{133}{20}{Estimate from the filtered field}{equation.133}{}}
+\newlabel{eq:ns-pp-diss-models}{{134}{20}{Estimate from the filtered field}{equation.134}{}}
+\@writefile{toc}{\contentsline {paragraph}{Kinetic energy.}{20}{section*.19}\protected@file@percent }
+\newlabel{eq:ns-kinetic-energy-nondim}{{135}{20}{Kinetic energy}{equation.135}{}}
+\newlabel{eq:ns-kinetic-energy-split}{{136}{20}{Kinetic energy}{equation.136}{}}
+\newlabel{eq:ns-sgs-energy}{{137}{20}{Kinetic energy}{equation.137}{}}
+\@writefile{toc}{\contentsline {paragraph}{Radial profiles.}{20}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.7.3}$\epsilon $ budget}{20}{subsubsection.5.7.3}\protected@file@percent }
+\newlabel{sssec:ns-pp-eps-budget}{{5.7.3}{20}{\texorpdfstring {$\epsilon $}{epsilon} budget}{subsubsection.5.7.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Assumptions.}{20}{section*.21}\protected@file@percent }
+\newlabel{eq:ns-pp-eps-def}{{138}{20}{Assumptions}{equation.138}{}}
 \citation{mansour1987reynolds}
 \citation{mansour1987reynolds}
 \citation{mansour1987reynolds}
 \citation{mansour1987reynolds}
+\@writefile{toc}{\contentsline {paragraph}{Dimensional budget.}{21}{section*.22}\protected@file@percent }
+\newlabel{eq:ns-pp-eps-nut}{{139}{21}{Dimensional budget}{equation.139}{}}
+\newlabel{eq:ns-pp-eps-rate}{{140}{21}{Dimensional budget}{equation.140}{}}
+\newlabel{eq:ns-pp-eps-terms}{{141}{21}{Dimensional budget}{equation.141}{}}
+\@writefile{toc}{\contentsline {paragraph}{Nondimensionalization.}{21}{section*.23}\protected@file@percent }
+\newlabel{eq:ns-pp-eps-nut-rate}{{142}{21}{Nondimensionalization}{equation.142}{}}
+\citation{pope2000turbulent}
+\newlabel{eq:ns-pp-eps-rate-constant}{{143}{22}{Nondimensionalization}{equation.143}{}}
+\newlabel{eq:ns-pp-eps-terms-nondim}{{144}{22}{Nondimensionalization}{equation.144}{}}
+\@writefile{toc}{\contentsline {paragraph}{Radial profiles.}{22}{section*.24}\protected@file@percent }
+\newlabel{eq:ns-pp-eps-integrands}{{145}{22}{Radial profiles}{equation.145}{}}
+\@writefile{toc}{\contentsline {paragraph}{The stationary budget.}{22}{section*.25}\protected@file@percent }
+\newlabel{eq:ns-pp-eps-radial}{{146}{22}{The stationary budget}{equation.146}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}Constraint functionals}{22}{subsection.5.8}\protected@file@percent }
+\newlabel{ssec:ns-constraints}{{5.8}{22}{Constraint functionals}{subsection.5.8}{}}
+\newlabel{eq:ns-functionals}{{147}{22}{Constraint functionals}{equation.147}{}}
+\newlabel{eq:ns-e0-homogeneity}{{148}{23}{Constraint functionals}{equation.148}{}}
+\newlabel{eq:ns-e2-homogeneity}{{149}{23}{Constraint functionals}{equation.149}{}}
+\newlabel{eq:ns-exponents}{{150}{23}{Constraint functionals}{equation.150}{}}
+\newlabel{eq:ns-length-ratio}{{151}{23}{Constraint functionals}{equation.151}{}}
+\newlabel{eq:ns-velocity-ratio}{{152}{23}{Constraint functionals}{equation.152}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.9}Initial condition}{23}{subsection.5.9}\protected@file@percent }
+\newlabel{ssec:ns-ic}{{5.9}{23}{Initial condition}{subsection.5.9}{}}
+\newlabel{eq:ns-ic-curl}{{153}{23}{Initial condition}{equation.153}{}}
+\newlabel{eq:ns-ic-filter}{{154}{23}{Initial condition}{equation.154}{}}
+\newlabel{eq:ns-ic-window}{{155}{23}{Initial condition}{equation.155}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.10}Spectral interpolation in three dimensions}{24}{subsection.5.10}\protected@file@percent }
+\newlabel{ssec:ns-interpolation}{{5.10}{24}{Spectral interpolation in three dimensions}{subsection.5.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{The sum on the real transform.}{24}{section*.26}\protected@file@percent }
+\newlabel{eq:ns-interp-multiplicity}{{156}{24}{The sum on the real transform}{equation.156}{}}
+\newlabel{eq:ns-interp}{{157}{24}{The sum on the real transform}{equation.157}{}}
+\@writefile{toc}{\contentsline {paragraph}{Separable evaluation.}{24}{section*.27}\protected@file@percent }
+\newlabel{eq:ns-interp-matrices}{{158}{24}{Separable evaluation}{equation.158}{}}
+\newlabel{eq:ns-interp-contractions}{{159}{24}{Separable evaluation}{equation.159}{}}
+\@writefile{toc}{\contentsline {paragraph}{The Nyquist bin.}{24}{section*.28}\protected@file@percent }
+\newlabel{eq:ns-interp-nyquist}{{160}{24}{The Nyquist bin}{equation.160}{}}
+\citation{pope2000turbulent}
+\@writefile{toc}{\contentsline {paragraph}{The out-of-box cutoff.}{25}{section*.29}\protected@file@percent }
+\newlabel{eq:ns-interp-cutoff}{{161}{25}{The out-of-box cutoff}{equation.161}{}}
+\@writefile{toc}{\contentsline {paragraph}{Loss of solenoidality and the Leray projection.}{25}{section*.30}\protected@file@percent }
+\newlabel{eq:ns-leray-scale}{{162}{25}{Loss of solenoidality and the Leray projection}{equation.162}{}}
+\@writefile{toc}{\contentsline {paragraph}{Interaction with dealiasing.}{25}{section*.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.11}Boundary treatment}{25}{subsection.5.11}\protected@file@percent }
+\newlabel{ssec:ns-boundary}{{5.11}{25}{Boundary treatment}{subsection.5.11}{}}
+\@writefile{toc}{\contentsline {paragraph}{The clamp.}{25}{section*.32}\protected@file@percent }
+\newlabel{eq:ns-clamp}{{163}{25}{The clamp}{equation.163}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Navier--Stokes results}{26}{section.6}\protected@file@percent }
+\newlabel{sec:ns-results}{{6}{26}{Navier--Stokes results}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Kinetic energy budget in the self-similar frame}{26}{subsection.6.1}\protected@file@percent }
+\newlabel{ssec:res-k-budget}{{6.1}{26}{Kinetic energy budget in the self-similar frame}{subsection.6.1}{}}
+\newlabel{eq:res-k-dim}{{164}{26}{Kinetic energy budget in the self-similar frame}{equation.164}{}}
+\newlabel{eq:res-k-scales}{{165}{26}{Kinetic energy budget in the self-similar frame}{equation.165}{}}
+\newlabel{eq:res-transport-nondim}{{166}{26}{Kinetic energy budget in the self-similar frame}{equation.166}{}}
+\newlabel{eq:res-k-lhs}{{167}{26}{Kinetic energy budget in the self-similar frame}{equation.167}{}}
+\newlabel{eq:res-k-nondim}{{168}{26}{Kinetic energy budget in the self-similar frame}{equation.168}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.1.1}Stationary budget}{26}{subsubsection.6.1.1}\protected@file@percent }
+\newlabel{ssec:res-stationary}{{6.1.1}{26}{Stationary budget}{subsubsection.6.1.1}{}}
+\newlabel{eq:res-k-stationary}{{169}{26}{Stationary budget}{equation.169}{}}
+\newlabel{eq:res-clock-const}{{170}{26}{Stationary budget}{equation.170}{}}
+\newlabel{eq:res-scaling-terms}{{171}{26}{Stationary budget}{equation.171}{}}
+\newlabel{eq:res-rates-const}{{172}{26}{Stationary budget}{equation.172}{}}
 \citation{mansour1987reynolds}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Dissipation budget}{25}{subsection.6.2}\protected@file@percent }
-\newlabel{ssec:res-eps-budget}{{6.2}{25}{Dissipation budget}{subsection.6.2}{}}
-\newlabel{eq:res-eps-def}{{168}{25}{Dissipation budget}{equation.168}{}}
-\newlabel{eq:res-eps-rate}{{169}{25}{Dissipation budget}{equation.169}{}}
-\newlabel{eq:res-eps-terms}{{170}{25}{Dissipation budget}{equation.170}{}}
-\newlabel{eq:res-eps-terms-diff}{{171}{25}{Dissipation budget}{equation.171}{}}
+\newlabel{eq:res-k-stationary-const}{{173}{27}{Stationary budget}{equation.173}{}}
+\newlabel{eq:res-origin-rate}{{174}{27}{Stationary budget}{equation.174}{}}
+\newlabel{eq:res-k-origin}{{175}{27}{Stationary budget}{equation.175}{}}
+\newlabel{eq:res-k-ode}{{176}{27}{Stationary budget}{equation.176}{}}
+\newlabel{eq:res-k-ode-integrating}{{177}{27}{Stationary budget}{equation.177}{}}
+\newlabel{eq:res-k-solution}{{178}{27}{Stationary budget}{equation.178}{}}
+\newlabel{eq:res-k-solution-dim}{{179}{27}{Stationary budget}{equation.179}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Dissipation budget}{27}{subsection.6.2}\protected@file@percent }
+\newlabel{ssec:res-eps-budget}{{6.2}{27}{Dissipation budget}{subsection.6.2}{}}
+\newlabel{eq:res-eps-nut-rate}{{180}{27}{Dissipation budget}{equation.180}{}}
+\newlabel{eq:res-eps-rate-compact}{{181}{27}{Dissipation budget}{equation.181}{}}
 \citation{mansour1987reynolds}
-\newlabel{eq:res-eps-nut}{{172}{26}{Dissipation budget}{equation.172}{}}
-\newlabel{eq:res-eps-nut-rate}{{173}{26}{Dissipation budget}{equation.173}{}}
-\newlabel{eq:res-eps-rate-compact}{{174}{26}{Dissipation budget}{equation.174}{}}
-\newlabel{eq:res-eps-rate-nondim}{{175}{26}{Dissipation budget}{equation.175}{}}
-\newlabel{eq:res-eps-scales}{{176}{26}{Dissipation budget}{equation.176}{}}
-\newlabel{eq:res-eps-terms-nondim}{{177}{26}{Dissipation budget}{equation.177}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Residuals with respect to DNS}{26}{subsubsection.6.2.1}\protected@file@percent }
-\newlabel{sssec:res-eps-residuals}{{6.2.1}{26}{Residuals with respect to DNS}{subsubsection.6.2.1}{}}
-\newlabel{eq:res-eps-rate-dns}{{178}{26}{Residuals with respect to DNS}{equation.178}{}}
-\newlabel{eq:res-eps-rate-les-dns}{{179}{26}{Residuals with respect to DNS}{equation.179}{}}
-\newlabel{eq:res-eps-residual-balance}{{180}{27}{Residuals with respect to DNS}{equation.180}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {A}The RK4 physics step}{27}{appendix.A}\protected@file@percent }
-\newlabel{app:rk4}{{A}{27}{The RK4 physics step}{appendix.A}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}The scheme}{27}{subsection.A.1}\protected@file@percent }
-\newlabel{ssec:rk4-scheme}{{A.1}{27}{The scheme}{subsection.A.1}{}}
-\newlabel{eq:rk4-rhs}{{181}{27}{The scheme}{equation.181}{}}
-\newlabel{eq:rk4-stages}{{182}{27}{The scheme}{equation.182}{}}
-\newlabel{eq:rk4-update}{{183}{27}{The scheme}{equation.183}{}}
-\@writefile{toc}{\contentsline {paragraph}{Order.}{27}{section*.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Stability}{27}{subsection.A.2}\protected@file@percent }
-\newlabel{ssec:rk4-stability}{{A.2}{27}{Stability}{subsection.A.2}{}}
-\newlabel{eq:rk4-polynomial}{{184}{27}{Stability}{equation.184}{}}
-\@writefile{toc}{\contentsline {paragraph}{The advective limit.}{28}{section*.28}\protected@file@percent }
-\newlabel{eq:rk4-advective-limit}{{185}{28}{The advective limit}{equation.185}{}}
-\@writefile{toc}{\contentsline {paragraph}{The sponge limit.}{28}{section*.29}\protected@file@percent }
-\newlabel{eq:rk4-sponge-limit}{{186}{28}{The sponge limit}{equation.186}{}}
-\@writefile{toc}{\contentsline {paragraph}{The diffusive limit.}{28}{section*.30}\protected@file@percent }
-\newlabel{eq:rk4-diffusive-limit}{{187}{28}{The diffusive limit}{equation.187}{}}
-\newlabel{eq:rk4-diffusive-limit-cnu}{{188}{28}{The diffusive limit}{equation.188}{}}
-\@writefile{toc}{\contentsline {paragraph}{The CFL time step.}{28}{section*.31}\protected@file@percent }
-\newlabel{eq:rk4-cfl-dt}{{189}{28}{The CFL time step}{equation.189}{}}
-\@writefile{toc}{\contentsline {paragraph}{A resolution margin.}{28}{section*.32}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Solenoidality}{28}{subsection.A.3}\protected@file@percent }
-\newlabel{ssec:rk4-divergence}{{A.3}{28}{Solenoidality}{subsection.A.3}{}}
+\newlabel{eq:res-eps-terms-diff}{{182}{28}{Dissipation budget}{equation.182}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.2.1}Residuals with respect to DNS}{28}{subsubsection.6.2.1}\protected@file@percent }
+\newlabel{sssec:res-eps-residuals}{{6.2.1}{28}{Residuals with respect to DNS}{subsubsection.6.2.1}{}}
+\newlabel{eq:res-eps-rate-dns}{{183}{28}{Residuals with respect to DNS}{equation.183}{}}
+\newlabel{eq:res-eps-rate-les-dns}{{184}{28}{Residuals with respect to DNS}{equation.184}{}}
+\newlabel{eq:res-eps-residual-balance}{{185}{28}{Residuals with respect to DNS}{equation.185}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}The RK4 physics step}{28}{appendix.A}\protected@file@percent }
+\newlabel{app:rk4}{{A}{28}{The RK4 physics step}{appendix.A}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}The scheme}{28}{subsection.A.1}\protected@file@percent }
+\newlabel{ssec:rk4-scheme}{{A.1}{28}{The scheme}{subsection.A.1}{}}
+\newlabel{eq:rk4-rhs}{{186}{28}{The scheme}{equation.186}{}}
+\newlabel{eq:rk4-stages}{{187}{29}{The scheme}{equation.187}{}}
+\newlabel{eq:rk4-update}{{188}{29}{The scheme}{equation.188}{}}
+\@writefile{toc}{\contentsline {paragraph}{Order.}{29}{section*.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Stability}{29}{subsection.A.2}\protected@file@percent }
+\newlabel{ssec:rk4-stability}{{A.2}{29}{Stability}{subsection.A.2}{}}
+\newlabel{eq:rk4-polynomial}{{189}{29}{Stability}{equation.189}{}}
+\@writefile{toc}{\contentsline {paragraph}{The advective limit.}{29}{section*.34}\protected@file@percent }
+\newlabel{eq:rk4-advective-limit}{{190}{29}{The advective limit}{equation.190}{}}
+\@writefile{toc}{\contentsline {paragraph}{The sponge limit.}{29}{section*.35}\protected@file@percent }
+\newlabel{eq:rk4-sponge-limit}{{191}{29}{The sponge limit}{equation.191}{}}
+\@writefile{toc}{\contentsline {paragraph}{The diffusive limit.}{30}{section*.36}\protected@file@percent }
+\newlabel{eq:rk4-diffusive-limit}{{192}{30}{The diffusive limit}{equation.192}{}}
+\newlabel{eq:rk4-diffusive-limit-cnu}{{193}{30}{The diffusive limit}{equation.193}{}}
+\@writefile{toc}{\contentsline {paragraph}{The CFL number.}{30}{section*.37}\protected@file@percent }
+\newlabel{eq:rk4-cfl-dt}{{194}{30}{The CFL number}{equation.194}{}}
+\@writefile{toc}{\contentsline {paragraph}{A resolution margin.}{30}{section*.38}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Solenoidality}{30}{subsection.A.3}\protected@file@percent }
+\newlabel{ssec:rk4-divergence}{{A.3}{30}{Solenoidality}{subsection.A.3}{}}
+\newlabel{eq:rk4-divergence}{{195}{30}{Solenoidality}{equation.195}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Dealiasing}{30}{subsection.A.4}\protected@file@percent }
+\newlabel{ssec:rk4-dealiasing}{{A.4}{30}{Dealiasing}{subsection.A.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Radial profiles from the spectral fields}{30}{appendix.B}\protected@file@percent }
+\newlabel{app:radial}{{B}{30}{Radial profiles from the spectral fields}{appendix.B}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}The spherical mean of a band-limited field}{31}{subsection.B.1}\protected@file@percent }
+\newlabel{ssec:radial-mean}{{B.1}{31}{The spherical mean of a band-limited field}{subsection.B.1}{}}
+\newlabel{eq:radial-dft}{{196}{31}{The spherical mean of a band-limited field}{equation.196}{}}
+\newlabel{eq:radial-interpolant}{{197}{31}{The spherical mean of a band-limited field}{equation.197}{}}
+\newlabel{eq:radial-mode-mean}{{198}{31}{The spherical mean of a band-limited field}{equation.198}{}}
+\newlabel{eq:radial-mean-modes}{{199}{31}{The spherical mean of a band-limited field}{equation.199}{}}
+\newlabel{eq:radial-group}{{200}{31}{The spherical mean of a band-limited field}{equation.200}{}}
+\newlabel{eq:radial-derivative}{{201}{31}{The spherical mean of a band-limited field}{equation.201}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}The radii}{31}{subsection.B.2}\protected@file@percent }
+\newlabel{ssec:radial-radii}{{B.2}{31}{The radii}{subsection.B.2}{}}
+\newlabel{eq:radial-radii}{{202}{31}{The radii}{equation.202}{}}
 \citation{shirian2023convergence}
-\newlabel{eq:rk4-divergence}{{190}{29}{Solenoidality}{equation.190}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Dealiasing}{29}{subsection.A.4}\protected@file@percent }
-\newlabel{ssec:rk4-dealiasing}{{A.4}{29}{Dealiasing}{subsection.A.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {B}Statistical error of time averages}{29}{appendix.B}\protected@file@percent }
-\newlabel{app:stat-error}{{B}{29}{Statistical error of time averages}{appendix.B}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Batch means}{29}{subsection.B.1}\protected@file@percent }
-\newlabel{ssec:stat-batch-means}{{B.1}{29}{Batch means}{subsection.B.1}{}}
-\newlabel{eq:stat-window-mean}{{191}{29}{Batch means}{equation.191}{}}
-\newlabel{eq:stat-sem}{{192}{29}{Batch means}{equation.192}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.3}The pressure}{32}{subsection.B.3}\protected@file@percent }
+\newlabel{ssec:radial-pressure}{{B.3}{32}{The pressure}{subsection.B.3}{}}
+\newlabel{eq:radial-pressure}{{203}{32}{The pressure}{equation.203}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.4}The integrands}{32}{subsection.B.4}\protected@file@percent }
+\newlabel{ssec:radial-integrands}{{B.4}{32}{The integrands}{subsection.B.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.5}Sampling in time}{32}{subsection.B.5}\protected@file@percent }
+\newlabel{ssec:radial-sampling}{{B.5}{32}{Sampling in time}{subsection.B.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Statistical error of time averages}{32}{appendix.C}\protected@file@percent }
+\newlabel{app:stat-error}{{C}{32}{Statistical error of time averages}{appendix.C}{}}
 \citation{shirian2023convergence}
 \bibstyle{osajnl2}
 \bibdata{references}
 \bibcite{nordstrom1999fringe}{1}
 \bibcite{pope2000turbulent}{2}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.1}Batch means}{33}{subsection.C.1}\protected@file@percent }
+\newlabel{ssec:stat-batch-means}{{C.1}{33}{Batch means}{subsection.C.1}{}}
+\newlabel{eq:stat-window-mean}{{204}{33}{Batch means}{equation.204}{}}
+\newlabel{eq:stat-sem}{{205}{33}{Batch means}{equation.205}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.2}Choosing the window length}{33}{subsection.C.2}\protected@file@percent }
+\newlabel{ssec:stat-window}{{C.2}{33}{Choosing the window length}{subsection.C.2}{}}
+\newlabel{eq:stat-tau-corr}{{206}{33}{Choosing the window length}{equation.206}{}}
 \bibcite{mansour1987reynolds}{3}
 \bibcite{shirian2023convergence}{4}
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Choosing the window length}{30}{subsection.B.2}\protected@file@percent }
-\newlabel{ssec:stat-window}{{B.2}{30}{Choosing the window length}{subsection.B.2}{}}
-\newlabel{eq:stat-tau-corr}{{193}{30}{Choosing the window length}{equation.193}{}}
-\gdef \@abspage@last{30}
+\gdef \@abspage@last{34}
