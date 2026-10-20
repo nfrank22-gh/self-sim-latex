@@ -2706,6 +2706,75 @@ $Re_\tau = 180$. A dissipation-type quantity, being a second-order statistic of
 the velocity gradients, has $\tau_{\mathrm{corr}}$ of roughly five eddy
 turnover times in homogeneous isotropic turbulence.
 
+\subsection{Pooling an ensemble of runs}\label{ssec:stat-ensemble}
+
+A record long enough for a clear plateau can exceed the wall-clock limit of a
+single computing job. The record is then gathered as an ensemble of $n$
+independent runs instead: identical in every parameter except the seed of the
+random phases of the initial condition (\S\ref{ssec:ns-ic}), and in their
+length $T_{\mathrm{end},j}$. Each run is a draw from the same self-similar
+state, and after its own transient is discarded, run $j$ contributes a record
+of length $T_j = T_{\mathrm{end},j} - t_{\mathrm{discard}}$.
+
+The batch means of \S\ref{ssec:stat-batch-means} extend to the ensemble
+without change. Every record is cut into windows of the common length $T_w$,
+starting at $t_{\mathrm{discard}}$, giving $M_j = \lfloor T_j / T_w \rfloor$
+window means $\langle q \rangle_{j,i}$ by \eqref{eq:stat-window-mean}, and the
+estimate \eqref{eq:stat-sem} is formed over the union of all
+$M = \sum_j M_j$ windows,
+\begin{equation}\label{eq:stat-ensemble-mean}
+  q_{\mathrm{est}} = \frac{1}{M} \sum_{j=1}^{n} \sum_{i=1}^{M_j}
+  \langle q \rangle_{j,i} = \sum_{j=1}^{n} \frac{M_j}{M}\, \bar q_j ,
+  \qquad
+  \bar q_j = \frac{1}{M_j} \sum_{i=1}^{M_j} \langle q \rangle_{j,i} ,
+\end{equation}
+with $\mathrm{SEM} \simeq \mathrm{STD}(\langle q \rangle_{j,i}) / \sqrt{M}$
+over the same union. Each run is therefore weighted by its length. When every
+window has the same variance, which holds for $T_w$ on the plateau and runs
+sampling a single stationary state, this is the minimum-variance weighting of
+the run means $\bar q_j$, whose variances are inversely proportional to $M_j$.
+The two conditions of \S\ref{ssec:stat-batch-means} are, if anything, better
+met than within a single run: windows of different runs are uncorrelated
+exactly, so only the windows adjacent within each run need $T_w \gg
+\tau_{\mathrm{corr}}$, and $M$ grows with every run added. The window length
+is chosen as in \S\ref{ssec:stat-window}, from the curve of
+$\mathrm{SEM}\sqrt{T}$ against $T_w$ for the pooled windows, with
+$T = \sum_j T_j$; the longest window scanned is the shortest $T_j$, so that
+every run still contributes. The cost of pooling is one transient
+$t_{\mathrm{discard}}$ discarded per run, rather than one in all.
+
+Two runs that differ only in $T_{\mathrm{end}}$ follow the same trajectory,
+up to the roundoff that eventually separates them, and would be counted twice.
+For each seed, only the longest completed run is therefore used.
+
+Pooling assumes that the runs sample the same state, and the ensemble can test
+it. Within run $j$ the window means scatter about $\bar q_j$ with the
+within-run variance
+\begin{equation}\label{eq:stat-ensemble-within}
+  s_w^2 = \frac{1}{M - n} \sum_{j=1}^{n} \sum_{i=1}^{M_j}
+  \left( \langle q \rangle_{j,i} - \bar q_j \right)^2 ,
+\end{equation}
+and if the run means differ only by that scatter, the ratio of the
+between-run to the within-run variance,
+\begin{equation}\label{eq:stat-ensemble-F}
+  F = \frac{1}{(n - 1)\, s_w^2} \sum_{j=1}^{n} M_j \left( \bar q_j - q_{\mathrm{est}} \right)^2 ,
+\end{equation}
+follows the $F$ distribution with $(n - 1, M - n)$ degrees of freedom: close
+to one, with standard deviation $\approx \sqrt{2/(n - 1)}$ for $M \gg n$
+(the one-way analysis of variance). A value well above one means the runs
+disagree by more than their own fluctuations allow: the transient is not over
+by $t_{\mathrm{discard}}$, the initial condition leaves a lasting imprint, or
+$T_w$ is short of the plateau, which shrinks $s_w$. The unweighted mean of the
+$\bar q_j$, with its standard error $\mathrm{STD}(\bar q_j)/\sqrt{n}$ from
+the spread of the runs alone, is reported alongside \eqref{eq:stat-ensemble-mean}
+as a second check that does not rely on the windows being uncorrelated.
+
+The same pooling applies radius by radius to the spherical means of
+Appendix~\ref{app:radial}, whose radii are shared by every run, and to the
+coefficients of the modeled $\epsilon$ budget (\S\ref{sssec:ns-pp-eps-model}),
+which are fitted to the pooled time averages and, for their confidence
+intervals, to the pooled windows.
+
 \bibliographystyle{osajnl2}
 \bibliography{references}
 \end{document}
