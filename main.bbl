@@ -15,6 +15,10 @@ N.~N. Mansour, J.~Kim, and P.~Moin, \enquote{Reynolds-stress and dissipation
   rate budgets in a turbulent channel flow,} NASA Technical Memorandum 89451,
   NASA Ames Research Center, Moffett Field, CA (1987).
 
+\bibitem{tennekes1972first}
+H.~Tennekes and J.~L. Lumley, \emph{A First Course in Turbulence} (MIT Press,
+  Cambridge, MA, 1972).
+
 \bibitem{shirian2023convergence}
 Y.~Shirian, J.~A.~K. Horwitz, and A.~Mani, \enquote{On the convergence of
   statistics in simulations of stationary incompressible turbulent flows,}
