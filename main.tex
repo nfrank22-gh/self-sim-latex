@@ -419,7 +419,9 @@ splitting scheme
 $\mathit{scheme} \in \{\textsc{LieTrotter}, \textsc{Strang}\}$
 (\S\ref{ssec:alg-lie-trotter}, \S\ref{ssec:alg-strang}), for equations that
 define one, the switch $\mathit{project}$ of the optional projection inside
-\textsc{Scale} (\S\ref{ssec:alg-substeps}), and initial guesses
+\textsc{Scale} (\S\ref{ssec:alg-substeps}), optionally the gain $\gamma > 0$
+and initial clock rate $c_\tau^{(0)}$ of the clock control
+(\S\ref{ssec:alg-clock}; $\gamma = \varnothing$ for none), and initial guesses
 $\beta_U^{(0)}, \beta_L^{(0)}$, which only seed the bracket of the first
 root-find for $\beta_U, \beta_L$ (\S\ref{ssec:alg-beta-estimation}). From these:
 \begin{itemize}
@@ -434,6 +436,9 @@ root-find for $\beta_U, \beta_L$ (\S\ref{ssec:alg-beta-estimation}). From these:
   \item The flag $\beta_{\mathrm{ok}}$, which records whether the current
   $\beta_U, \beta_L$ are usable by \textsc{Strang}, starts as
   $\beta_{\mathrm{ok}} = \text{false}$.
+  \item Under clock control the clock rate starts at $c_{\tau,0} = c_\tau^{(0)}$,
+  and the miss \eqref{eq:alg-clock-m} of $u_0$ is $m_0 = 0$ by
+  \eqref{eq:alg-targets}.
 \end{itemize}
 
 \subsection{Time step}\label{ssec:alg-timestep}
@@ -471,17 +476,23 @@ reaching each time, never by shortening a step.
 \begin{algorithm}[H]
 \caption{Top-level integrator}
 \begin{algorithmic}[1]
-\Require $u_0$, $H$, $N$, $\Delta t$, $T_{\mathrm{end}}$, $\mathit{scheme}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
+\Require $u_0$, $H$, $N$, $\Delta t$, $T_{\mathrm{end}}$, $\mathit{scheme}$, $\gamma$, $c_\tau^{(0)}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
 \State $t_0 \gets 0$, $k \gets 0$
 \State $\ln U_0 \gets 0$, $\ln L_0 \gets 0$
 \State Compute constraint targets $F_1, F_2$ from $u_0$ via \eqref{eq:alg-targets}
 \State $\beta_U \gets \beta_U^{(0)}$, $\beta_L \gets \beta_L^{(0)}$, $\beta_{\mathrm{ok}} \gets \text{false}$
-\State Store $(u_0, \ln U_0, \ln L_0, \ln \tau_0, \beta_U, \beta_L, \beta_{\mathrm{ok}})$
+\State $c_{\tau,0} \gets c_\tau^{(0)}$, $m_0 \gets 0$ \Comment{under clock control, \S\ref{ssec:alg-clock}}
+\State Store $(u_0, \ln U_0, \ln L_0, \ln \tau_0, \beta_U, \beta_L, \beta_{\mathrm{ok}}, m_0)$
 \While{$t_k < T_{\mathrm{end}}$}
-  \If{$\mathit{scheme} = \textsc{Strang}$ \textbf{and} $\beta_{\mathrm{ok}}$}
-    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{Strang}{u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-strang}}
+  \If{$\gamma \neq \varnothing$}
+    \State $C \gets (\gamma, c_{\tau,k}, m_k, \Delta t, 0)$ \Comment{\S\ref{ssec:alg-clock}}
   \Else
-    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}) \gets \Call{LieTrotter}{u_k, \ln U_k, \ln L_k, \Delta t}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+    \State $C \gets \varnothing$
+  \EndIf
+  \If{$\mathit{scheme} = \textsc{Strang}$ \textbf{and} $\beta_{\mathrm{ok}}$}
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, c_{\tau,k+1}) \gets \Call{Strang}{u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L, C}$ \Comment{\S\ref{ssec:alg-strang}}
+  \Else
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, c_{\tau,k+1}) \gets \Call{LieTrotter}{u_k, \ln U_k, \ln L_k, \Delta t, C}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
   \EndIf
   \State $u_{k+1} \gets \Call{ApplyBC}{u_{k+1}}$ \Comment{equation-specific, \S\ref{ssec:alg-substeps}}
   \State $\ln \tau_{k+1} \gets \ln \tau(\ln U_{k+1}, \ln L_{k+1})$ \Comment{\eqref{eq:1d-ln-clock}, \eqref{eq:ns-ln-clock}}
@@ -489,7 +500,8 @@ reaching each time, never by shortening a step.
   \If{$k+1 \geq 3$}
     \State $(\beta_U, \beta_L, \beta_{\mathrm{ok}}) \gets \Call{EstimateBeta}{\ln U_{k:k+1}, \ln L_{k:k+1}, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-beta-estimation}}
   \EndIf
-  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \ln \tau_{k+1}, t_{k+1}, \mathrm{CFL}_k, \beta_U, \beta_L, \beta_{\mathrm{ok}})$ \Comment{\eqref{eq:alg-realized-cfl}}
+  \State $m_{k+1} \gets m[u_{k+1}]$ \Comment{\eqref{eq:alg-clock-m}}
+  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \ln \tau_{k+1}, t_{k+1}, \mathrm{CFL}_k, \beta_U, \beta_L, \beta_{\mathrm{ok}}, c_{\tau,k+1}, m_{k+1})$ \Comment{\eqref{eq:alg-realized-cfl}}
   \State $k \gets k + 1$
 \EndWhile
 \end{algorithmic}
@@ -504,6 +516,8 @@ also the case for every step that follows a failed $\beta$ update
 (\S\ref{ssec:alg-beta-estimation}), until a later update succeeds. The $\beta$
 update itself runs regardless of $\mathit{scheme}$; under
 $\mathit{scheme} = \textsc{LieTrotter}$ the estimates are diagnostic only.
+Clock control needs no $\beta$ and so acts from the first step $k = 0$.
+Without it ($C = \varnothing$) the returned $c_{\tau,k+1}$ is unused.
 
 \subsection{Substeps}\label{ssec:alg-substeps}
 Both splitting schemes are assembled from the substeps below. None of them
@@ -546,9 +560,10 @@ projection removes. The miss does not accumulate: the next
 \textsc{ConstrainedScale} measures the functionals of the projected field
 afresh and absorbs it into the next ratios.
 
-\paragraph{\textsc{ConstrainedScale}$(u, \ln U, \ln L)$.}
+\paragraph{\textsc{ConstrainedScale}$(u, \ln U, \ln L, C)$.}
 Rescales $u$ so that the result carries the fixed targets $F_1, F_2$ of
-\eqref{eq:alg-targets}, and advances the log-scale state accordingly:
+\eqref{eq:alg-targets} --- under clock control, $F_1$ and the prescribed clock
+increment instead --- and advances the log-scale state accordingly:
 \begin{enumerate}
   \item \textbf{Functionals of the input,}
   $F_m^{\mathrm{in}} = F_m[u]$, evaluated on the grid via
@@ -556,14 +571,21 @@ Rescales $u$ so that the result carries the fixed targets $F_1, F_2$ of
   \item \textbf{Ratios} $\ln \lambda_U, \ln \lambda_L$ from the linear system
   \eqref{eq:fw-constraint-system}, in closed form. This works on the scalars
   $F_m^{\mathrm{in}}$ alone and does not touch the field.
+  \item \textbf{Clock.} If a clock state $C = (\gamma, c_{\tau,k}, m_k, \Delta t, \delta_k)$
+  is given, advance the clock rate to $c_{\tau,k+1}$ by
+  \eqref{eq:alg-clock-update} and replace the ratios by the solution of
+  \eqref{eq:alg-clock-system} (\S\ref{ssec:alg-clock}); with
+  $C = \varnothing$ they are kept.
   \item \textbf{Rescale,} $u' = \textsc{Scale}(u, \ln \lambda_U, \ln \lambda_L)$.
   \item \textbf{Return} $u'$ together with the advanced state
-  $\ln U + \ln \lambda_U$, $\ln L + \ln \lambda_L$.
+  $\ln U + \ln \lambda_U$, $\ln L + \ln \lambda_L$, and $c_{\tau,k+1}$.
 \end{enumerate}
-No time increment enters \textsc{ConstrainedScale}: the ratios are fixed by the
-functionals of the field it is given, not by the elapsed time. The same substep
-therefore serves as the full scaling step of Lie--Trotter and as the closing
-scaling half step of Strang.
+Without clock control no time increment enters \textsc{ConstrainedScale}: the
+ratios are fixed by the functionals of the field it is given, not by the
+elapsed time. The same substep therefore serves as the full scaling step of
+Lie--Trotter and as the closing scaling half step of Strang; under clock
+control the two differ only in the part $\delta_k$ of the step's clock
+increment already applied.
 
 \paragraph{\textsc{PredictScale}$(i, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L)$.}
 Predicts the ratios over the fraction $i$ of step $k$ from the power-law form
@@ -587,7 +609,8 @@ sponge forcing of \S\ref{ssec:ns-sponge}, which acts inside \textsc{Evolve}.
 \subsection{\textsc{LieTrotter}: Lie--Trotter splitting}\label{ssec:alg-lie-trotter}
 A Lie--Trotter step composes a full physics step with a full scaling step,
 $u_{k+1} = \Phi_{\Delta t_k}^{(\mathrm{S})}\bigl(\Phi_{\Delta t_k}^{(\mathrm{P})}(u_k)\bigr)$,
-with the scaling ratios fixed by the constraints. It uses no estimate of
+with the scaling ratios fixed by the constraints, or under clock control
+by $F_1$ and the clock (\S\ref{ssec:alg-clock}). It uses no estimate of
 $\beta_U, \beta_L$, so it is valid from the first step. It is written for a
 general input state $(u, \ln U, \ln L)$ and step $\Delta t_k$ rather than only a stored state
 $(u_k, \ln U_k, \ln L_k)$, so that \textsc{Strang} can call it on a
@@ -595,9 +618,9 @@ half-stepped state.
 \begin{algorithm}[H]
 \caption{Lie--Trotter step}
 \begin{algorithmic}[1]
-\Function{LieTrotter}{$u, \ln U, \ln L, \Delta t_k$}
+\Function{LieTrotter}{$u, \ln U, \ln L, \Delta t_k, C$}
   \State $u^{(\mathrm{P})} \gets \Call{Evolve}{u, \Delta t_k}$ \Comment{\S\ref{ssec:alg-substeps}}
-  \State \Return $\Call{ConstrainedScale}{u^{(\mathrm{P})}, \ln U, \ln L}$ \Comment{\S\ref{ssec:alg-substeps}}
+  \State \Return $\Call{ConstrainedScale}{u^{(\mathrm{P})}, \ln U, \ln L, C}$ \Comment{\S\ref{ssec:alg-substeps}}
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
@@ -615,11 +638,14 @@ followed by a scaling step whose ratios come from the constraints --- so
 \begin{algorithm}[H]
 \caption{Strang step}
 \begin{algorithmic}[1]
-\Function{Strang}{$u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L$}
+\Function{Strang}{$u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L, C$}
   \State $\bigl(\ln (U_{k+1/2}/U_k),\, \ln (L_{k+1/2}/L_k)\bigr) \gets \Call{PredictScale}{\tfrac12, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L}$ \Comment{\eqref{eq:alg-strang-predict}}
   \State $u_{k+1/2} \gets \Call{Scale}{u_k, \ln (U_{k+1/2}/U_k), \ln (L_{k+1/2}/L_k)}$
   \State $\ln U_{k+1/2} \gets \ln U_k + \ln (U_{k+1/2}/U_k)$;\ \ $\ln L_{k+1/2} \gets \ln L_k + \ln (L_{k+1/2}/L_k)$
-  \State \Return $\Call{LieTrotter}{u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2}, \Delta t_k}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+  \If{$C \neq \varnothing$}
+    \State $\delta_k \gets \ln \tau(\ln U_{k+1/2}, \ln L_{k+1/2}) - \ln \tau_k$; set the last entry of $C$ to $\delta_k$ \Comment{\S\ref{ssec:alg-clock}}
+  \EndIf
+  \State \Return $\Call{LieTrotter}{u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2}, \Delta t_k, C}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
@@ -633,12 +659,125 @@ step takes its ratios from the current power-law estimates, via
 The call to \textsc{LieTrotter} then advances $u_{k+1/2}$ over the full
 $\Delta t_k$, and its \textsc{ConstrainedScale} substep --- the second scaling
 half step --- sets $U_{k+1}/U_{k+1/2}$ and $L_{k+1}/L_{k+1/2}$ so that
-$u_{k+1}$ satisfies the constraints. The half-step state
+$u_{k+1}$ satisfies the constraints. Under clock control the predicted half
+step is unchanged and the clock constrains the \emph{full} step: the closing
+half step advances $\ln \tau$ by $c_{\tau,k+1} \Delta t$ less the increment
+$\delta_k$ the predicted half step already applied (\S\ref{ssec:alg-clock}).
+The half-step state
 $(u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2})$ is internal to the step and is not
 stored. The top-level loop calls \textsc{Strang} only when
 $\beta_{\mathrm{ok}}$ is true (\S\ref{ssec:alg-top-level}), which guarantees
 that $\beta_U, \beta_L$ were fitted to the stored history at the end of the
 previous step and that $\ln \tau_{k-2}$ exists.
+
+\subsection{Clock control of the scaling step}\label{ssec:alg-clock}
+The constrained ratios of \textsc{ConstrainedScale} fix $F_1, F_2$ exactly at
+every step, and so pass every fluctuation of the functionals of the evolved
+field into $\ln \lambda_U, \ln \lambda_L$, and through them into the rates
+$\sigma_X$. In particular the clock advances at the rate
+\begin{equation}\label{eq:alg-clock-rate}
+  c_{\tau,k+1} = \frac{\ln \tau_{k+1} - \ln \tau_k}{\Delta t},
+\end{equation}
+which for Navier--Stokes is $\sigma_L - \sigma_U$ by \eqref{eq:ns-ln-clock},
+and on the power law the constant $c_\tau$ of \eqref{eq:ns-pp-rates-clock}.
+Clock control makes this rate a slowly varying state of the integrator,
+and lets the second constraint absorb the difference.
+
+\paragraph{The clock and the miss.}
+For both equations the clock is linear in the log-scales,
+$\ln \tau = a_U \ln U + a_L \ln L + \mathrm{const}$, with $(a_U, a_L) = (0, 2)$
+by \eqref{eq:1d-ln-clock} and $(-1, 1)$ by \eqref{eq:ns-ln-clock}, so ratios
+$\lambda_U, \lambda_L$ advance it by $a_U \ln \lambda_U + a_L \ln \lambda_L$.
+For a field $u$, let $\ln \lambda_X^{\mathrm{c}}[u]$ solve
+\eqref{eq:fw-constraint-system} with $F_m^{\mathrm{in}} = F_m[u]$. The
+\emph{miss}
+\begin{equation}\label{eq:alg-clock-m}
+  m[u] = a_U \ln \lambda_U^{\mathrm{c}}[u] + a_L \ln \lambda_L^{\mathrm{c}}[u]
+\end{equation}
+is the amount by which $\ln \tau$ would have to advance to put $u$ back on the
+targets with no physics in between. It vanishes on a field that meets the
+targets, so $m_0 = 0$; the integrator records $m_k = m[u_k]$ for every stored
+field.
+
+\paragraph{The clock rate.}
+Under clock control $c_\tau$ obeys
+\begin{equation}\label{eq:alg-clock-ode}
+  \frac{\mathrm{d} c_\tau}{\mathrm{d} t} = \gamma \left( c_\tau^{\mathrm{target}} - c_\tau \right),
+\end{equation}
+with the gain $\gamma > 0$ and $c_{\tau,0} = c_\tau^{(0)}$ run parameters.
+Within step $k$, let $\Delta_k^{\mathrm{c}}$ be the $\ln \tau$ increment that
+would put the evolved field on the targets: that of the constrained ratios of
+the closing \textsc{ConstrainedScale}, plus, under \textsc{Strang}, the
+increment $\delta_k$ of the predicted half step. It consists of the miss $m_k$
+the step started with and the increment the physics added over the step,
+$c^{\mathrm{phys}}_k \Delta t = \Delta_k^{\mathrm{c}} - m_k$. The target
+\begin{equation}\label{eq:alg-clock-target}
+  c_\tau^{\mathrm{target}} = c^{\mathrm{phys}}_k + \frac{m_k}{T_m}
+  = \frac{\Delta_k^{\mathrm{c}} - m_k}{\Delta t} + \frac{m_k}{T_m},
+  \qquad T_m = \frac{4}{\gamma},
+\end{equation}
+follows the physics and closes the miss over the time $T_m$. Holding it over
+the step, \eqref{eq:alg-clock-ode} is integrated exactly,
+\begin{equation}\label{eq:alg-clock-update}
+  c_{\tau,k+1} = c_\tau^{\mathrm{target}}
+  + \left( c_{\tau,k} - c_\tau^{\mathrm{target}} \right) e^{-\gamma \Delta t},
+\end{equation}
+which is stable for any $\gamma \Delta t$, and the step advances $\ln \tau$ by
+$c_{\tau,k+1} \Delta t$.
+
+\paragraph{The ratios.}
+The clock fixes one combination of $\ln \lambda_U, \ln \lambda_L$; the other
+holds $F_1$ exactly. The ratios applied solve
+\begin{equation}\label{eq:alg-clock-system}
+  \begin{bmatrix} p_1 & q_1 \\ a_U & a_L \end{bmatrix}
+  \begin{bmatrix} \ln \lambda_U \\ \ln \lambda_L \end{bmatrix}
+  = \begin{bmatrix} \ln F_1^{\mathrm{in}} - \ln F_1 \\ c_{\tau,k+1} \Delta t - \delta_k \end{bmatrix},
+\end{equation}
+with $\delta_k = 0$ under \textsc{LieTrotter}, in closed form when
+$p_1 a_L - q_1 a_U \neq 0$ (here $2$ for the 1D diffusion equation and $5$
+for Navier--Stokes). Of all ratios that advance the clock as prescribed, these
+are the ones closest to the constrained ratios in the sense that the first
+constraint is still met exactly: the whole difference goes into $F_2$, which
+the rescaled field misses by
+\begin{equation}\label{eq:alg-clock-f2}
+  \ln \frac{F_2[u_{k+1}]}{F_2} = \frac{p_1 q_2 - p_2 q_1}{p_1 a_L - q_1 a_U}\, m_{k+1},
+\end{equation}
+$\tfrac45 m_{k+1}$ for Navier--Stokes. As with the projection inside
+\textsc{Scale}, the next \textsc{ConstrainedScale} measures the functionals
+afresh, so the miss is carried forward through $m_{k+1}$ and not lost.
+
+\paragraph{Dynamics of the miss.}
+Over a step the miss changes by what the physics added less what the clock
+applied, $m_{k+1} = m_k + c^{\mathrm{phys}}_k \Delta t - c_{\tau,k+1} \Delta t$.
+For $\Delta t \to 0$ this is $\dot m = c^{\mathrm{phys}} - c_\tau$, and with
+\eqref{eq:alg-clock-ode} and \eqref{eq:alg-clock-target},
+\begin{equation}\label{eq:alg-clock-miss}
+  \ddot m + \gamma \dot m + \frac{\gamma}{T_m}\, m = \dot c^{\mathrm{phys}},
+\end{equation}
+a damped oscillator with damping ratio $\zeta = \tfrac12 \sqrt{\gamma T_m}$.
+The choice $T_m = 4/\gamma$ makes it critically damped, independently of
+$\Delta t$. Closing the whole miss in one step instead, $T_m = \Delta t$,
+would give $\zeta = \tfrac12 \sqrt{\gamma \Delta t} \ll 1$, an oscillation at
+the frequency $\sqrt{\gamma/\Delta t}$ that grows as the step is refined.
+Differentiating \eqref{eq:alg-clock-ode} and using $\dot m = c^{\mathrm{phys}} - c_\tau$,
+the clock rate obeys the same oscillator,
+\begin{equation}\label{eq:alg-clock-ctau}
+  \ddot c_\tau + \gamma \dot c_\tau + \frac{\gamma}{T_m}\, c_\tau
+  = \gamma \dot c^{\mathrm{phys}} + \frac{\gamma}{T_m}\, c^{\mathrm{phys}},
+\end{equation}
+forced by $c^{\mathrm{phys}}$ and its rate. In steady state $c_\tau$ equals
+the mean of $c^{\mathrm{phys}}$; a fluctuation of $c^{\mathrm{phys}}$ at
+frequency $\omega \gg \sqrt{\gamma/T_m}$ passes into $c_\tau$ attenuated only
+by $\gamma/\omega$, through the $\gamma \dot c^{\mathrm{phys}}$ term, and into
+$m$ as $1/\omega$, so the smoothing of $c_\tau$ is set by $\gamma$ and not by
+$T_m$. For a
+statistically stationary $c^{\mathrm{phys}}$ the miss averages to zero, so the
+moments do not drift; fluctuations of $c^{\mathrm{phys}}$ faster than
+$1/\gamma$ are filtered out of $c_\tau$ and appear instead as bounded
+excursions of $m$, and so of $F_2$ by \eqref{eq:alg-clock-f2}. Smoothing
+$c_\tau$ over a longer time costs a larger miss, by as much as $\ln \tau$
+of the moment-preserving frame wanders over that time.
+
 
 \subsection{\textsc{EstimateBeta}: estimating \texorpdfstring{$\beta_U$}{beta\_U} and \texorpdfstring{$\beta_L$}{beta\_L}}\label{ssec:alg-beta-estimation}
 After every step with $k+1 \geq 3$, regardless of $\mathit{scheme}$, $\beta_U$
@@ -1118,18 +1257,17 @@ becomes
 \subsubsection{Self-similar constant eddy viscosity}\label{sssec:ns-sgs-constant}
 The second model replaces the local eddy viscosity by a constant that is
 uniform in space, chosen so that the dissipative scale of the flow tracks the
-grid. Throughout this paper the dissipation rate $\epsilon^*$ is the trace of
-the dissipation tensor (\S\ref{sssec:ns-pp-quantities}),
-$\epsilon^* = 2\nu^*\, \overline{(\partial u_i^*/\partial x_k^*)(\partial u_i^*/\partial x_k^*)}$
+grid. Throughout this paper the dissipation rate $\epsilon^*$ is half the
+trace of the dissipation tensor (\S\ref{sssec:ns-pp-quantities}),
+$\epsilon^* = \nu^*\, \overline{(\partial u_i^*/\partial x_k^*)(\partial u_i^*/\partial x_k^*)}$
 \eqref{eq:ns-pp-diss-trace}, the sink in the equation for
-$\overline{u_i^* u_i^*} = 2\overline{k^*}$, with $\nu_{\mathrm{t}}^*$ in place of
+$\overline{k^*} = \tfrac{1}{2}\overline{u_i^* u_i^*}$, with $\nu_{\mathrm{t}}^*$ in place of
 $\nu^*$ in the LES. It is not the thermodynamic dissipation rate
 $2\nu^*\, \overline{S_{ij}^* S_{ij}^*}$, the rate at which kinetic energy is
-converted to heat, which is the sink of $\overline{k^*}$: the two differ by a
-divergence that vanishes in homogeneous turbulence, where $\epsilon^*$ is twice
-the thermodynamic rate, but not in the inhomogeneous flow considered here. With
-zero molecular viscosity, the Kolmogorov scale built from the eddy viscosity
-and this $\epsilon^*$,
+converted to heat: the two differ by a divergence that vanishes in homogeneous
+turbulence, where they are equal, but not in the inhomogeneous flow
+considered here. With zero molecular viscosity, the Kolmogorov scale built
+from the eddy viscosity and this $\epsilon^*$,
 \begin{equation}\label{eq:ns-kolmogorov-scale}
   \eta^* = \left( \frac{(\nu_{\mathrm{t}}^*)^3}{\epsilon^*} \right)^{1/4},
 \end{equation}
@@ -1137,9 +1275,8 @@ is required to be proportional to the filter width,
 \begin{equation}\label{eq:ns-kolmogorov-mesh}
   \eta^* = C_\eta \Delta^*,
 \end{equation}
-with $C_\eta$ a constant. Since $\epsilon^*$ is twice the thermodynamic rate in
-homogeneous turbulence, \eqref{eq:ns-kolmogorov-scale} is $2^{-1/4}$ times the
-conventional Kolmogorov scale there; the factor is absorbed into $C_\eta$. The
+with $C_\eta$ a constant. In homogeneous turbulence
+\eqref{eq:ns-kolmogorov-scale} is the conventional Kolmogorov scale. The
 dissipation rate is estimated from the large scales of the self-similar frame,
 \begin{equation}\label{eq:ns-eps-estimate}
   \epsilon^* \approx C_\epsilon \frac{U^3}{L},
@@ -1474,6 +1611,13 @@ where the length ratio is identical in form to its 1D counterpart
 
 \section{Navier--Stokes results}\label{sec:ns-results}
 
+\subsection{Post-processing}\label{ssec:ns-postproc}
+This subsection sets out how statistics of the self-similar fields are
+related to the physical flow and measured, defines the dissipation rate, and
+gives the scaling rates in the stationary state. The budgets of
+\S\ref{ssec:ns-pp-rs-budget}--\S\ref{ssec:ns-pp-eps-budget} build on all
+three.
+
 \subsubsection{Scaling of point statistics}\label{sssec:ns-pp-scaling}
 Let $Q^*$ be a pointwise quantity that nondimensionalizes as
 \begin{equation}\label{eq:ns-pp-generic}
@@ -1537,21 +1681,22 @@ statistical error is computed. The spherical mean reduces this error compared
 with a single point. The reduction is larger at larger $r$, where the sphere
 spans more correlation lengths, and absent at $r = 0$.
 
-\subsubsection{Dissipation and radial profiles}\label{sssec:ns-pp-quantities}
+\subsubsection{The dissipation rate}\label{sssec:ns-pp-quantities}
 \paragraph{The dissipation tensor and its trace.}
-As in \S\ref{ssec:res-k-budget}, we assume that the ensemble-mean velocity
+As in \S\ref{ssec:ns-pp-k-budget}, we assume that the ensemble-mean velocity
 vanishes, so $u_i^*$ is the fluctuating velocity. The evolution equation for the Reynolds
 stress tensor $\overline{u_i^* u_j^*}$, with $\overline{\,\cdot\,}$ the ensemble
-average of \S\ref{sssec:ns-pp-scaling}, contains the sink $-\varepsilon_{ij}^*$,
+average of \S\ref{sssec:ns-pp-scaling}, contains the sink $-\varepsilon_{ij}^*$
+(\S\ref{ssec:ns-pp-rs-budget}),
 where
 \begin{equation}\label{eq:ns-pp-diss-tensor}
   \varepsilon_{ij}^* = 2\nu^*\, \overline{\frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_j^*}{\partial x_k^*}}
 \end{equation}
-is the dissipation tensor \cite{pope2000turbulent}. We report its trace,
+is the dissipation tensor \cite{pope2000turbulent}. We report half its trace,
 \begin{equation}\label{eq:ns-pp-diss-trace}
-  \epsilon^* = \varepsilon_{ii}^* = 2\nu^*\, \overline{\frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_i^*}{\partial x_k^*}},
+  \epsilon^* = \tfrac{1}{2}\varepsilon_{ii}^* = \nu^*\, \overline{\frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_i^*}{\partial x_k^*}},
 \end{equation}
-which is the sink in the equation for $\overline{u_i^* u_i^*} = 2\overline{k^*}$.
+which is the sink in the equation for $\overline{k^*} = \tfrac{1}{2}\overline{u_i^* u_i^*}$.
 \paragraph{Estimate from the filtered field.}
 The LES does not resolve the gradients in \eqref{eq:ns-pp-diss-trace}. As for
 the kinetic energy below, we therefore estimate the filtered integrand,
@@ -1580,10 +1725,10 @@ and
   + 2\nu_{\mathrm{t}}^*\, \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*}
   = 2\left( \nu^* + \nu_{\mathrm{t}}^* \right) \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*}.
 \end{equation}
-Taking the trace gives the pointwise estimate of the integrand of
+Taking half the trace gives the pointwise estimate of the integrand of
 \eqref{eq:ns-pp-diss-trace},
 \begin{equation}\label{eq:ns-pp-diss-trace-les}
-  \epsilon^* = 2\left( \nu^* + \nu_{\mathrm{t}}^* \right) \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_i^*}{\partial x_k^*}.
+  \epsilon^* = \left( \nu^* + \nu_{\mathrm{t}}^* \right) \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_i^*}{\partial x_k^*}.
 \end{equation}
 Since the filter commutes with the ensemble average, the average of
 \eqref{eq:ns-pp-diss-trace-les} estimates \eqref{eq:ns-pp-diss-trace}. With
@@ -1592,26 +1737,346 @@ $\partial \tilde u_i^*/\partial x_k^* = (U/L)\, \partial \tilde u_i/\partial x_k
 \begin{equation}\label{eq:ns-pp-diss-nondim}
   \epsilon^* = \frac{U^3}{L}\, \epsilon,
   \qquad
-  \epsilon = 2\left( \frac{1}{Re} + \nu_{\mathrm{t}} \right) \frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_k},
+  \epsilon = \left( \frac{1}{Re} + \nu_{\mathrm{t}} \right) \frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_k},
 \end{equation}
 which is of the form \eqref{eq:ns-pp-generic} with $m_U = 3$, $m_L = -1$. In
 the limit $1/Re = 0$ the resolved part vanishes and only the subgrid part
 remains. By \eqref{eq:ns-eddy-viscosity-nondim} and
 \eqref{eq:ns-constant-viscosity},
 \begin{equation}\label{eq:ns-pp-diss-models}
-  \epsilon = 2\nu_{\mathrm{t}}\, \frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_k} =
+  \epsilon = \nu_{\mathrm{t}}\, \frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_k} =
   \begin{cases}
-    2 (C_s \Delta)^2 |\tilde S|\, \dfrac{\partial \tilde u_i}{\partial x_k} \dfrac{\partial \tilde u_i}{\partial x_k}, & \text{Smagorinsky model}, \\[10pt]
-    2 C_\nu \Delta^{4/3}\, \dfrac{\partial \tilde u_i}{\partial x_k} \dfrac{\partial \tilde u_i}{\partial x_k}, & \text{self-similar constant eddy viscosity}.
+    (C_s \Delta)^2 |\tilde S|\, \dfrac{\partial \tilde u_i}{\partial x_k} \dfrac{\partial \tilde u_i}{\partial x_k}, & \text{Smagorinsky model}, \\[10pt]
+    C_\nu \Delta^{4/3}\, \dfrac{\partial \tilde u_i}{\partial x_k} \dfrac{\partial \tilde u_i}{\partial x_k}, & \text{self-similar constant eddy viscosity}.
   \end{cases}
 \end{equation}
 
-\subsubsection{\texorpdfstring{$\epsilon$}{epsilon} budget}\label{sssec:ns-pp-eps-budget}
+\subsubsection{Scaling rates in the stationary state}\label{sssec:ns-pp-rates}
+The budgets below contain the rates $\sigma_U$ and $\sigma_L$
+\eqref{eq:fw-rates}, which the power-law ansatz fixes. Take
+$\beta_L - \beta_U = 1$ and a shared offset $\alpha_U = \alpha_L = \alpha$
+in \eqref{eq:fw-powerlaw}. The clock \eqref{eq:ns-clock} is then
+\begin{equation}\label{eq:ns-pp-rates-clock}
+  \tau = \frac{L}{U} = c_\tau\, (t^* + \alpha),
+  \qquad
+  c_\tau = \frac{A_L}{A_U},
+\end{equation}
+and by \eqref{eq:pp-rate-chain} the rates are constant,
+\begin{equation}\label{eq:ns-pp-rates}
+  \sigma_X = \beta_X \frac{\tau}{t^* + \alpha} = c_\tau \beta_X ,
+\end{equation}
+so that
+\begin{equation}\label{eq:ns-pp-rates-diff}
+  \sigma_U - \sigma_L = c_\tau \left( \beta_U - \beta_L \right) = -c_\tau .
+\end{equation}
+Equivalently, by \eqref{eq:ns-ln-clock}, $c_\tau$ is the rate at which
+$\ln \tau = \ln L - \ln U$ grows in $t$. In the budgets we use
+\eqref{eq:ns-pp-rates} in place of the instantaneous rates; in a run whose
+scales are prescribed by the power law it holds exactly. Under the clock
+control of \S\ref{ssec:alg-clock}, \eqref{eq:ns-pp-rates-diff} holds at every
+step with the instantaneous clock rate $c_{\tau,k}$ in place of $c_\tau$.
+
+\subsection{Reynolds stress budget}\label{ssec:ns-pp-rs-budget}
+This subsection derives the evolution equation of the resolved Reynolds
+stress $\overline{\tilde u_i \tilde u_j}$. As for the $\epsilon$ budget of
+\S\ref{ssec:ns-pp-eps-budget}, we proceed in three steps:
+\begin{enumerate}
+  \item write the dimensional budget, \eqref{eq:ns-pp-rs-rate};
+  \item nondimensionalize it into the self-similar frame,
+  \eqref{eq:ns-pp-rs-rate-nondim};
+  \item assume stationarity and isotropy of the statistics, which reduces it
+  to two balances between radial profiles,
+  \eqref{eq:ns-pp-rs-radial-ctau}.
+\end{enumerate}
+
+\paragraph{Assumptions.}
+The assumptions are those of the $\epsilon$ budget
+(\S\ref{ssec:ns-pp-eps-budget}): $1/Re = 0$, the subgrid model is the
+self-similar constant eddy viscosity \eqref{eq:ns-constant-viscosity}, the
+ensemble-mean velocity vanishes, $\overline{\tilde u_i} = 0$, and we work
+inside the sphere $r \le r_0$, where $W = 0$.
+
+\paragraph{Dimensional budget.}
+Under these assumptions the subgrid stress term is the Laplacian
+\eqref{eq:ns-constant-viscosity-laplacian}, and the filtered momentum equation
+\eqref{eq:ns-momentum} becomes
+\begin{equation}\label{eq:ns-pp-rs-momentum}
+  \frac{\partial \tilde u_i^*}{\partial t^*}
+  + \tilde u_k^* \frac{\partial \tilde u_i^*}{\partial x_k^*}
+  = -\frac{1}{\rho}\frac{\partial \tilde p^*}{\partial x_i^*}
+  + \nu_{\mathrm{t}}^* \frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_k^*} ,
+\end{equation}
+with $\nu_{\mathrm{t}}^*$ uniform in space \eqref{eq:ns-pp-eps-nut}. Multiply
+the equation for $\tilde u_i^*$ by $\tilde u_j^*$, add the same with $i$ and
+$j$ exchanged, and average. By continuity \eqref{eq:ns-continuity}, the
+advection term is the divergence
+$\partial_k^* (\tilde u_i^* \tilde u_j^* \tilde u_k^*)$, and since
+$\nu_{\mathrm{t}}^*$ is uniform the viscous term splits as
+\begin{equation*}
+  \nu_{\mathrm{t}}^* \left( \tilde u_j^* \frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_k^*}
+  + \tilde u_i^* \frac{\partial^2 \tilde u_j^*}{\partial x_k^* \partial x_k^*} \right)
+  = \nu_{\mathrm{t}}^* \frac{\partial^2 (\tilde u_i^* \tilde u_j^*)}{\partial x_k^* \partial x_k^*}
+  - 2 \nu_{\mathrm{t}}^* \frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*} .
+\end{equation*}
+Unlike $\epsilon^*$, the Reynolds stress does not contain $\nu_{\mathrm{t}}^*$,
+so the change of the eddy viscosity in time does not enter. The dimensional
+budget is \cite{pope2000turbulent}
+\begin{equation}\label{eq:ns-pp-rs-rate}
+  \frac{\partial \overline{\tilde u_i^* \tilde u_j^*}}{\partial t^*}
+  = \tilde T_{ij}^* + \tilde \Pi_{ij}^* + \tilde D_{ij}^* - \varepsilon_{ij}^* ,
+\end{equation}
+with
+\begin{equation}\label{eq:ns-pp-rs-terms}
+\begin{aligned}
+  \tilde T_{ij}^* &= -\frac{\partial}{\partial x_k^*}\, \overline{\tilde u_i^* \tilde u_j^* \tilde u_k^*}
+  && \text{turbulent transport,} \\
+  \tilde \Pi_{ij}^* &= -\frac{1}{\rho} \left( \overline{\tilde u_i^* \frac{\partial \tilde p^*}{\partial x_j^*}}
+  + \overline{\tilde u_j^* \frac{\partial \tilde p^*}{\partial x_i^*}} \right)
+  && \text{velocity--pressure gradient,} \\
+  \tilde D_{ij}^* &= \nu_{\mathrm{t}}^* \frac{\partial^2 \overline{\tilde u_i^* \tilde u_j^*}}{\partial x_k^* \partial x_k^*}
+  && \text{viscous diffusion,} \\
+  \varepsilon_{ij}^* &= 2 \nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_j^*}{\partial x_k^*}}
+  && \text{dissipation.}
+\end{aligned}
+\end{equation}
+The dissipation is the tensor \eqref{eq:ns-pp-diss-tensor-les} with
+$1/Re = 0$, so that $\tfrac12 \varepsilon_{ii}^* = \overline{\epsilon^*}$
+\eqref{eq:ns-pp-eps-def}. With zero mean velocity the production vanishes,
+and so does the mean advection. The velocity--pressure gradient term contains
+both the pressure--strain redistribution and the pressure transport
+\cite{pope2000turbulent}; we keep it whole, since only its sum enters.
+
+\paragraph{Nondimensionalization.}
+The substitutions are those of the $\epsilon$ budget, $\tilde u_i^* = U \tilde u_i$,
+$x_j^* = L x_j$, $\tilde p^* = \rho U^2 \tilde p$, and
+$\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$ \eqref{eq:ns-pp-eps-nut}.
+\begin{itemize}
+  \item \emph{Right-hand side.} Each of the four terms carries the factor
+  $U^3/L$. For example,
+  $\tilde T_{ij}^* = (U^3/L)\, \tilde T_{ij}$ and
+  $\varepsilon_{ij}^* = (UL)(U/L)^2\, \varepsilon_{ij} = (U^3/L)\, \varepsilon_{ij}$.
+  \item \emph{Left-hand side.} The chain rule \eqref{eq:fw-lhs-chain}, with
+  the amplitude $U^2$ (rate $2\sigma_U$) in place of $U$ and the clock
+  $\tau = L/U$ \eqref{eq:ns-clock}, gives
+  \begin{equation*}
+    \frac{\partial \overline{\tilde u_i^* \tilde u_j^*}}{\partial t^*}
+    = \frac{U^3}{L}\left( \frac{\partial \overline{\tilde u_i \tilde u_j}}{\partial t}
+    + 2\sigma_U\, \overline{\tilde u_i \tilde u_j}
+    - \sigma_L\, x_k \frac{\partial \overline{\tilde u_i \tilde u_j}}{\partial x_k} \right).
+  \end{equation*}
+\end{itemize}
+Dividing by $U^3/L$ gives
+\begin{equation}\label{eq:ns-pp-rs-rate-nondim}
+  \frac{\partial \overline{\tilde u_i \tilde u_j}}{\partial t}
+  = \sigma_L\, x_k \frac{\partial \overline{\tilde u_i \tilde u_j}}{\partial x_k}
+  - 2\sigma_U\, \overline{\tilde u_i \tilde u_j}
+  + \tilde T_{ij} + \tilde \Pi_{ij} + \tilde D_{ij} - \varepsilon_{ij} ,
+\end{equation}
+with the nondimensional terms
+\begin{equation}\label{eq:ns-pp-rs-terms-nondim}
+\begin{aligned}
+  \tilde T_{ij} &= -\frac{\partial}{\partial x_k}\, \overline{\tilde u_i \tilde u_j \tilde u_k},
+  &
+  \tilde \Pi_{ij} &= -\overline{\tilde u_i \frac{\partial \tilde p}{\partial x_j}}
+  - \overline{\tilde u_j \frac{\partial \tilde p}{\partial x_i}},
+  \\
+  \tilde D_{ij} &= \nu_{\mathrm{t}} \frac{\partial^2 \overline{\tilde u_i \tilde u_j}}{\partial x_k \partial x_k},
+  &
+  \varepsilon_{ij} &= 2 \nu_{\mathrm{t}}\, \overline{\frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_j}{\partial x_k}} ,
+\end{aligned}
+\end{equation}
+of the same form as \eqref{eq:ns-pp-rs-terms} without stars. The two scaling
+terms follow directly from those of the momentum equation
+\eqref{eq:ns-nondim-momentum}: the first advects the stress radially as the
+frame dilates, and the second, $-2\sigma_U$, is twice the velocity rescaling
+$-\sigma_U \tilde u_i$, since the stress is quadratic in the velocity.
+
+\paragraph{Stationary state.}
+In the stationary state $\partial \overline{\tilde u_i \tilde u_j}/\partial t = 0$
+and the rates are constant, $\sigma_X = c_\tau \beta_X$
+(\S\ref{sssec:ns-pp-rates}), so \eqref{eq:ns-pp-rs-rate-nondim} becomes
+\begin{equation}\label{eq:ns-pp-rs-stationary}
+  0 = c_\tau \beta_L\, x_k \frac{\partial \overline{\tilde u_i \tilde u_j}}{\partial x_k}
+  - 2 c_\tau \beta_U\, \overline{\tilde u_i \tilde u_j}
+  + \tilde T_{ij} + \tilde \Pi_{ij} + \tilde D_{ij} - \varepsilon_{ij} .
+\end{equation}
+Unlike the $\epsilon$ budget \eqref{eq:ns-pp-eps-radial-ctau}, whose
+rescaling term depends only on $\beta_U - \beta_L = -1$, the rescaling term
+here depends on $\beta_U$ itself.
+
+\paragraph{Isotropic form.}
+Under the isotropy assumption of \S\ref{sssec:ns-pp-scaling}, the statistics
+are invariant under rotations about the origin. A symmetric second-rank
+tensor field with this invariance has the form
+\begin{equation}\label{eq:ns-pp-rs-isotropic}
+  \overline{\tilde u_i \tilde u_j}
+  = R_\perp(r)\, \delta_{ij} + \left( R_r(r) - R_\perp(r) \right) n_i n_j ,
+  \qquad
+  n_i = \frac{x_i}{r} ,
+\end{equation}
+where $R_r = \overline{\tilde u_r \tilde u_r}$, with $\tilde u_r = n_i \tilde u_i$,
+is the radial normal stress and $R_\perp$ the normal stress in either
+direction tangent to the sphere; the off-diagonal components in spherical
+coordinates vanish. Each term of \eqref{eq:ns-pp-rs-stationary} has the same
+form, so for a term $X_{ij}$ we define its radial and tangential components
+\begin{equation}\label{eq:ns-pp-rs-projections}
+  X_r = n_i n_j X_{ij} ,
+  \qquad
+  X_\perp = \tfrac{1}{2} \left( \delta_{ij} - n_i n_j \right) X_{ij} ,
+\end{equation}
+which are evaluated as spherical means \eqref{eq:ns-pp-sphere-mean} of the
+projected pointwise integrands. The trace is $X_{ii} = X_r + 2 X_\perp$.
+\par
+Two of the terms can be written in terms of $R_r$ and $R_\perp$. Since
+$n_i$ is constant along rays, $x_k\, \partial_k n_i = 0$, and the advection
+term preserves the form \eqref{eq:ns-pp-rs-isotropic},
+\begin{equation*}
+  x_k \frac{\partial \overline{\tilde u_i \tilde u_j}}{\partial x_k}
+  = r \frac{\mathrm{d} R_\perp}{\mathrm{d} r}\, \delta_{ij}
+  + r \frac{\mathrm{d} (R_r - R_\perp)}{\mathrm{d} r}\, n_i n_j .
+\end{equation*}
+For the diffusion, $\nabla^2 (n_i n_j) = (2\delta_{ij} - 6 n_i n_j)/r^2$ and
+the cross term $2\, \partial_k (R_r - R_\perp)\, \partial_k (n_i n_j)$
+vanishes, again because $n_i$ is constant along rays, so the projections
+\eqref{eq:ns-pp-rs-projections} of $\tilde D_{ij}$ are
+\begin{equation}\label{eq:ns-pp-rs-diffusion}
+  \tilde D_r = \nu_{\mathrm{t}} \left( \nabla_r^2 R_r - \frac{4}{r^2} \left( R_r - R_\perp \right) \right),
+  \qquad
+  \tilde D_\perp = \nu_{\mathrm{t}} \left( \nabla_r^2 R_\perp + \frac{2}{r^2} \left( R_r - R_\perp \right) \right),
+\end{equation}
+with the radial Laplacian
+$\nabla_r^2 f = r^{-2}\, \mathrm{d}(r^2\, \mathrm{d}f/\mathrm{d}r)/\mathrm{d}r$.
+The extra terms in $R_r - R_\perp$ couple the two components through the
+curvature of the spheres and cancel in the trace. Projecting
+\eqref{eq:ns-pp-rs-stationary} with \eqref{eq:ns-pp-rs-projections} gives the
+budget we evaluate,
+\begin{equation}\label{eq:ns-pp-rs-radial-ctau}
+\begin{aligned}
+  0 &= c_\tau \beta_L\, r \frac{\mathrm{d} R_r}{\mathrm{d} r}
+  - 2 c_\tau \beta_U\, R_r
+  + \tilde T_r + \tilde \Pi_r + \tilde D_r - \varepsilon_r , \\
+  0 &= c_\tau \beta_L\, r \frac{\mathrm{d} R_\perp}{\mathrm{d} r}
+  - 2 c_\tau \beta_U\, R_\perp
+  + \tilde T_\perp + \tilde \Pi_\perp + \tilde D_\perp - \varepsilon_\perp ,
+\end{aligned}
+\end{equation}
+each term a function of $r$ alone. As for the $\epsilon$ budget, every term is
+estimated independently, so the residuals of \eqref{eq:ns-pp-rs-radial-ctau}
+measure the statistical and discretization error of the profiles. Regularity
+at the origin requires $R_r(0) = R_\perp(0)$ and
+$\mathrm{d}R_r/\mathrm{d}r = \mathrm{d}R_\perp/\mathrm{d}r = 0$ at $r = 0$,
+where the stress is isotropic.
+
+\subsection{Kinetic energy budget}\label{ssec:ns-pp-k-budget}
+This subsection derives the evolution equation of the mean resolved kinetic
+energy $\overline{\tilde k} = \tfrac12 \overline{\tilde u_i \tilde u_i}$,
+following the same three steps. The assumptions are those of
+\S\ref{ssec:ns-pp-rs-budget}. Since $\tilde k$ is half the trace of the
+Reynolds stress, each step is half the trace of its counterpart there; we
+give the result of each step and the form the terms take.
+
+\paragraph{Dimensional budget.}
+Half the trace of \eqref{eq:ns-pp-rs-rate} is
+\begin{equation}\label{eq:ns-pp-k-rate}
+  \frac{\partial \overline{\tilde k^*}}{\partial t^*}
+  = \tilde T_k^* + \tilde \Pi_k^* + \tilde D_k^* - \overline{\epsilon^*} ,
+\end{equation}
+with
+\begin{equation}\label{eq:ns-pp-k-terms}
+\begin{aligned}
+  \tilde T_k^* &= -\frac{\partial}{\partial x_j^*}\, \overline{\tilde u_j^* \tilde k^*}
+  && \text{turbulent transport,} \\
+  \tilde \Pi_k^* &= -\frac{1}{\rho} \frac{\partial}{\partial x_j^*}\, \overline{\tilde u_j^* \tilde p^*}
+  && \text{pressure transport,} \\
+  \tilde D_k^* &= \nu_{\mathrm{t}}^* \frac{\partial^2 \overline{\tilde k^*}}{\partial x_j^* \partial x_j^*}
+  && \text{viscous diffusion,} \\
+  \overline{\epsilon^*} &= \nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_i^*}{\partial x_m^*}}
+  && \text{dissipation,}
+\end{aligned}
+\end{equation}
+where $\tilde k^* = \tfrac12 \tilde u_i^* \tilde u_i^*$. The pressure term is
+half the trace of $\tilde \Pi_{ij}^*$, which by continuity
+\eqref{eq:ns-continuity} is a divergence: the pressure--strain part is
+traceless and only redistributes energy among the components. The sink is the
+$\epsilon^*$ \eqref{eq:ns-pp-eps-def} whose budget is formed in
+\S\ref{ssec:ns-pp-eps-budget}. It appears here with the Laplacian
+$\tilde D_k^*$ of $\overline{\tilde k^*}$, rather than with the thermodynamic
+dissipation and the divergence of the viscous stress work, which is why
+$\epsilon^*$ is defined as half the trace of the dissipation tensor
+(\S\ref{sssec:ns-sgs-constant}).
+
+\paragraph{Nondimensionalization.}
+With the substitutions of \S\ref{ssec:ns-pp-rs-budget}, the kinetic energy
+and the dissipation scale as
+\begin{equation}\label{eq:ns-pp-k-scales}
+  \overline{\tilde k^*} = U^2\, \overline{\tilde k} ,
+  \qquad
+  \overline{\epsilon^*} = \frac{U^3}{L}\, \overline{\epsilon} ,
+\end{equation}
+by \eqref{eq:ns-kinetic-energy-nondim} and \eqref{eq:ns-pp-eps-def}. Each term
+on the right of \eqref{eq:ns-pp-k-rate} carries the factor $U^3/L$, and the
+left-hand side transforms as in \S\ref{ssec:ns-pp-rs-budget}, with the
+amplitude $U^2$. Dividing by $U^3/L$,
+\begin{equation}\label{eq:ns-pp-k-rate-nondim}
+  \frac{\partial \overline{\tilde k}}{\partial t}
+  = \sigma_L\, x_j \frac{\partial \overline{\tilde k}}{\partial x_j}
+  - 2\sigma_U\, \overline{\tilde k}
+  + \tilde T_k + \tilde \Pi_k + \tilde D_k - \overline{\epsilon} ,
+\end{equation}
+with the nondimensional terms
+\begin{equation}\label{eq:ns-pp-k-terms-nondim}
+  \tilde T_k = -\frac{\partial}{\partial x_j}\, \overline{\tilde u_j \tilde k},
+  \qquad
+  \tilde \Pi_k = -\frac{\partial}{\partial x_j}\, \overline{\tilde u_j \tilde p},
+  \qquad
+  \tilde D_k = \nu_{\mathrm{t}} \frac{\partial^2 \overline{\tilde k}}{\partial x_j \partial x_j},
+  \qquad
+  \overline{\epsilon} = \nu_{\mathrm{t}}\, \overline{\frac{\partial \tilde u_i}{\partial x_m} \frac{\partial \tilde u_i}{\partial x_m}} .
+\end{equation}
+
+\paragraph{Stationary state.}
+In the stationary state, with $\sigma_X = c_\tau \beta_X$,
+\begin{equation}\label{eq:ns-pp-k-stationary}
+  0 = c_\tau \beta_L\, x_j \frac{\partial \overline{\tilde k}}{\partial x_j}
+  - 2 c_\tau \beta_U\, \overline{\tilde k}
+  + \tilde T_k + \tilde \Pi_k + \tilde D_k - \overline{\epsilon} .
+\end{equation}
+
+\paragraph{Isotropic form.}
+Under the isotropy assumption, $\overline{\tilde k}$ and $\overline{\epsilon}$
+depend only on $r$, and the mean fluxes $\overline{\tilde u_j \tilde k}$ and
+$\overline{\tilde u_j \tilde p}$ are radial, $F_j = n_j F(r)$. As in
+\S\ref{sssec:ns-pp-eps-model}, the advection term becomes
+$x_j\, \partial_j \overline{\tilde k} = r\, \mathrm{d}\overline{\tilde k}/\mathrm{d}r$
+and the divergence of a radial flux is $r^{-2}\, \mathrm{d}(r^2 F)/\mathrm{d}r$,
+so the transport terms are
+\begin{equation}\label{eq:ns-pp-k-radial-terms}
+  \tilde T_k = -\frac{1}{r^2} \frac{\mathrm{d}}{\mathrm{d} r}\left( r^2\, \overline{\tilde u_r \tilde k} \right),
+  \qquad
+  \tilde \Pi_k = -\frac{1}{r^2} \frac{\mathrm{d}}{\mathrm{d} r}\left( r^2\, \overline{\tilde u_r \tilde p} \right),
+  \qquad
+  \tilde D_k = \frac{\nu_{\mathrm{t}}}{r^2} \frac{\mathrm{d}}{\mathrm{d} r}\left( r^2 \frac{\mathrm{d} \overline{\tilde k}}{\mathrm{d} r} \right),
+\end{equation}
+with $\tilde u_r = n_j \tilde u_j$. The budget we evaluate is
+\begin{equation}\label{eq:ns-pp-k-radial-ctau}
+  0 = c_\tau \beta_L\, r \frac{\mathrm{d} \overline{\tilde k}}{\mathrm{d} r}
+  - 2 c_\tau \beta_U\, \overline{\tilde k}
+  + \tilde T_k + \tilde \Pi_k + \tilde D_k - \overline{\epsilon} ,
+\end{equation}
+each term a function of $r$ alone. It is the sum of the radial equation and
+twice the tangential equation of \eqref{eq:ns-pp-rs-radial-ctau}, halved,
+with $\overline{\tilde k} = \tfrac12 (R_r + 2 R_\perp)$ and
+$\overline{\epsilon} = \tfrac12 (\varepsilon_r + 2\varepsilon_\perp)$; it is
+not an independent check of the profiles, but it is the budget that the
+$k$--$\epsilon$ model of \S\ref{sssec:ns-pp-eps-model} closes. Regularity at
+the origin requires $\mathrm{d}\overline{\tilde k}/\mathrm{d}r = 0$ at $r = 0$.
+
+\subsection{\texorpdfstring{$\epsilon$}{epsilon} budget}\label{ssec:ns-pp-eps-budget}
 This subsection derives the evolution equation of the mean dissipation
 $\overline{\epsilon}$. In the stationary state it reduces to a balance
 \eqref{eq:ns-pp-eps-radial} between radial profiles that are each measured
 independently, so its residual tests the profiles; its dimensional form
-\eqref{eq:ns-pp-eps-rate} is the starting point of \S\ref{ssec:res-eps-budget}.
+\eqref{eq:ns-pp-eps-rate} is the starting point of \S\ref{sssec:ns-pp-eps-model}.
 We proceed in three steps:
 \begin{enumerate}
   \item write the dimensional budget by adapting the dissipation equation of
@@ -1622,20 +2087,21 @@ We proceed in three steps:
   balance, \eqref{eq:ns-pp-eps-radial}.
 \end{enumerate}
 
+\subsubsection{Exact budget}\label{sssec:ns-pp-eps-exact}
 \paragraph{Assumptions.}
 Throughout, $1/Re = 0$, and the subgrid model is the self-similar
 constant eddy viscosity \eqref{eq:ns-constant-viscosity}; the budget is not
-formed under the Smagorinsky model. As in \S\ref{ssec:res-k-budget}, the ensemble-mean
+formed under the Smagorinsky model. As in \S\ref{ssec:ns-pp-k-budget}, the ensemble-mean
 velocity vanishes, $\overline{\tilde u_i} = 0$, so $\tilde u_i$ is the
 fluctuating velocity. We work inside the sphere $r \le r_0$, where $W = 0$, so the
 sponge does not enter the budget.
-The quantity whose budget we form is the trace of the dissipation tensor of
+The quantity whose budget we form is half the trace of the dissipation tensor of
 \S\ref{sssec:ns-pp-quantities}, which by \eqref{eq:ns-pp-diss-trace-les} and
 \eqref{eq:ns-pp-diss-nondim} with $1/Re = 0$ is
 \begin{equation}\label{eq:ns-pp-eps-def}
-  \epsilon^* = 2 \nu_{\mathrm{t}}^*\, \frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_i^*}{\partial x_m^*} ,
+  \epsilon^* = \nu_{\mathrm{t}}^*\, \frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_i^*}{\partial x_m^*} ,
   \qquad
-  \epsilon = 2 \nu_{\mathrm{t}}\, \frac{\partial \tilde u_i}{\partial x_m} \frac{\partial \tilde u_i}{\partial x_m} ,
+  \epsilon = \nu_{\mathrm{t}}\, \frac{\partial \tilde u_i}{\partial x_m} \frac{\partial \tilde u_i}{\partial x_m} ,
   \qquad
   \epsilon^* = \frac{U^3}{L}\, \epsilon .
 \end{equation}
@@ -1653,15 +2119,14 @@ It is uniform in space but not in time. To account for this, differentiate
 \begin{equation*}
   \frac{\partial \overline{\epsilon^*}}{\partial t^*}
   = \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}\, \overline{\epsilon^*}
-  + 2\nu_{\mathrm{t}}^*\, \frac{\partial}{\partial t^*}\, \overline{\frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_i^*}{\partial x_m^*}} .
+  + \nu_{\mathrm{t}}^*\, \frac{\partial}{\partial t^*}\, \overline{\frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_i^*}{\partial x_m^*}} .
 \end{equation*}
 The first term comes from the change of the eddy viscosity alone. In the
 second, the time derivative of the mean squared velocity gradient involves
 the viscosity only as the
 instantaneous coefficient of the viscous term, so the derivation of
 \cite{mansour1987reynolds} applies unchanged: it gives their dissipation
-equation for zero mean velocity, doubled because of the factor of two in
-\eqref{eq:ns-pp-eps-def}, with $\nu^*$ replaced by $\nu_{\mathrm{t}}^*$. The
+equation for zero mean velocity, with $\nu^*$ replaced by $\nu_{\mathrm{t}}^*$. The
 dimensional budget is therefore
 \begin{equation}\label{eq:ns-pp-eps-rate}
   \frac{\partial \overline{\epsilon^*}}{\partial t^*}
@@ -1671,15 +2136,15 @@ dimensional budget is therefore
 with
 \begin{equation}\label{eq:ns-pp-eps-terms}
 \begin{aligned}
-  \tilde P_\epsilon^* &= -4\nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
+  \tilde P_\epsilon^* &= -2\nu_{\mathrm{t}}^*\, \overline{\frac{\partial \tilde u_i^*}{\partial x_k^*} \frac{\partial \tilde u_i^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
   && \text{turbulent production,} \\
   \tilde T_\epsilon^* &= -\frac{\partial}{\partial x_k^*}\, \overline{\tilde u_k^* \epsilon^*}
   && \text{turbulent transport,} \\
-  \tilde \Pi_\epsilon^* &= -\frac{4\nu_{\mathrm{t}}^*}{\rho}\, \frac{\partial}{\partial x_k^*}\, \overline{\frac{\partial \tilde p^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
+  \tilde \Pi_\epsilon^* &= -\frac{2\nu_{\mathrm{t}}^*}{\rho}\, \frac{\partial}{\partial x_k^*}\, \overline{\frac{\partial \tilde p^*}{\partial x_m^*} \frac{\partial \tilde u_k^*}{\partial x_m^*}}
   && \text{pressure transport,} \\
   \tilde D_\epsilon^* &= \nu_{\mathrm{t}}^* \frac{\partial^2 \overline{\epsilon^*}}{\partial x_k^* \partial x_k^*}
   && \text{viscous diffusion,} \\
-  \tilde \Upsilon^* &= 4 \left(\nu_{\mathrm{t}}^*\right)^2 \overline{\frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*} \frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*}}
+  \tilde \Upsilon^* &= 2 \left(\nu_{\mathrm{t}}^*\right)^2 \overline{\frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*} \frac{\partial^2 \tilde u_i^*}{\partial x_k^* \partial x_m^*}}
   && \text{dissipation of } \epsilon^* .
 \end{aligned}
 \end{equation}
@@ -1731,15 +2196,15 @@ $(\sigma_U + \sigma_L) - (3\sigma_U - \sigma_L) = -2(\sigma_U - \sigma_L)$, give
 with the nondimensional terms
 \begin{equation}\label{eq:ns-pp-eps-terms-nondim}
 \begin{aligned}
-  \tilde P_\epsilon &= -4\nu_{\mathrm{t}}\, \overline{\frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_m} \frac{\partial \tilde u_k}{\partial x_m}},
+  \tilde P_\epsilon &= -2\nu_{\mathrm{t}}\, \overline{\frac{\partial \tilde u_i}{\partial x_k} \frac{\partial \tilde u_i}{\partial x_m} \frac{\partial \tilde u_k}{\partial x_m}},
   &
   \tilde T_\epsilon &= -\frac{\partial}{\partial x_k}\, \overline{\tilde u_k \epsilon},
   &
-  \tilde \Pi_\epsilon &= -4\nu_{\mathrm{t}}\, \frac{\partial}{\partial x_k}\, \overline{\frac{\partial \tilde p}{\partial x_m} \frac{\partial \tilde u_k}{\partial x_m}},
+  \tilde \Pi_\epsilon &= -2\nu_{\mathrm{t}}\, \frac{\partial}{\partial x_k}\, \overline{\frac{\partial \tilde p}{\partial x_m} \frac{\partial \tilde u_k}{\partial x_m}},
   \\
   \tilde D_\epsilon &= \nu_{\mathrm{t}} \frac{\partial^2 \overline{\epsilon}}{\partial x_k \partial x_k},
   &
-  \tilde \Upsilon &= 4 \nu_{\mathrm{t}}^2\, \overline{\frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m} \frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m}} ,
+  \tilde \Upsilon &= 2 \nu_{\mathrm{t}}^2\, \overline{\frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m} \frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m}} ,
 \end{aligned}
 \end{equation}
 of the same form as \eqref{eq:ns-pp-eps-terms} without stars. The two new
@@ -1752,16 +2217,32 @@ the square of the gradient scale $U/L$, which changes at the rate
 $\sigma_U - \sigma_L$.
 \par
 In the stationary state $\partial \overline{\epsilon}/\partial t = 0$ and the
-rates are constant, $\sigma_X = c_\tau \beta_X$ (\S\ref{ssec:res-stationary}),
+rates are constant, $\sigma_X = c_\tau \beta_X$ (\S\ref{sssec:ns-pp-rates}),
 so by \eqref{eq:ns-pp-eps-rate-constant} the profiles satisfy
 \begin{equation}\label{eq:ns-pp-eps-radial}
   0 = \sigma_L\, r \frac{\mathrm{d} \overline{\epsilon}}{\mathrm{d} r}
   - 2\left( \sigma_U - \sigma_L \right) \overline{\epsilon}
   + \tilde P_\epsilon + \tilde T_\epsilon + \tilde \Pi_\epsilon + \tilde D_\epsilon - \tilde \Upsilon ,
 \end{equation}
-each term a function of $r$. Since every term is estimated independently,
-the residual of \eqref{eq:ns-pp-eps-radial} measures the statistical and
-discretization error of the profiles.
+each term a function of $r$.
+\par
+The second scaling term depends on the rates only through their difference
+$\sigma_U - \sigma_L$, which by \eqref{eq:ns-pp-rates-diff} is $-c_\tau$.
+Substituting it, together with $\sigma_L = c_\tau \beta_L$, into
+\eqref{eq:ns-pp-eps-radial} gives the budget we evaluate,
+\begin{equation}\label{eq:ns-pp-eps-radial-ctau}
+  0 = c_\tau \beta_L\, r \frac{\mathrm{d} \overline{\epsilon}}{\mathrm{d} r}
+  + 2 c_\tau\, \overline{\epsilon}
+  + \tilde P_\epsilon + \tilde T_\epsilon + \tilde \Pi_\epsilon + \tilde D_\epsilon - \tilde \Upsilon .
+\end{equation}
+The coefficients $c_\tau \beta_L$ and $2 c_\tau$ are constants, and the
+profiles $\overline{\epsilon}$, $\tilde P_\epsilon$, $\tilde T_\epsilon$,
+$\tilde \Pi_\epsilon$, $\tilde D_\epsilon$, and $\tilde \Upsilon$ are
+statistics of the stationary state, functions of $r$ alone; every term of
+\eqref{eq:ns-pp-eps-radial-ctau} is therefore independent of $t$.
+Since every term is estimated independently, the residual of
+\eqref{eq:ns-pp-eps-radial-ctau} measures the statistical and discretization
+error of the profiles.
 \par
 \subsubsection{Modeling terms}\label{sssec:ns-pp-eps-model}
 The budget \eqref{eq:ns-pp-eps-rate} is exact, but its production,
@@ -1789,11 +2270,8 @@ and the turbulent and pressure transport as gradient diffusion,
 where $C_{\epsilon 2}$, $C_\mu$, and $\sigma_\epsilon$ are constants and
 $\nu_\epsilon^*$ is the turbulent viscosity of the $k$--$\epsilon$ model,
 distinct from the LES eddy viscosity $\nu_{\mathrm{t}}^*$. Since our
-$\epsilon^*$ is the trace of the dissipation tensor, twice the sink of
-$\overline{k^*}$ used in \cite{pope2000turbulent}, the constants relate to the
-standard ones by $C_\mu = 2 C_\mu^{\mathrm{std}}$,
-$C_{\epsilon 2} = C_{\epsilon 2}^{\mathrm{std}}/2$, and
-$\sigma_\epsilon = \sigma_\epsilon^{\mathrm{std}}$.
+$\epsilon^*$ is the sink of $\overline{k^*}$, as in \cite{pope2000turbulent},
+the constants are directly comparable with the standard ones.
 Since $\nu_{\mathrm{t}}^*$ is uniform in space,
 $\tilde D_\epsilon^* = \partial_j^* (\nu_{\mathrm{t}}^*\, \partial_j^* \overline{\epsilon^*})$
 combines with \eqref{eq:ns-pp-eps-model-T} into a single diffusion term.
@@ -1809,7 +2287,7 @@ into \eqref{eq:ns-pp-eps-rate} gives the modeled dimensional budget
 \paragraph{Nondimensionalization.}
 The modeled terms scale like the exact terms they replace. With
 $\overline{k^*} = U^2\, \overline{k}$ and
-$\overline{\epsilon^*} = (U^3/L)\, \overline{\epsilon}$ \eqref{eq:res-k-scales},
+$\overline{\epsilon^*} = (U^3/L)\, \overline{\epsilon}$ \eqref{eq:ns-pp-k-scales},
 \begin{equation}\label{eq:ns-pp-eps-model-scales}
   \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}}
   = \frac{U^4}{L^2}\, \frac{\overline{\epsilon}^{\,2}}{\overline{k}} ,
@@ -1857,7 +2335,7 @@ modeled budget \eqref{eq:ns-pp-eps-model-nondim} then becomes
 \end{equation}
 a one-dimensional equation for $\overline{\epsilon}(r, t)$. In the stationary
 state $\partial \overline{\epsilon}/\partial t = 0$ and the rates are constant,
-$\sigma_X = c_\tau \beta_X$ (\S\ref{ssec:res-stationary}), so
+$\sigma_X = c_\tau \beta_X$ (\S\ref{sssec:ns-pp-rates}), so
 \eqref{eq:ns-pp-eps-model-radial} reduces to the ordinary differential
 equation
 \begin{equation}\label{eq:ns-pp-eps-model-stationary}
@@ -1869,188 +2347,6 @@ equation
 \end{equation}
 Regularity at the origin requires
 $\mathrm{d}\overline{\epsilon}/\mathrm{d}r = 0$ at $r = 0$.
-
-\subsection{Kinetic energy budget in the self-similar frame}\label{ssec:res-k-budget}
-We work with the full velocity $u_i^*$ and the ensemble average
-$\overline{\,\cdot\,}$ of \S\ref{sssec:ns-pp-scaling}, and assume that the
-ensemble-mean velocity vanishes, $\overline{u_i^*} = 0$. Then $u_i^*$ is the fluctuating velocity,
-the mean-advection and production terms of the turbulent
-kinetic energy equation \cite{pope2000turbulent} drop out, and the mean of the
-kinetic energy
-$\overline{k^*} = \tfrac12 \overline{u_i^* u_i^*}$, obeys
-\begin{equation}\label{eq:res-k-dim}
-  \frac{\partial \overline{k^*}}{\partial t^*} = \overline{T^*} - \frac{1}{2}\overline{\epsilon^*},
-  \qquad
-  \overline{T^*} = -\frac{\partial}{\partial x_j^*} \left( \frac{1}{\rho}\overline{p^* u_j^*}
-    + \frac{1}{2}\overline{u_i^* u_i^* u_j^*}
-    - \nu^* \frac{\partial \overline{k^*}}{\partial x_j^*} \right),
-\end{equation}
-where $\overline{T^*}$ is the transport and $\overline{\epsilon^*}$ is the
-trace of the dissipation tensor \eqref{eq:ns-pp-diss-trace}. The viscous term
-of the momentum equation contributes
-$\nu^*\, \overline{u_i^* \nabla^{*2} u_i^*}
-= \nu^* \nabla^{*2} \overline{k^*} - \tfrac12 \overline{\epsilon^*}$:
-a viscous diffusion of $\overline{k^*}$, which we include in the transport,
-and the sink. Since $\overline{\epsilon^*}$ is the sink of
-$\overline{u_i^* u_i^*} = 2\overline{k^*}$, the sink of $\overline{k^*}$ is
-$\tfrac12 \overline{\epsilon^*}$.
-\par
-We nondimensionalize with \eqref{eq:fw-nondim}, the pressure scale
-\eqref{eq:ns-pressure-nondim}, and
-\begin{equation}\label{eq:res-k-scales}
-  \overline{k^*} = U^2\, \overline{k}, \qquad
-  \overline{\epsilon^*} = \frac{U^3}{L}\, \overline{\epsilon},
-\end{equation}
-as in \eqref{eq:ns-kinetic-energy-nondim} and
-\eqref{eq:ns-pp-diss-nondim}. Since $U$ and $L$ are the same for every
-member of the ensemble (assumption~1 of \S\ref{sssec:ns-pp-scaling}), they
-pass through the averages, e.g.\
-$\overline{u_i^* u_i^* u_j^*} = U^3\, \overline{u_i u_i u_j}$. The pressure and
-triple-correlation fluxes in $\overline{T^*}$ therefore carry $U^3$, the viscous flux
-carries $\nu^* U^2/L$, and each derivative contributes
-$\partial/\partial x_j^* = L^{-1}\, \partial/\partial x_j$, so that
-\begin{equation}\label{eq:res-transport-nondim}
-  \overline{T^*} = \frac{U^3}{L}\, \overline{T},
-  \qquad
-  \overline{T} = -\frac{\partial}{\partial x_j} \left( \overline{p u_j}
-    + \frac{1}{2}\overline{u_i u_i u_j}
-    - \frac{1}{Re} \frac{\partial \overline{k}}{\partial x_j} \right),
-\end{equation}
-with $Re$ the Reynolds number \eqref{eq:ns-reynolds}. In the limit $1/Re = 0$
-in which we run, the viscous term drops out of $\overline{T}$, while
-$\overline{\epsilon}$ stays finite and is estimated from the resolved field
-by \eqref{eq:ns-pp-diss-models}.
-\par
-The left-hand side of \eqref{eq:res-k-dim} follows from the chain rule exactly
-as in \eqref{eq:fw-lhs-chain}, with the amplitude $U^2$ in place of $U$, so
-that $\sigma_U$ is replaced by $(U^2)^\prime / U^2 = 2\sigma_U$,
-\begin{equation}\label{eq:res-k-lhs}
-  \frac{\partial \overline{k^*}}{\partial t^*}
-  = \frac{U^2}{\tau}\left(
-      \frac{\partial \overline{k}}{\partial t}
-      + 2\sigma_U\, \overline{k}
-      - \sigma_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
-    \right).
-\end{equation}
-With the clock \eqref{eq:ns-clock}, $U^2/\tau = U^3/L$, so the prefactors of
-\eqref{eq:res-k-lhs} and \eqref{eq:res-transport-nondim} cancel and
-\eqref{eq:res-k-dim} becomes
-\begin{equation}\label{eq:res-k-nondim}
-  \frac{\partial \overline{k}}{\partial t}
-  = \sigma_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
-  - 2\sigma_U\, \overline{k}
-  + \overline{T}
-  - \tfrac12 \overline{\epsilon}.
-\end{equation}
-
-\subsubsection{Stationary budget}\label{ssec:res-stationary}
-In the self-similar frame the flow is statistically stationary, so
-$\overline{k}$, $\overline{T}$, and $\overline{\epsilon}$ are independent of
-$t$ and \eqref{eq:res-k-nondim} reduces to
-\begin{equation}\label{eq:res-k-stationary}
-  0 = \sigma_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
-  - 2\sigma_U\, \overline{k}
-  + \overline{T}
-  - \tfrac12 \overline{\epsilon} .
-\end{equation}
-Since $\overline{T} - \tfrac12 \overline{\epsilon}$ is independent of $t$, so are the
-scaling terms. Under the power-law ansatz the rates are
-$\sigma_X = \beta_X \tau/(t^* + \alpha_X)$ by \eqref{eq:pp-rate-chain}.
-Taking $\alpha_U = \alpha_L = \alpha$, the clock \eqref{eq:ns-clock} is
-$\tau = c_\tau\, (t^* + \alpha)^{\beta_L - \beta_U}$ with
-\begin{equation}\label{eq:res-clock-const}
-  c_\tau = \frac{A_L}{A_U},
-\end{equation}
-and
-\begin{equation}\label{eq:res-scaling-terms}
-  \sigma_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
-  - 2\sigma_U\, \overline{k}
-  = c_\tau\, (t^* + \alpha)^{\beta_L - \beta_U - 1}
-    \left( \beta_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
-    - 2\beta_U\, \overline{k} \right).
-\end{equation}
-Either the bracket vanishes identically, which by \eqref{eq:res-k-stationary}
-would require $\overline{T} = \tfrac12 \overline{\epsilon}$ everywhere, or the
-power of $t^* + \alpha$ vanishes, $\beta_L - \beta_U = 1$; the numerical
-experiments confirm the latter. The clock is then $\tau = c_\tau (t^* + \alpha)$,
-the rates
-\begin{equation}\label{eq:res-rates-const}
-  \sigma_X = c_\tau\, \beta_X
-\end{equation}
-are constant, the self-similar time is $t = c_\tau^{-1} \ln(t^* + \alpha)$ up
-to a constant, and \eqref{eq:res-k-stationary} holds with constant
-coefficients,
-\begin{equation}\label{eq:res-k-stationary-const}
-  0 = \sigma_L\, x_j \frac{\partial \overline{k}}{\partial x_j}
-  - 2\sigma_U\, \overline{k}
-  + \overline{T}
-  - \tfrac12 \overline{\epsilon}.
-\end{equation}
-The constant $c_\tau$ is not fixed by the analysis. The frame normalization
-$U_0 = L_0 = 1$ would give $c_\tau = 1$ only if the power law held from the
-initial condition on, which it does not, and the runs give $c_\tau$ well
-away from $1$. Since $\sigma_L - \sigma_U = c_\tau (\beta_L - \beta_U) = c_\tau$,
-the mean rate difference over the fitted range and the ratio $A_L/A_U$ of the
-fitted prefactors (\S\ref{ssec:pp-fit}) are two estimates of the same constant,
-a consistency check on the fit alongside $\beta_L - \beta_U = 1$ and
-$\alpha_U = \alpha_L$.
-\par
-In physical variables, $\overline{T^*} - \tfrac12 \overline{\epsilon^*}
-= (U^3/L)(\overline{T} - \tfrac12 \overline{\epsilon})$ by \eqref{eq:res-k-scales} and
-\eqref{eq:res-transport-nondim}, and
-$U^3/L = U^2/\tau = (A_U^2/c_\tau)\, (t^* + \alpha)^{2\beta_U - 1}$,
-so \eqref{eq:res-k-dim} and \eqref{eq:res-k-stationary-const} give
-\begin{equation}\label{eq:res-origin-rate}
-  \frac{\partial \overline{k^*}}{\partial t^*}
-  = \frac{A_U^2}{c_\tau}\, (t^* + \alpha)^{2\beta_U - 1}
-    \left( 2\sigma_U\, \overline{k} - \sigma_L\, x_j \frac{\partial \overline{k}}{\partial x_j} \right).
-\end{equation}
-\par
-At the origin $x_j\, \partial \overline{k}/\partial x_j = 0$, and
-\eqref{eq:res-k-stationary-const} gives the energy there directly,
-\begin{equation}\label{eq:res-k-origin}
-  \overline{k}(0) = \frac{\overline{T}(0) - \tfrac12 \overline{\epsilon}(0)}{2\sigma_U}.
-\end{equation}
-Then \eqref{eq:res-origin-rate}, with $\sigma_U = c_\tau \beta_U$, integrates to
-$\overline{k^*}(0, t^*) = A_U^2\, (t^* + \alpha)^{2\beta_U}\, \overline{k}(0)$, the
-scaling \eqref{eq:ns-pp-ensemble-radial} at $r = 0$ with $m_U = 2$, $m_L = 0$.
-\par
-Away from the origin we use the isotropy assumption of
-\S\ref{sssec:ns-pp-scaling}, so that $\overline{k}$, $\overline{T}$, and
-$\overline{\epsilon}$ depend only on $r = \sqrt{x_i x_i}$. Then
-$x_j\, \partial \overline{k}/\partial x_j = r\, \mathrm{d}\overline{k}/\mathrm{d}r$,
-and \eqref{eq:res-k-stationary-const} becomes the ordinary differential
-equation
-\begin{equation}\label{eq:res-k-ode}
-  \sigma_L\, r \frac{\mathrm{d} \overline{k}}{\mathrm{d} r}
-  - 2\sigma_U\, \overline{k}
-  = \tfrac12 \overline{\epsilon} - \overline{T} .
-\end{equation}
-The ratio of the rates is that of the exponents,
-$\sigma_U/\sigma_L = \beta_U/\beta_L$ by \eqref{eq:res-rates-const}, and with
-the integrating factor $r^{-2\beta_U/\beta_L}$ the equation becomes
-\begin{equation}\label{eq:res-k-ode-integrating}
-  \frac{\mathrm{d}}{\mathrm{d} r}\left( r^{-2\beta_U/\beta_L}\, \overline{k} \right)
-  = \frac{1}{\sigma_L}\, r^{-2\beta_U/\beta_L - 1}
-    \left( \tfrac12 \overline{\epsilon} - \overline{T} \right).
-\end{equation}
-The homogeneous solution is $\overline{k} = C\, r^{2\beta_U/\beta_L}$. For a
-flow whose length scale grows and whose velocity scale decays,
-$\beta_L > 0 > \beta_U$, and this is singular at the origin. Requiring
-$\overline{k}$ to be finite there sets $C = 0$, and integrating
-\eqref{eq:res-k-ode-integrating} from $0$ to $r$ gives
-\begin{equation}\label{eq:res-k-solution}
-  \overline{k}(r)
-  = \frac{1}{\sigma_L} \int_0^r \left( \frac{s}{r} \right)^{-2\beta_U/\beta_L}
-    \left( \tfrac12 \overline{\epsilon}(s) - \overline{T}(s) \right) \frac{\mathrm{d}s}{s} .
-\end{equation}
-Finally, with $\overline{k^*} = U^2\, \overline{k}$ and $r = r^*/L$, the
-physical energy is
-\begin{equation}\label{eq:res-k-solution-dim}
-  \overline{k^*}(r^*, t^*)
-  = A_U^2\, (t^* + \alpha)^{2\beta_U}\,
-    \overline{k}\!\left( \frac{r^*}{A_L\, (t^* + \alpha)^{\beta_L}} \right).
-\end{equation}
 
 \appendix
 
@@ -2326,6 +2622,33 @@ of \eqref{eq:ns-pp-eps-rate-constant}. It is evaluated this way rather than from
 the pointwise product $x_j\, \partial Q/\partial x_j$, which is not periodic
 and whose interpolant rings at the faces of the box. It vanishes at $r = 0$.
 
+\subsection{Radial projections of tensor fields}\label{ssec:radial-tensor}
+The Reynolds stress budget needs the spherical means of the projections
+\eqref{eq:ns-pp-rs-projections} of symmetric tensor fields $X_{ij}$. The
+weight $n_i n_j = x_i x_j / r^2$ is not smooth at the origin, so
+$n_i n_j X_{ij}$ is not band-limited and the mean of its interpolant would
+not be exact. Instead, the projection is moved onto the kernel. Differentiating
+$\langle e^{\mathrm{i} \boldsymbol{\kappa} \cdot \mathbf{x}} \rangle_r = j_0(|\boldsymbol{\kappa}| r)$
+twice with respect to $\boldsymbol{\kappa}$ gives
+\begin{equation}\label{eq:radial-tensor}
+  \frac{1}{4\pi} \oint n_i n_j\, e^{\mathrm{i} \boldsymbol{\kappa} \cdot r \hat{\mathbf{n}}}\,
+  \mathrm{d}\Omega
+  = \frac{j_1(z)}{z}\, \delta_{ij} - j_2(z)\, \hat\kappa_i \hat\kappa_j ,
+  \qquad z = |\boldsymbol{\kappa}| r ,
+\end{equation}
+with $\hat{\boldsymbol{\kappa}} = \boldsymbol{\kappa}/|\boldsymbol{\kappa}|$ and
+$j_2(z) = (3/z^2 - 1) \sin z / z - 3 \cos z / z^2$. Hence
+$\langle n_i n_j X_{ij} \rangle_r$ is \eqref{eq:radial-group} applied to two
+fields of the components, the trace $\hat X_{ii}$ with the kernel $j_1(z)/z$
+and the contraction $\hat\kappa_i \hat\kappa_j \hat X_{ij}$ with the kernel
+$-j_2(z)$. Both are formed in Fourier space from the band-limited components
+and grouped by $s$ like any other field, so the projection is exact. The
+tangential projection follows as
+$X_\perp = \tfrac12 (\langle X_{ii} \rangle_r - X_r)$. The radial derivatives
+use $z\, \mathrm{d}(j_1/z)/\mathrm{d}z = -j_2$ and
+$z\, j_2^\prime = z j_1 - 3 j_2$, as in \eqref{eq:radial-derivative}. At
+$r = 0$ the kernels are $1/3$ and $0$, so $X_r = X_\perp = X_{ii}/3$.
+
 \subsection{The radii}\label{ssec:radial-radii}
 The profiles are evaluated at $r = 0$ and at $n_r$ logarithmically spaced
 radii,
@@ -2337,7 +2660,7 @@ together with the few radii at which the statistical error is reported,
 which are added to the set exactly rather than taken from the nearest $r_i$.
 By default $n_r = 32$, $r_{\min} = \Delta x$, and $r_{\max} = r_0$, the radius
 inside which the sponge forcing vanishes and the $\epsilon$ budget of
-\S\ref{sssec:ns-pp-eps-budget} applies.
+\S\ref{ssec:ns-pp-eps-budget} applies.
 
 \subsection{The pressure}\label{ssec:radial-pressure}
 The pressure transport $\tilde \Pi_\epsilon$ needs the nondimensional pressure
@@ -2353,7 +2676,7 @@ $\hat N_l = \mathrm{i} \kappa_j \widehat{\tilde u_l \tilde u_j}$, which equals
 \end{equation}
 without the sponge term $\mathrm{i} \kappa_l \hat F_l / \kappa^2$ of
 \eqref{eq:ns-fourier-poisson}, since the sponge is not part of the budget
-(\S\ref{sssec:ns-pp-eps-budget}). The products $\tilde u_l \tilde u_j$ are formed on the refined grid of
+(\S\ref{ssec:ns-pp-eps-budget}). The products $\tilde u_l \tilde u_j$ are formed on the refined grid of
 \S\ref{ssec:radial-integrands}, where they are exact. The solver itself forms the convective
 term in rotational form, $-\tilde{\mathbf{u}} \times \boldsymbol{\omega}$,
 which differs from $\tilde u_j\, \partial \tilde u_i / \partial x_j$ by the
@@ -2414,7 +2737,7 @@ This appendix sets out how the statistical error of a time-averaged quantity
 such as \eqref{eq:ns-pp-time-average} is estimated, following
 \cite{shirian2023convergence}. Let $q(t)$ be a statistically stationary signal,
 here the spherical mean \eqref{eq:ns-pp-sphere-mean} at some radius $r$ of
-the trace of the nondimensional dissipation tensor,
+the nondimensional dissipation rate,
 $q(t) = \langle \epsilon \rangle_r(t)$ of \eqref{eq:ns-pp-diss-models},
 or of the resolved kinetic energy, $q(t) = \langle \tilde k \rangle_r(t)$ of
 \eqref{eq:ns-kinetic-energy-nondim},
