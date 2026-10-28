@@ -1635,6 +1635,169 @@ $\gamma/2$: a smaller $\gamma$ gives a smoother clock at the cost of a larger
 miss in $E_2$.
 
 
+\section{HIT Post Processing thought experiment}
+In HIT the kinetic energy evolution equation reduces to
+\begin{equation}
+  \frac{\partial k}{\partial t} = -\epsilon,
+\end{equation}
+which holds for both the physical flow and the simulated flow, each with its own
+$k$ and $\epsilon$. For the simulated flow, with kinetic energy $k_s$ and eddy
+viscosity $\nu_{\mathrm{t}}$, the dissipation equation is
+\begin{equation}
+  \frac{\partial \epsilon}{\partial t} = \frac{1}{\nu_{\mathrm{t}}}\frac{\partial \nu_{\mathrm{t}}}{\partial t} \epsilon + P_\epsilon - Y
+  \approx \frac{1}{\nu_{\mathrm{t}}}\frac{\partial \nu_{\mathrm{t}}}{\partial t} \epsilon - C_{\epsilon 2} \frac{\epsilon^2}{k_s}.
+\end{equation}
+The time dependent viscosity $\nu_{\mathrm{t}}$ moves the tail of the kinetic
+energy spectrum $E(\kappa)$ away from where the constant physical viscosity
+$\nu_0$ would put it. Let $\eta_0$ be the Kolmogorov scale of the physical
+flow, built from $\nu_0$, and $\eta$ the Kolmogorov scale of the simulated
+flow, built from $\nu_{\mathrm{t}}$. Consequently the kinetic energy can be broken up into two contributions
+\begin{equation}
+  k = k_s -  k_a,
+\end{equation}
+where $k_s$ is the simulated kinetic energy
+\begin{equation}
+  k_s \approx \int_0^{2\pi/\eta} E(\kappa)\, \mathrm{d}\kappa,
+\end{equation}
+and $k_a$ is the kinetic energy added by the viscosity adjustment
+\begin{equation}
+  k_a \approx \int_{2\pi/\eta_0}^{2\pi/\eta} E(\kappa)\, \mathrm{d}\kappa.
+\end{equation}
+The decomposition holds for either ordering of the two scales. When
+$\eta < \eta_0$ the simulation resolves more of the tail than the physical
+flow has and $k_a > 0$; when $\eta > \eta_0$ the simulation truncates the
+tail and $k_a < 0$ is the energy it is missing.
+Take the length scale $L$ to be constant. Assume that in the inertial range the spectrum is self-similar,
+$E(\kappa, t) = U^2 L\, \hat E(\kappa L)$, with
+\begin{equation}
+  \hat E(q) = \hat A (q + \hat\alpha)^{\beta_E},
+\end{equation}
+so that in dimensional form
+\begin{equation}
+  E(\kappa) = A_E(\kappa + \alpha_E)^{\beta_E},
+  \qquad
+  A_E = \hat A\, U^2 L^{1 + \beta_E},
+  \qquad
+  \alpha_E = \frac{\hat\alpha}{L}.
+\end{equation}
+For a Kolmogorov spectrum, $\beta_E = -5/3$, $\hat\alpha = 0$ and, with
+\eqref{eq:ns-eps-estimate}, $\hat A = C_K C_\epsilon^{2/3}$, where $C_K$ is the Kolmogorov constant.
+Using
+\begin{equation}
+  \eta = C_\eta \Delta L,
+\end{equation}
+and
+\begin{equation}
+  \eta_0 = \left(\frac{\nu_0^3 L}{C_\epsilon U^3}\right)^{1/4}.
+\end{equation}
+Plugging in
+\begin{equation}
+  k_a = \int_{2\pi / \eta_0}^{2\pi/\eta} A_E(\kappa + \alpha_E)^{\beta_E}\, \mathrm{d}\kappa = \frac{A_E}{\beta_E+1} \left[\left(\frac{2\pi}{\eta} + \alpha_E\right)^{\beta_E + 1} - \left(\frac{2\pi}{\eta_0} + \alpha_E\right)^{\beta_E + 1}\right],
+\end{equation}
+for $\beta_E \neq -1$.
+Plugging in equations for Kolmogorov scale
+\begin{equation}\label{eq:hit-ka}
+  k_a = \frac{A_E}{\beta_E + 1}\left[\left(\frac{2\pi}{C_\eta \Delta L} + \alpha_E\right)^{\beta_E+1} - \left(\frac{2\pi C_\epsilon^{1/4} U^{3/4}}{\nu_0^{3/4}L^{1/4}} + \alpha_E\right)^{\beta_E + 1}\right].
+\end{equation}
+
+\subsection{The dissipation correction}\label{ssec:hit-eps}
+The dissipation splits in the same way,
+\begin{equation}\label{eq:hit-eps-split}
+  \epsilon = \epsilon_s - \epsilon_a,
+\end{equation}
+where $\epsilon_s$ is the dissipation of the simulated flow and $\epsilon_a$
+the dissipation added by the viscosity adjustment. There are two ways to
+estimate $\epsilon_a$: from the spectrum, as for $k_a$, and from the energy
+budget.
+
+\paragraph{From the spectrum.}
+With $\epsilon$ half the trace of the dissipation tensor,
+$\epsilon = \nu\, \overline{(\partial u_i/\partial x_k)(\partial u_i/\partial x_k)}
+= 2\nu \int_0^\infty \kappa^2 E(\kappa)\, \mathrm{d}\kappa$, so
+\begin{equation}
+  \epsilon_s \approx 2\nu_{\mathrm{t}} \int_0^{2\pi/\eta} \kappa^2 E(\kappa)\, \mathrm{d}\kappa,
+  \qquad
+  \epsilon \approx 2\nu_0 \int_0^{2\pi/\eta_0} \kappa^2 E(\kappa)\, \mathrm{d}\kappa,
+\end{equation}
+and
+\begin{equation}\label{eq:hit-eps-a-parts}
+  \epsilon_a = 2(\nu_{\mathrm{t}} - \nu_0) \int_0^{2\pi/\eta} \kappa^2 E(\kappa)\, \mathrm{d}\kappa
+  + 2\nu_0 \int_{2\pi/\eta_0}^{2\pi/\eta} \kappa^2 E(\kappa)\, \mathrm{d}\kappa.
+\end{equation}
+Unlike $k_a$, which comes only from the band between the two cutoffs,
+$\epsilon_a$ has a second part from the change of viscosity over the whole
+resolved range. Take $\alpha_E = 0$ and $\beta_E > -3$, so that the integrals
+converge at $\kappa = 0$. Then
+\begin{equation}
+  \epsilon_s = \frac{2 A_E}{\beta_E + 3}\, \nu_{\mathrm{t}} \left(\frac{2\pi}{\eta}\right)^{\beta_E + 3},
+\end{equation}
+and likewise for $\epsilon$ with $\nu_0$ and $\eta_0$. With the self-similar
+constant eddy viscosity \eqref{eq:ns-constant-viscosity}, $\eta = C_\eta \Delta L$
+is the Kolmogorov scale of $\nu_{\mathrm{t}}$ and $C_\epsilon U^3/L$, just as
+$\eta_0$ is the Kolmogorov scale of $\nu_0$ and $C_\epsilon U^3/L$.
+Substituting $2\pi/\eta = 2\pi (C_\epsilon U^3/(\nu_{\mathrm{t}}^3 L))^{1/4}$
+and its counterpart for $\eta_0$,
+\begin{equation}\label{eq:hit-eps-a-spectral}
+  \epsilon_a = \frac{2 A_E}{\beta_E + 3} (2\pi)^{\beta_E + 3}
+  \left(\frac{C_\epsilon U^3}{L}\right)^{(\beta_E + 3)/4}
+  \left[\nu_{\mathrm{t}}^{-(3\beta_E + 5)/4} - \nu_0^{-(3\beta_E + 5)/4}\right].
+\end{equation}
+For the Kolmogorov spectrum, $\beta_E = -5/3$, the bracket vanishes and
+$\epsilon_a = 0$ for any $\nu_{\mathrm{t}}$: the dissipation is fixed by the
+flux through the inertial range, not by the viscosity, and moving the cutoff
+changes $k$ but not $\epsilon$. A nonzero spectral $\epsilon_a$ comes only from
+departures from $-5/3$ ($\beta_E \neq -5/3$ or $\alpha_E \neq 0$). The sharp
+cutoff is crude here: with $\beta_E = -5/3$ the spectral $\epsilon_s$ equals
+$\tfrac32 (2\pi)^{4/3} C_K\, C_\epsilon U^3/L$, consistent with
+\eqref{eq:ns-eps-estimate} only if $\tfrac32 (2\pi)^{4/3} C_K = 1$. The
+cutoff constant cancels from \eqref{eq:hit-eps-a-spectral} but not from
+\eqref{eq:hit-ka}.
+
+\paragraph{From the energy budget.}
+Both flows obey $\partial k/\partial t = -\epsilon$, so subtracting the two
+with $k_a = k_s - k$ gives
+\begin{equation}\label{eq:hit-eps-a-budget}
+  \epsilon_a = -\frac{\partial k_a}{\partial t}.
+\end{equation}
+This is exact, given the two energy equations, and it does not vanish for the
+Kolmogorov spectrum. The two estimates disagree because the spectral one
+assumes that both flows share the same inertial range, $U^2 L \hat E$, which
+cannot hold exactly when $k_s \neq k$; the error is of relative size
+$k_a/k_s$, the same size as $\epsilon_a/\epsilon_s$ from
+\eqref{eq:hit-eps-a-budget}. The budget therefore gives the leading
+nonzero $\epsilon_a$. \par
+For the Kolmogorov spectrum, $\hat A = C_K C_\epsilon^{2/3}$, and
+\eqref{eq:hit-ka} with $\alpha_E = 0$ is
+\begin{equation}\label{eq:hit-ka-kolmogorov}
+  k_a = -\frac{3}{2} (2\pi)^{-2/3} C_K C_\epsilon^{2/3}\, U^2
+  \left[\left(\frac{\eta}{L}\right)^{2/3} - \left(\frac{\eta_0}{L}\right)^{2/3}\right],
+\end{equation}
+with $\eta/L = C_\eta \Delta$ fixed by the grid and
+$\eta_0/L = C_\epsilon^{-1/4} \mathrm{Re}_0^{-3/4}$, $\mathrm{Re}_0 = UL/\nu_0$,
+so that $(\eta_0/L)^{2/3} \propto U^{-1/2}$. With $L$ and $\Delta$ constant,
+\begin{equation}
+  \frac{\partial k_a}{\partial t} = -\frac{3}{2} (2\pi)^{-2/3} C_K C_\epsilon^{2/3}\,
+  U \frac{\partial U}{\partial t}
+  \left[2\left(\frac{\eta}{L}\right)^{2/3} - \frac{3}{2}\left(\frac{\eta_0}{L}\right)^{2/3}\right].
+\end{equation}
+The rate $\partial U/\partial t$ follows from the simulated flow: with $L$
+constant, self-similarity gives $k_s \propto U^2$, so
+$U\, \partial U/\partial t = \tfrac12 (U^2/k_s)\, \partial k_s/\partial t
+= -\tfrac12 (U^2/k_s)\, \epsilon_s$. Then \eqref{eq:hit-eps-a-budget} gives
+\begin{equation}\label{eq:hit-eps-a}
+  \epsilon_a = -\frac{3}{4} (2\pi)^{-2/3} C_K C_\epsilon^{2/3}\,
+  \frac{U^2}{k_s}\, \epsilon_s
+  \left[2\left(\frac{\eta}{L}\right)^{2/3} - \frac{3}{2}\left(\frac{\eta_0}{L}\right)^{2/3}\right].
+\end{equation}
+Unlike $k_a$, $\epsilon_a$ does not vanish when $\eta = \eta_0$: the grid holds
+$\eta/L$ fixed while $\eta_0/L$ grows as $U$ decays, so the two cutoffs drift
+apart and $k_a$ changes even at the instant they coincide. When
+$(\eta_0/L)^{2/3} > \tfrac43 (\eta/L)^{2/3}$, which includes the
+well-resolved case $\eta \ll \eta_0$, the bracket is negative and
+$\epsilon_a > 0$: the simulated flow dissipates faster than the physical one
+because the excess energy $k_a$ in its tail decays faster than $k$.
+
+\subsection{Mesh dependance}
 
 \section{Navier--Stokes results}\label{sec:ns-results}
 
