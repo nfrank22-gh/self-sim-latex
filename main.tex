@@ -419,9 +419,10 @@ splitting scheme
 $\mathit{scheme} \in \{\textsc{LieTrotter}, \textsc{Strang}\}$
 (\S\ref{ssec:alg-lie-trotter}, \S\ref{ssec:alg-strang}), for equations that
 define one, the switch $\mathit{project}$ of the optional projection inside
-\textsc{Scale} (\S\ref{ssec:alg-substeps}), optionally the gain $\gamma > 0$
-and initial clock rate $c_\tau^{(0)}$ of the clock control
-(\S\ref{ssec:alg-clock}; $\gamma = \varnothing$ for none), and initial guesses
+\textsc{Scale} (\S\ref{ssec:alg-substeps}), for equations that use it (here
+only Navier--Stokes), the gain $\gamma > 0$ and initial clock rate
+$c_{\mathrm{init}}$ of the clock control (\S\ref{ssec:ns-clock-control};
+$\gamma = \varnothing$ for none), and initial guesses
 $\beta_U^{(0)}, \beta_L^{(0)}$, which only seed the bracket of the first
 root-find for $\beta_U, \beta_L$ (\S\ref{ssec:alg-beta-estimation}). From these:
 \begin{itemize}
@@ -436,8 +437,9 @@ root-find for $\beta_U, \beta_L$ (\S\ref{ssec:alg-beta-estimation}). From these:
   \item The flag $\beta_{\mathrm{ok}}$, which records whether the current
   $\beta_U, \beta_L$ are usable by \textsc{Strang}, starts as
   $\beta_{\mathrm{ok}} = \text{false}$.
-  \item Under clock control the clock rate starts at $c_{\tau,0} = c_\tau^{(0)}$,
-  and the miss \eqref{eq:alg-clock-m} of $u_0$ is $m_0 = 0$ by
+  \item Under clock control the clock rate starts at $c_{-1} = c_{\mathrm{init}}$,
+  the rate the first step relaxes from (\S\ref{ssec:ns-clock-control}), and the miss
+  \eqref{eq:ns-cc-miss-def} of $u_0$ is $\mu_0 = 0$ by
   \eqref{eq:alg-targets}.
 \end{itemize}
 
@@ -476,23 +478,23 @@ reaching each time, never by shortening a step.
 \begin{algorithm}[H]
 \caption{Top-level integrator}
 \begin{algorithmic}[1]
-\Require $u_0$, $H$, $N$, $\Delta t$, $T_{\mathrm{end}}$, $\mathit{scheme}$, $\gamma$, $c_\tau^{(0)}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
+\Require $u_0$, $H$, $N$, $\Delta t$, $T_{\mathrm{end}}$, $\mathit{scheme}$, $\gamma$, $c_{\mathrm{init}}$, $\beta_U^{(0)}$, $\beta_L^{(0)}$
 \State $t_0 \gets 0$, $k \gets 0$
 \State $\ln U_0 \gets 0$, $\ln L_0 \gets 0$
 \State Compute constraint targets $F_1, F_2$ from $u_0$ via \eqref{eq:alg-targets}
 \State $\beta_U \gets \beta_U^{(0)}$, $\beta_L \gets \beta_L^{(0)}$, $\beta_{\mathrm{ok}} \gets \text{false}$
-\State $c_{\tau,0} \gets c_\tau^{(0)}$, $m_0 \gets 0$ \Comment{under clock control, \S\ref{ssec:alg-clock}}
-\State Store $(u_0, \ln U_0, \ln L_0, \ln \tau_0, \beta_U, \beta_L, \beta_{\mathrm{ok}}, m_0)$
+\State $c_{-1} \gets c_{\mathrm{init}}$, $\mu_0 \gets 0$ \Comment{under clock control, \S\ref{ssec:ns-clock-control}}
+\State Store $(u_0, \ln U_0, \ln L_0, \ln \tau_0, \beta_U, \beta_L, \beta_{\mathrm{ok}}, \mu_0)$
 \While{$t_k < T_{\mathrm{end}}$}
   \If{$\gamma \neq \varnothing$}
-    \State $C \gets (\gamma, c_{\tau,k}, m_k, \Delta t, 0)$ \Comment{\S\ref{ssec:alg-clock}}
+    \State $C \gets (c_{k-1}, \mu_k)$ \Comment{\S\ref{ssec:ns-clock-control}}
   \Else
     \State $C \gets \varnothing$
   \EndIf
   \If{$\mathit{scheme} = \textsc{Strang}$ \textbf{and} $\beta_{\mathrm{ok}}$}
-    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, c_{\tau,k+1}) \gets \Call{Strang}{u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L, C}$ \Comment{\S\ref{ssec:alg-strang}}
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, c_k) \gets \Call{Strang}{u_k, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L, C}$ \Comment{\S\ref{ssec:alg-strang}}
   \Else
-    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, c_{\tau,k+1}) \gets \Call{LieTrotter}{u_k, \ln U_k, \ln L_k, \Delta t, C}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+    \State $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, c_k) \gets \Call{LieTrotter}{u_k, \ln U_k, \ln L_k, \Delta t, C}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
   \EndIf
   \State $u_{k+1} \gets \Call{ApplyBC}{u_{k+1}}$ \Comment{equation-specific, \S\ref{ssec:alg-substeps}}
   \State $\ln \tau_{k+1} \gets \ln \tau(\ln U_{k+1}, \ln L_{k+1})$ \Comment{\eqref{eq:1d-ln-clock}, \eqref{eq:ns-ln-clock}}
@@ -500,8 +502,8 @@ reaching each time, never by shortening a step.
   \If{$k+1 \geq 3$}
     \State $(\beta_U, \beta_L, \beta_{\mathrm{ok}}) \gets \Call{EstimateBeta}{\ln U_{k:k+1}, \ln L_{k:k+1}, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L}$ \Comment{\S\ref{ssec:alg-beta-estimation}}
   \EndIf
-  \State $m_{k+1} \gets m[u_{k+1}]$ \Comment{\eqref{eq:alg-clock-m}}
-  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \ln \tau_{k+1}, t_{k+1}, \mathrm{CFL}_k, \beta_U, \beta_L, \beta_{\mathrm{ok}}, c_{\tau,k+1}, m_{k+1})$ \Comment{\eqref{eq:alg-realized-cfl}}
+  \State $\mu_{k+1} \gets \mu[u_{k+1}]$ \Comment{\eqref{eq:ns-cc-miss-def}}
+  \State Store $(u_{k+1}, \ln U_{k+1}, \ln L_{k+1}, \ln \tau_{k+1}, t_{k+1}, \mathrm{CFL}_k, \beta_U, \beta_L, \beta_{\mathrm{ok}}, c_k, \mu_{k+1})$ \Comment{\eqref{eq:alg-realized-cfl}}
   \State $k \gets k + 1$
 \EndWhile
 \end{algorithmic}
@@ -517,7 +519,7 @@ also the case for every step that follows a failed $\beta$ update
 update itself runs regardless of $\mathit{scheme}$; under
 $\mathit{scheme} = \textsc{LieTrotter}$ the estimates are diagnostic only.
 Clock control needs no $\beta$ and so acts from the first step $k = 0$.
-Without it ($C = \varnothing$) the returned $c_{\tau,k+1}$ is unused.
+Without it ($C = \varnothing$) the returned $c_k$ is unused.
 
 \subsection{Substeps}\label{ssec:alg-substeps}
 Both splitting schemes are assembled from the substeps below. None of them
@@ -560,10 +562,11 @@ projection removes. The miss does not accumulate: the next
 \textsc{ConstrainedScale} measures the functionals of the projected field
 afresh and absorbs it into the next ratios.
 
-\paragraph{\textsc{ConstrainedScale}$(u, \ln U, \ln L, C)$.}
+\paragraph{\textsc{ConstrainedScale}$(u, \ln U, \ln L, C, \Delta^{\mathrm{pred}}_{\ln\tau,k} = 0)$.}
 Rescales $u$ so that the result carries the fixed targets $F_1, F_2$ of
-\eqref{eq:alg-targets} --- under clock control, $F_1$ and the prescribed clock
-increment instead --- and advances the log-scale state accordingly:
+\eqref{eq:alg-targets} --- under the clock control of Navier--Stokes, $F_1$
+and a prescribed clock increment instead --- and advances the log-scale state
+accordingly:
 \begin{enumerate}
   \item \textbf{Functionals of the input,}
   $F_m^{\mathrm{in}} = F_m[u]$, evaluated on the grid via
@@ -571,21 +574,22 @@ increment instead --- and advances the log-scale state accordingly:
   \item \textbf{Ratios} $\ln \lambda_U, \ln \lambda_L$ from the linear system
   \eqref{eq:fw-constraint-system}, in closed form. This works on the scalars
   $F_m^{\mathrm{in}}$ alone and does not touch the field.
-  \item \textbf{Clock.} If a clock state $C = (\gamma, c_{\tau,k}, m_k, \Delta t, \delta_k)$
-  is given, advance the clock rate to $c_{\tau,k+1}$ by
-  \eqref{eq:alg-clock-update} and replace the ratios by the solution of
-  \eqref{eq:alg-clock-system} (\S\ref{ssec:alg-clock}); with
-  $C = \varnothing$ they are kept.
+  \item \textbf{Clock (Navier--Stokes only).} If a clock state
+  $C = (c_{k-1}, \mu_k)$ is given, advance the clock rate to $c_k$ by
+  \eqref{eq:ns-cc-update} and replace the ratios by the solution of
+  \eqref{eq:ns-cc-system} (\S\ref{ssec:ns-clock-control}), using the
+  increment $\Delta^{\mathrm{pred}}_{\ln\tau,k}$ already applied by a predicted
+  half step; with $C = \varnothing$ they are kept.
   \item \textbf{Rescale,} $u' = \textsc{Scale}(u, \ln \lambda_U, \ln \lambda_L)$.
   \item \textbf{Return} $u'$ together with the advanced state
-  $\ln U + \ln \lambda_U$, $\ln L + \ln \lambda_L$, and $c_{\tau,k+1}$.
+  $\ln U + \ln \lambda_U$, $\ln L + \ln \lambda_L$, and $c_k$.
 \end{enumerate}
 Without clock control no time increment enters \textsc{ConstrainedScale}: the
 ratios are fixed by the functionals of the field it is given, not by the
 elapsed time. The same substep therefore serves as the full scaling step of
 Lie--Trotter and as the closing scaling half step of Strang; under clock
-control the two differ only in the part $\delta_k$ of the step's clock
-increment already applied.
+control the two differ only in the part $\Delta^{\mathrm{pred}}_{\ln\tau,k}$ of
+the step's clock increment already applied.
 
 \paragraph{\textsc{PredictScale}$(i, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L)$.}
 Predicts the ratios over the fraction $i$ of step $k$ from the power-law form
@@ -610,7 +614,7 @@ sponge forcing of \S\ref{ssec:ns-sponge}, which acts inside \textsc{Evolve}.
 A Lie--Trotter step composes a full physics step with a full scaling step,
 $u_{k+1} = \Phi_{\Delta t_k}^{(\mathrm{S})}\bigl(\Phi_{\Delta t_k}^{(\mathrm{P})}(u_k)\bigr)$,
 with the scaling ratios fixed by the constraints, or under clock control
-by $F_1$ and the clock (\S\ref{ssec:alg-clock}). It uses no estimate of
+by $F_1$ and the clock (\S\ref{ssec:ns-clock-control}). It uses no estimate of
 $\beta_U, \beta_L$, so it is valid from the first step. It is written for a
 general input state $(u, \ln U, \ln L)$ and step $\Delta t_k$ rather than only a stored state
 $(u_k, \ln U_k, \ln L_k)$, so that \textsc{Strang} can call it on a
@@ -618,9 +622,9 @@ half-stepped state.
 \begin{algorithm}[H]
 \caption{Lie--Trotter step}
 \begin{algorithmic}[1]
-\Function{LieTrotter}{$u, \ln U, \ln L, \Delta t_k, C$}
+\Function{LieTrotter}{$u, \ln U, \ln L, \Delta t_k, C, \Delta^{\mathrm{pred}}_{\ln\tau,k} = 0$}
   \State $u^{(\mathrm{P})} \gets \Call{Evolve}{u, \Delta t_k}$ \Comment{\S\ref{ssec:alg-substeps}}
-  \State \Return $\Call{ConstrainedScale}{u^{(\mathrm{P})}, \ln U, \ln L, C}$ \Comment{\S\ref{ssec:alg-substeps}}
+  \State \Return $\Call{ConstrainedScale}{u^{(\mathrm{P})}, \ln U, \ln L, C, \Delta^{\mathrm{pred}}_{\ln\tau,k}}$ \Comment{\S\ref{ssec:alg-substeps}}
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
@@ -642,10 +646,8 @@ followed by a scaling step whose ratios come from the constraints --- so
   \State $\bigl(\ln (U_{k+1/2}/U_k),\, \ln (L_{k+1/2}/L_k)\bigr) \gets \Call{PredictScale}{\tfrac12, \ln U_k, \ln L_k, \ln \tau_{k-2:k}, \Delta t, \beta_U, \beta_L}$ \Comment{\eqref{eq:alg-strang-predict}}
   \State $u_{k+1/2} \gets \Call{Scale}{u_k, \ln (U_{k+1/2}/U_k), \ln (L_{k+1/2}/L_k)}$
   \State $\ln U_{k+1/2} \gets \ln U_k + \ln (U_{k+1/2}/U_k)$;\ \ $\ln L_{k+1/2} \gets \ln L_k + \ln (L_{k+1/2}/L_k)$
-  \If{$C \neq \varnothing$}
-    \State $\delta_k \gets \ln \tau(\ln U_{k+1/2}, \ln L_{k+1/2}) - \ln \tau_k$; set the last entry of $C$ to $\delta_k$ \Comment{\S\ref{ssec:alg-clock}}
-  \EndIf
-  \State \Return $\Call{LieTrotter}{u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2}, \Delta t_k, C}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
+  \State $\Delta^{\mathrm{pred}}_{\ln\tau,k} \gets \ln \tau(\ln U_{k+1/2}, \ln L_{k+1/2}) - \ln \tau_k$ \Comment{used only if $C \neq \varnothing$, \S\ref{ssec:ns-clock-control}}
+  \State \Return $\Call{LieTrotter}{u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2}, \Delta t_k, C, \Delta^{\mathrm{pred}}_{\ln\tau,k}}$ \Comment{\S\ref{ssec:alg-lie-trotter}}
 \EndFunction
 \end{algorithmic}
 \end{algorithm}
@@ -661,123 +663,15 @@ $\Delta t_k$, and its \textsc{ConstrainedScale} substep --- the second scaling
 half step --- sets $U_{k+1}/U_{k+1/2}$ and $L_{k+1}/L_{k+1/2}$ so that
 $u_{k+1}$ satisfies the constraints. Under clock control the predicted half
 step is unchanged and the clock constrains the \emph{full} step: the closing
-half step advances $\ln \tau$ by $c_{\tau,k+1} \Delta t$ less the increment
-$\delta_k$ the predicted half step already applied (\S\ref{ssec:alg-clock}).
+half step advances $\ln \tau$ by $c_k \Delta t$ less the increment
+$\Delta^{\mathrm{pred}}_{\ln\tau,k}$ the predicted half step already applied
+(\S\ref{ssec:ns-clock-control}).
 The half-step state
 $(u_{k+1/2}, \ln U_{k+1/2}, \ln L_{k+1/2})$ is internal to the step and is not
 stored. The top-level loop calls \textsc{Strang} only when
 $\beta_{\mathrm{ok}}$ is true (\S\ref{ssec:alg-top-level}), which guarantees
 that $\beta_U, \beta_L$ were fitted to the stored history at the end of the
 previous step and that $\ln \tau_{k-2}$ exists.
-
-\subsection{Clock control of the scaling step}\label{ssec:alg-clock}
-The constrained ratios of \textsc{ConstrainedScale} fix $F_1, F_2$ exactly at
-every step, and so pass every fluctuation of the functionals of the evolved
-field into $\ln \lambda_U, \ln \lambda_L$, and through them into the rates
-$\sigma_X$. In particular the clock advances at the rate
-\begin{equation}\label{eq:alg-clock-rate}
-  c_{\tau,k+1} = \frac{\ln \tau_{k+1} - \ln \tau_k}{\Delta t},
-\end{equation}
-which for Navier--Stokes is $\sigma_L - \sigma_U$ by \eqref{eq:ns-ln-clock},
-and on the power law the constant $c_\tau$ of \eqref{eq:ns-pp-rates-clock}.
-Clock control makes this rate a slowly varying state of the integrator,
-and lets the second constraint absorb the difference.
-
-\paragraph{The clock and the miss.}
-For both equations the clock is linear in the log-scales,
-$\ln \tau = a_U \ln U + a_L \ln L + \mathrm{const}$, with $(a_U, a_L) = (0, 2)$
-by \eqref{eq:1d-ln-clock} and $(-1, 1)$ by \eqref{eq:ns-ln-clock}, so ratios
-$\lambda_U, \lambda_L$ advance it by $a_U \ln \lambda_U + a_L \ln \lambda_L$.
-For a field $u$, let $\ln \lambda_X^{\mathrm{c}}[u]$ solve
-\eqref{eq:fw-constraint-system} with $F_m^{\mathrm{in}} = F_m[u]$. The
-\emph{miss}
-\begin{equation}\label{eq:alg-clock-m}
-  m[u] = a_U \ln \lambda_U^{\mathrm{c}}[u] + a_L \ln \lambda_L^{\mathrm{c}}[u]
-\end{equation}
-is the amount by which $\ln \tau$ would have to advance to put $u$ back on the
-targets with no physics in between. It vanishes on a field that meets the
-targets, so $m_0 = 0$; the integrator records $m_k = m[u_k]$ for every stored
-field.
-
-\paragraph{The clock rate.}
-Under clock control $c_\tau$ obeys
-\begin{equation}\label{eq:alg-clock-ode}
-  \frac{\mathrm{d} c_\tau}{\mathrm{d} t} = \gamma \left( c_\tau^{\mathrm{target}} - c_\tau \right),
-\end{equation}
-with the gain $\gamma > 0$ and $c_{\tau,0} = c_\tau^{(0)}$ run parameters.
-Within step $k$, let $\Delta_k^{\mathrm{c}}$ be the $\ln \tau$ increment that
-would put the evolved field on the targets: that of the constrained ratios of
-the closing \textsc{ConstrainedScale}, plus, under \textsc{Strang}, the
-increment $\delta_k$ of the predicted half step. It consists of the miss $m_k$
-the step started with and the increment the physics added over the step,
-$c^{\mathrm{phys}}_k \Delta t = \Delta_k^{\mathrm{c}} - m_k$. The target
-\begin{equation}\label{eq:alg-clock-target}
-  c_\tau^{\mathrm{target}} = c^{\mathrm{phys}}_k + \frac{m_k}{T_m}
-  = \frac{\Delta_k^{\mathrm{c}} - m_k}{\Delta t} + \frac{m_k}{T_m},
-  \qquad T_m = \frac{4}{\gamma},
-\end{equation}
-follows the physics and closes the miss over the time $T_m$. Holding it over
-the step, \eqref{eq:alg-clock-ode} is integrated exactly,
-\begin{equation}\label{eq:alg-clock-update}
-  c_{\tau,k+1} = c_\tau^{\mathrm{target}}
-  + \left( c_{\tau,k} - c_\tau^{\mathrm{target}} \right) e^{-\gamma \Delta t},
-\end{equation}
-which is stable for any $\gamma \Delta t$, and the step advances $\ln \tau$ by
-$c_{\tau,k+1} \Delta t$.
-
-\paragraph{The ratios.}
-The clock fixes one combination of $\ln \lambda_U, \ln \lambda_L$; the other
-holds $F_1$ exactly. The ratios applied solve
-\begin{equation}\label{eq:alg-clock-system}
-  \begin{bmatrix} p_1 & q_1 \\ a_U & a_L \end{bmatrix}
-  \begin{bmatrix} \ln \lambda_U \\ \ln \lambda_L \end{bmatrix}
-  = \begin{bmatrix} \ln F_1^{\mathrm{in}} - \ln F_1 \\ c_{\tau,k+1} \Delta t - \delta_k \end{bmatrix},
-\end{equation}
-with $\delta_k = 0$ under \textsc{LieTrotter}, in closed form when
-$p_1 a_L - q_1 a_U \neq 0$ (here $2$ for the 1D diffusion equation and $5$
-for Navier--Stokes). Of all ratios that advance the clock as prescribed, these
-are the ones closest to the constrained ratios in the sense that the first
-constraint is still met exactly: the whole difference goes into $F_2$, which
-the rescaled field misses by
-\begin{equation}\label{eq:alg-clock-f2}
-  \ln \frac{F_2[u_{k+1}]}{F_2} = \frac{p_1 q_2 - p_2 q_1}{p_1 a_L - q_1 a_U}\, m_{k+1},
-\end{equation}
-$\tfrac45 m_{k+1}$ for Navier--Stokes. As with the projection inside
-\textsc{Scale}, the next \textsc{ConstrainedScale} measures the functionals
-afresh, so the miss is carried forward through $m_{k+1}$ and not lost.
-
-\paragraph{Dynamics of the miss.}
-Over a step the miss changes by what the physics added less what the clock
-applied, $m_{k+1} = m_k + c^{\mathrm{phys}}_k \Delta t - c_{\tau,k+1} \Delta t$.
-For $\Delta t \to 0$ this is $\dot m = c^{\mathrm{phys}} - c_\tau$, and with
-\eqref{eq:alg-clock-ode} and \eqref{eq:alg-clock-target},
-\begin{equation}\label{eq:alg-clock-miss}
-  \ddot m + \gamma \dot m + \frac{\gamma}{T_m}\, m = \dot c^{\mathrm{phys}},
-\end{equation}
-a damped oscillator with damping ratio $\zeta = \tfrac12 \sqrt{\gamma T_m}$.
-The choice $T_m = 4/\gamma$ makes it critically damped, independently of
-$\Delta t$. Closing the whole miss in one step instead, $T_m = \Delta t$,
-would give $\zeta = \tfrac12 \sqrt{\gamma \Delta t} \ll 1$, an oscillation at
-the frequency $\sqrt{\gamma/\Delta t}$ that grows as the step is refined.
-Differentiating \eqref{eq:alg-clock-ode} and using $\dot m = c^{\mathrm{phys}} - c_\tau$,
-the clock rate obeys the same oscillator,
-\begin{equation}\label{eq:alg-clock-ctau}
-  \ddot c_\tau + \gamma \dot c_\tau + \frac{\gamma}{T_m}\, c_\tau
-  = \gamma \dot c^{\mathrm{phys}} + \frac{\gamma}{T_m}\, c^{\mathrm{phys}},
-\end{equation}
-forced by $c^{\mathrm{phys}}$ and its rate. In steady state $c_\tau$ equals
-the mean of $c^{\mathrm{phys}}$; a fluctuation of $c^{\mathrm{phys}}$ at
-frequency $\omega \gg \sqrt{\gamma/T_m}$ passes into $c_\tau$ attenuated only
-by $\gamma/\omega$, through the $\gamma \dot c^{\mathrm{phys}}$ term, and into
-$m$ as $1/\omega$, so the smoothing of $c_\tau$ is set by $\gamma$ and not by
-$T_m$. For a
-statistically stationary $c^{\mathrm{phys}}$ the miss averages to zero, so the
-moments do not drift; fluctuations of $c^{\mathrm{phys}}$ faster than
-$1/\gamma$ are filtered out of $c_\tau$ and appear instead as bounded
-excursions of $m$, and so of $F_2$ by \eqref{eq:alg-clock-f2}. Smoothing
-$c_\tau$ over a longer time costs a larger miss, by as much as $\ln \tau$
-of the moment-preserving frame wanders over that time.
-
 
 \subsection{\textsc{EstimateBeta}: estimating \texorpdfstring{$\beta_U$}{beta\_U} and \texorpdfstring{$\beta_L$}{beta\_L}}\label{ssec:alg-beta-estimation}
 After every step with $k+1 \geq 3$, regardless of $\mathit{scheme}$, $\beta_U$
@@ -1608,6 +1502,139 @@ with $p_1 q_2 - p_2 q_1 = 4 \neq 0$, so the constraint system
 where the length ratio is identical in form to its 1D counterpart
 \eqref{eq:1d-length-ratio}.
 
+\subsection{Clock control of the scaling step}\label{ssec:ns-clock-control}
+The constrained ratios \eqref{eq:ns-length-ratio}, \eqref{eq:ns-velocity-ratio}
+fix $E_0, E_2$ exactly at every step, and so pass every fluctuation of the
+moments of the evolved field into $\ln \lambda_U, \ln \lambda_L$, and through
+them into the rates $\sigma_X$. For a turbulent field these fluctuations are
+large from step to step. In particular the clock advances over step $k$ by
+$\Delta_{\ln\tau,k} = \ln \tau_{k+1} - \ln \tau_k$, at the rate
+\begin{equation}\label{eq:ns-cc-rate}
+  c_k = \frac{\Delta_{\ln\tau,k}}{\Delta t},
+\end{equation}
+which is $\sigma_L - \sigma_U$ by \eqref{eq:ns-ln-clock}, and on the power law
+the constant $c_\tau$ of \eqref{eq:ns-pp-rates-clock}. Without clock control
+$c_k$ is whatever the constraints produce; clock control prescribes it, makes
+it a slowly varying state of the integrator, and lets the second constraint
+absorb the difference. \par
+Throughout this subsection $\Delta^{\bullet}_{\ln\tau,k}$ denotes an increment
+of $\ln \tau$ over step $k$, from $t_k$ to $t_{k+1}$, and
+$c^{\bullet}_k = \Delta^{\bullet}_{\ln\tau,k} / \Delta t$ the corresponding
+rate, with the same label $\bullet$. Like $\Delta t_k$, both carry the index
+$k$ of the step they belong to.
+
+
+\paragraph{The clock and the miss.}
+By \eqref{eq:ns-ln-clock} ratios $\lambda_U, \lambda_L$ advance the clock by
+$\ln \lambda_L - \ln \lambda_U$. For a field $\tilde u$, let
+$\ln \lambda_X^{\mathrm{con}}[\tilde u]$ be the constrained ratios
+\eqref{eq:ns-length-ratio}, \eqref{eq:ns-velocity-ratio} with
+$E_m^{\mathrm{in}} = E_m[\tilde u]$. The \emph{miss}
+\begin{equation}\label{eq:ns-cc-miss-def}
+  \mu[\tilde u] = \ln \lambda_L^{\mathrm{con}}[\tilde u] - \ln \lambda_U^{\mathrm{con}}[\tilde u]
+\end{equation}
+is the amount by which $\ln \tau$ would have to advance to put $\tilde u$
+back on the targets with no physics in between. 
+
+\paragraph{The clock rate.}
+Under clock control the rate obeys
+\begin{equation}\label{eq:ns-cc-ode}
+  \frac{\mathrm{d} c}{\mathrm{d} t} = \gamma \left( c^{\mathrm{tgt}} - c \right),
+\end{equation}
+with the gain $\gamma > 0$ and the rate $c_{-1} = c_{\mathrm{init}}$ the first
+step relaxes from as run parameters. Within step $k$, let
+$\Delta^{\mathrm{con}}_{\ln\tau,k}$ be the increment that would put the evolved
+field on the targets. It consists of
+the miss $\mu_k$ the step started with and the increment the physics added
+over the step,
+$\Delta^{\mathrm{phys}}_{\ln\tau,k} = \Delta^{\mathrm{con}}_{\ln\tau,k} - \mu_k$.
+The target
+\begin{equation}\label{eq:ns-cc-target}
+  c^{\mathrm{tgt}}_k = c^{\mathrm{phys}}_k + \frac{\mu_k}{T_\mu}
+  = \frac{\Delta^{\mathrm{con}}_{\ln\tau,k} - \mu_k}{\Delta t} + \frac{\mu_k}{T_\mu},
+  \qquad T_\mu = \frac{4}{\gamma},
+\end{equation}
+follows the physics and closes the miss over the time $T_\mu$. Holding it over
+the step, \eqref{eq:ns-cc-ode} is integrated exactly,
+\begin{equation}\label{eq:ns-cc-update}
+  c_k = c^{\mathrm{tgt}}_k
+  + \left( c_{k-1} - c^{\mathrm{tgt}}_k \right) e^{-\gamma \Delta t},
+\end{equation}
+which is stable for any $\gamma \Delta t$, and the step advances $\ln \tau$ by
+$\Delta_{\ln\tau,k} = c_k \Delta t$.
+
+\paragraph{The ratios.}
+The clock fixes one combination of $\ln \lambda_U, \ln \lambda_L$; the other
+holds $E_0$ exactly. With the exponents \eqref{eq:ns-exponents}, the ratios
+applied solve
+\begin{equation}\label{eq:ns-cc-system}
+  \begin{bmatrix} 2 & 3 \\ -1 & 1 \end{bmatrix}
+  \begin{bmatrix} \ln \lambda_U \\ \ln \lambda_L \end{bmatrix}
+  = \begin{bmatrix} \ln E_0^{\mathrm{in}} - \ln E_0 \\ c_k \Delta t - \Delta^{\mathrm{pred}}_{\ln\tau,k} \end{bmatrix},
+\end{equation}
+with $\Delta^{\mathrm{pred}}_{\ln\tau,k} = 0$ under \textsc{LieTrotter}. The
+determinant is $5$, and in closed form
+\begin{equation}\label{eq:ns-cc-ratios}
+  \ln \lambda_L = \frac{R_0 + 2 R_\tau}{5}, \qquad
+  \ln \lambda_U = \frac{R_0 - 3 R_\tau}{5},
+\end{equation}
+with $R_0$ and $R_\tau$ the two entries of the right-hand side. Of all ratios
+that advance the clock as prescribed, these are the ones closest to the
+constrained ratios in the sense that the first constraint is still met
+exactly: the whole difference goes into $E_2$, which the rescaled field
+misses by
+\begin{equation}\label{eq:ns-cc-f2}
+  \ln \frac{E_2[\tilde u_{k+1}]}{E_2} = \frac{4}{5}\, \mu_{k+1},
+\end{equation}
+where $4 = p_1 q_2 - p_2 q_1$ is the determinant of the constraint system
+\eqref{eq:fw-constraint-system}. As with the projection inside
+\textsc{Scale}, the next \textsc{ConstrainedScale} measures the moments
+afresh, so the miss is carried forward through $\mu_{k+1}$ and not lost.
+
+\paragraph{Dynamics of the miss.}
+Over a step the miss changes by what the physics added less what the clock
+applied,
+\begin{equation}\label{eq:ns-cc-miss-step}
+  \mu_{k+1} = \mu_k + \Delta^{\mathrm{phys}}_{\ln\tau,k} - \Delta_{\ln\tau,k}
+  = \mu_k + \bigl( c^{\mathrm{phys}}_k - c_k \bigr) \Delta t .
+\end{equation}
+Let $\Delta t \to 0$ with $\gamma$ and $T_\mu$ held fixed, and assume the
+physics advances the clock by $O(\Delta t)$ per step, so that
+$c^{\mathrm{phys}}_k$ has a limit. The rates then become functions $c(t)$,
+$c^{\mathrm{phys}}(t)$ and the miss a function $\mu(t)$, and dividing
+\eqref{eq:ns-cc-miss-step} by $\Delta t$,
+\begin{equation}\label{eq:ns-cc-limit}
+  \dot \mu = c^{\mathrm{phys}} - c .
+\end{equation}
+Substituting the target \eqref{eq:ns-cc-target},
+$c^{\mathrm{tgt}} = c^{\mathrm{phys}} + \mu/T_\mu$, into \eqref{eq:ns-cc-ode}
+and then using \eqref{eq:ns-cc-limit},
+\begin{equation}\label{eq:ns-cc-cdot}
+  \dot c = \gamma \left( c^{\mathrm{phys}} - c \right) + \frac{\gamma}{T_\mu}\, \mu
+  = \gamma \dot \mu + \frac{\gamma}{T_\mu}\, \mu .
+\end{equation}
+Differentiating \eqref{eq:ns-cc-limit} and inserting
+\eqref{eq:ns-cc-cdot},
+$\ddot \mu = \dot c^{\mathrm{phys}} - \dot c
+= \dot c^{\mathrm{phys}} - \gamma \dot \mu - (\gamma/T_\mu)\, \mu$, or
+\begin{equation}\label{eq:ns-cc-miss}
+  \ddot \mu + \gamma \dot \mu + \frac{\gamma}{T_\mu}\, \mu = \dot c^{\mathrm{phys}},
+\end{equation}
+a damped oscillator. Matching it to the standard form
+$\ddot \mu + 2 \zeta \omega_0 \dot \mu + \omega_0^2 \mu$ gives the natural
+frequency $\omega_0 = \sqrt{\gamma/T_\mu}$ and the damping ratio
+$\zeta = \gamma / (2 \omega_0) = \tfrac12 \sqrt{\gamma T_\mu}$.
+Critical damping, $\zeta = 1$, requires $\gamma T_\mu = 4$, so the choice
+$T_\mu = 4/\gamma$ makes it critically damped, independently of
+$\Delta t$. Closing the whole miss in one step instead, $T_\mu = \Delta t$,
+would give $\zeta = \tfrac12 \sqrt{\gamma \Delta t} \ll 1$, an oscillation at
+the frequency $\sqrt{\gamma/\Delta t}$ that grows as the step is refined. \par
+The natural frequency is then $\omega_0 = \gamma/2$, so the clock rate follows
+$c^{\mathrm{phys}}$ through a low-pass filter with corner frequency
+$\gamma/2$: a smaller $\gamma$ gives a smoother clock at the cost of a larger
+miss in $E_2$.
+
+
 
 \section{Navier--Stokes results}\label{sec:ns-results}
 
@@ -1773,8 +1800,8 @@ Equivalently, by \eqref{eq:ns-ln-clock}, $c_\tau$ is the rate at which
 $\ln \tau = \ln L - \ln U$ grows in $t$. In the budgets we use
 \eqref{eq:ns-pp-rates} in place of the instantaneous rates; in a run whose
 scales are prescribed by the power law it holds exactly. Under the clock
-control of \S\ref{ssec:alg-clock}, \eqref{eq:ns-pp-rates-diff} holds at every
-step with the instantaneous clock rate $c_{\tau,k}$ in place of $c_\tau$.
+control of \S\ref{ssec:ns-clock-control}, \eqref{eq:ns-pp-rates-diff} holds at every
+step with the instantaneous clock rate $c_k$ in place of $c_\tau$.
 
 \subsection{Reynolds stress budget}\label{ssec:ns-pp-rs-budget}
 This subsection derives the evolution equation of the resolved Reynolds
@@ -2070,6 +2097,85 @@ $\overline{\epsilon} = \tfrac12 (\varepsilon_r + 2\varepsilon_\perp)$; it is
 not an independent check of the profiles, but it is the budget that the
 $k$--$\epsilon$ model of \S\ref{sssec:ns-pp-eps-model} closes. Regularity at
 the origin requires $\mathrm{d}\overline{\tilde k}/\mathrm{d}r = 0$ at $r = 0$.
+
+\subsubsection{The dimensional budget at the origin}\label{sssec:ns-pp-k-origin}
+We now apply the isotropy assumption directly to the dimensional budget
+\eqref{eq:ns-pp-k-rate}, without passing to the self-similar frame, and
+evaluate it at the origin. Let $r^* = |\mathbf{x}^*|$ and
+$n_j = x_j^* / r^*$. The statistics $\overline{\tilde k^*}$ and
+$\overline{\epsilon^*}$ depend only on $r^*$ and $t^*$, and the mean fluxes are
+radial,
+\begin{equation}\label{eq:ns-pp-k-origin-flux}
+  \overline{\tilde u_j^* \tilde k^*} = n_j\, F_k^*(r^*, t^*) ,
+  \qquad
+  \overline{\tilde u_j^* \tilde p^*} = n_j\, F_p^*(r^*, t^*) ,
+\end{equation}
+with $F_k^* = \overline{\tilde u_r^* \tilde k^*}$,
+$F_p^* = \overline{\tilde u_r^* \tilde p^*}$ and
+$\tilde u_r^* = n_j \tilde u_j^*$. As in \eqref{eq:ns-pp-k-radial-terms}, the
+divergence of a radial flux and the Laplacian of a radial function give
+\begin{equation}\label{eq:ns-pp-k-origin-radial}
+  \frac{\partial \overline{\tilde k^*}}{\partial t^*}
+  = -\frac{1}{r^{*2}} \frac{\partial}{\partial r^*}\left( r^{*2} F_k^* \right)
+  - \frac{1}{\rho}\, \frac{1}{r^{*2}} \frac{\partial}{\partial r^*}\left( r^{*2} F_p^* \right)
+  + \frac{\nu_{\mathrm{t}}^*}{r^{*2}} \frac{\partial}{\partial r^*}\left( r^{*2} \frac{\partial \overline{\tilde k^*}}{\partial r^*} \right)
+  - \overline{\epsilon^*} .
+\end{equation}
+
+\paragraph{Behaviour near the origin.}
+Each term of \eqref{eq:ns-pp-k-origin-radial} has the form $0/0$ at
+$r^* = 0$, and its value there follows from the regularity of the mean fields.
+A smooth function of $r^*$ alone is even in $r^*$, so
+\begin{equation}\label{eq:ns-pp-k-origin-k-expansion}
+  \overline{\tilde k^*} = k_0^*(t^*) + k_2^*(t^*)\, r^{*2} + O(r^{*4}) .
+\end{equation}
+A smooth radial vector field $n_j F^*(r^*) = x_j^*\, F^*/r^*$ requires $F^*/r^*$
+to be smooth, so $F^*$ is odd in $r^*$ and vanishes at the origin,
+\begin{equation}\label{eq:ns-pp-k-origin-flux-expansion}
+  F^* = a^*(t^*)\, r^* + O(r^{*3}) ,
+  \qquad
+  a^* = \left.\frac{\partial F^*}{\partial r^*}\right|_{r^*=0} .
+\end{equation}
+The flux itself vanishes at the origin, since there is no preferred direction
+there, but its divergence does not:
+\begin{equation}\label{eq:ns-pp-k-origin-limits}
+  \lim_{r^* \to 0} \frac{1}{r^{*2}} \frac{\partial}{\partial r^*}\left( r^{*2} F^* \right)
+  = 3\, a^* ,
+  \qquad
+  \lim_{r^* \to 0} \frac{1}{r^{*2}} \frac{\partial}{\partial r^*}\left( r^{*2} \frac{\partial \overline{\tilde k^*}}{\partial r^*} \right)
+  = 6\, k_2^*
+  = 3 \left.\frac{\partial^2 \overline{\tilde k^*}}{\partial r^{*2}}\right|_{r^*=0} .
+\end{equation}
+Equivalently, $n_j F^* = a^* x_j^* + O(r^{*3})$ has divergence $3 a^*$ at the
+origin, and $\nabla^{*2} (k_2^* r^{*2}) = 6 k_2^*$.
+
+\paragraph{Budget at the origin.}
+Substituting \eqref{eq:ns-pp-k-origin-limits} into
+\eqref{eq:ns-pp-k-origin-radial},
+\begin{equation}\label{eq:ns-pp-k-origin}
+  \frac{\mathrm{d} \overline{\tilde k^*}(0, t^*)}{\mathrm{d} t^*}
+  = \underbrace{-3 \left.\frac{\partial F_k^*}{\partial r^*}\right|_{0}}_{\tilde T_k^*(0)}
+  \;\underbrace{-\,\frac{3}{\rho} \left.\frac{\partial F_p^*}{\partial r^*}\right|_{0}}_{\tilde \Pi_k^*(0)}
+  \;+\; \underbrace{3\, \nu_{\mathrm{t}}^* \left.\frac{\partial^2 \overline{\tilde k^*}}{\partial r^{*2}}\right|_{0}}_{\tilde D_k^*(0)}
+  \;-\; \overline{\epsilon^*}(0, t^*) .
+\end{equation}
+The transport terms do not vanish at the origin in general. They are
+divergences, so they integrate to zero over a volume on whose boundary the
+fluxes vanish, but locally they exchange energy between the centre and its
+surroundings. If the turbulent flux points outward near the origin,
+$\partial F_k^* / \partial r^* > 0$ there and $\tilde T_k^*(0) < 0$: turbulent
+transport drains energy from the centre. The same limits apply
+to the self-similar budget \eqref{eq:ns-pp-k-radial-ctau}, whose additional
+advection term $c_\tau \beta_L\, r\, \mathrm{d}\overline{\tilde k}/\mathrm{d}r$
+vanishes at $r = 0$, so that there
+\begin{equation}\label{eq:ns-pp-k-origin-ctau}
+  0 = - 2 c_\tau \beta_U\, \overline{\tilde k}(0)
+  + \tilde T_k(0) + \tilde \Pi_k(0) + \tilde D_k(0) - \overline{\epsilon}(0) ,
+\end{equation}
+with $\tilde T_k(0)$, $\tilde \Pi_k(0)$ and $\tilde D_k(0)$ given by the
+nondimensional counterparts of \eqref{eq:ns-pp-k-origin}. When the profiles
+are evaluated numerically, these limits replace the radial forms
+\eqref{eq:ns-pp-k-radial-terms} at $r = 0$.
 
 \subsection{\texorpdfstring{$\epsilon$}{epsilon} budget}\label{ssec:ns-pp-eps-budget}
 This subsection derives the evolution equation of the mean dissipation
