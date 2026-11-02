@@ -1504,6 +1504,36 @@ The constrained ratios \eqref{eq:ns-length-ratio}, \eqref{eq:ns-velocity-ratio}
 fix $E_0, E_2$ exactly at every step, and so pass every fluctuation of the
 moments of the evolved field into $U$ and $L$.
 \par
+The clock advances over step $k$ by
+$\Delta_{\ln\tau,k} = \ln \tau_{k+1} - \ln \tau_k$, at the rate
+\begin{equation}\label{eq:ns-sr-clock-rate}
+  c_k = \frac{\mathrm{d} \ln \tau}{\mathrm{d} t} = \frac{\Delta_{\ln\tau,k}}{\Delta t}.
+\end{equation}
+Substituting \eqref{eq:ns-ln-clock},
+\begin{equation}
+  c_k = \frac{\ln L_{k+1} - \ln U_{k+1} - \ln L_k + \ln U_k}{\Delta t} = \sigma_L - \sigma_U ,
+\end{equation}
+which by \eqref{eq:ns-pp-rates} is the constant $c_\tau$. However, this assumes
+that $U$ and $L$ follow the assumed power law exactly. In practice, satisfying
+the moment constraints exactly introduces fluctuations, so that instead
+\begin{equation}
+  X = \overline{X} + X^\prime,
+\end{equation}
+where $\overline{X}$ is the ensemble average of $X$, which we assume still
+follows the assumed power law, and $X^\prime$ is a mean-zero fluctuation. When
+$X^\prime \ne 0$, nondimensionalizing ensemble-averaged quantities such as
+\begin{equation}
+  \overline{Q^*} = \overline{UL Q}
+\end{equation}
+does not allow the time-dependent $U$ and $L$ to be pulled out to give
+\begin{equation}
+  \overline{Q^*} = UL\, \overline{Q}.
+\end{equation}
+Thus, to reduce $X^\prime$ so that the velocity and length scale factors can
+be pulled out of ensemble averages, we introduce scale relaxation, which lets
+the moments fluctuate in return for reduced fluctuations in the velocity and
+length scales.
+\par
 Throughout this subsection $\mathcal{X} = \ln X$ for $X \in \{U, L\}$, as in
 \eqref{eq:pp-logs}, and a statement made for $\mathcal{X}$ holds for
 $\mathcal{U}$ and $\mathcal{L}$ alike.
