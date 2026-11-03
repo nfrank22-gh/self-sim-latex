@@ -1502,32 +1502,21 @@ where the length ratio is identical in form to its 1D counterpart
 \subsection{Relaxation of the scales}\label{ssec:ns-scale-relaxation}
 The constrained ratios \eqref{eq:ns-length-ratio}, \eqref{eq:ns-velocity-ratio}
 fix $E_0, E_2$ exactly at every step, and so pass every fluctuation of the
-moments of the evolved field into $U$ and $L$.
-\par
-The clock advances over step $k$ by
-$\Delta_{\ln\tau,k} = \ln \tau_{k+1} - \ln \tau_k$, at the rate
-\begin{equation}\label{eq:ns-sr-clock-rate}
-  c_k = \frac{\mathrm{d} \ln \tau}{\mathrm{d} t} = \frac{\Delta_{\ln\tau,k}}{\Delta t}.
-\end{equation}
-Substituting \eqref{eq:ns-ln-clock},
-\begin{equation}
-  c_k = \frac{\ln L_{k+1} - \ln U_{k+1} - \ln L_k + \ln U_k}{\Delta t} = \sigma_L - \sigma_U ,
-\end{equation}
-which by \eqref{eq:ns-pp-rates} is the constant $c_\tau$. However, this assumes
-that $U$ and $L$ follow the assumed power law exactly. In practice, satisfying
-the moment constraints exactly introduces fluctuations, so that instead
+moments of the evolved field into $U$ and $L$. As a result, the velocity and length
+scales don't exactly follow the assumed power law distribution. Instead for $X\in \{U, L\}$, we have
 \begin{equation}
   X = \overline{X} + X^\prime,
 \end{equation}
 where $\overline{X}$ is the ensemble average of $X$, which we assume still
 follows the assumed power law, and $X^\prime$ is a mean-zero fluctuation. When
-$X^\prime \ne 0$, nondimensionalizing ensemble-averaged quantities such as
+$X^\prime \ne 0$ and we nondimensionalize an ensemble-averaged quantity
 \begin{equation}
-  \overline{Q^*} = \overline{UL Q}
+  \overline{Q^*} = \overline{U^{m_U} L^{m_L} Q},
 \end{equation}
-does not allow the time-dependent $U$ and $L$ to be pulled out to give
+whose units are set by the exponents $m_U, m_L$, the time-dependent $U$ and
+$L$ cannot be pulled out of the average to give
 \begin{equation}
-  \overline{Q^*} = UL\, \overline{Q}.
+  \overline{Q^*} = U^{m_U} L^{m_L}\, \overline{Q}.
 \end{equation}
 Thus, to reduce $X^\prime$ so that the velocity and length scale factors can
 be pulled out of ensemble averages, we introduce scale relaxation, which lets
@@ -1597,11 +1586,9 @@ relaxation \eqref{eq:ns-sr-ode}, in which $\gamma$ is constant,
 \begin{equation*}
   \ddot{\mathcal{X}}
   = \gamma \left( \dot{\mathcal{X}}^{\mathrm{tgt}} - \dot{\mathcal{X}} \right)
-  = \gamma \left( \dot{\mathcal{X}}^{\mathrm{tgt}} - \sigma_X^{\mathrm{phys}} + \dot \mu_X \right),
+  = \gamma \left( \dot{\mathcal{X}}^{\mathrm{tgt}} - \sigma_X^{\mathrm{phys}} + \dot \mu_X \right).
 \end{equation*}
-where the second form uses \eqref{eq:ns-sr-balance} again,
-$\dot{\mathcal{X}} = \sigma_X^{\mathrm{phys}} - \dot \mu_X$, to eliminate
-$\dot{\mathcal{X}}$. Substituting this into the first and moving the term
+ Substituting this into the first and moving the term
 $\gamma \dot \mu_X$ to the left-hand side,
 \begin{equation}\label{eq:ns-sr-general}
   \ddot \mu_X + \gamma \dot \mu_X
