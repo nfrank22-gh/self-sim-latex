@@ -2286,10 +2286,9 @@ and therefore time dependent in physical space,
 $\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$. The \emph{true} flow is the one
 whose viscosity is constant in physical space and equal to zero,
 \begin{equation}\label{eq:hit-nu-true}
-  \nu_{\mathrm{c}}^* = 0 ,
+  \nu_{\mathrm{c}}^* = 0.
 \end{equation}
-the infinite-Reynolds-number flow that the simulation, with $1/Re = 0$,
-approximates. Its spectrum extends to $\kappa^* \to \infty$, and its
+Its spectrum extends to $\kappa^* \to \infty$, and its
 dissipation is the rate at which energy cascades to infinitely small scales.
 Quantities of the true flow carry the subscript $\mathrm{c}$, for constant
 viscosity: $\overline{k_{\mathrm{c}}^*}$, $\overline{\epsilon_{\mathrm{c}}^*}$,
@@ -2384,42 +2383,85 @@ true flow, the kinetic energies are
 \begin{equation}\label{eq:hit-k-split}
   \overline{k^*} \approx \int_0^{2\pi/\eta^*} E^*(\kappa^*)\, \mathrm{d}\kappa^*,
   \qquad
-  \overline{k_{\mathrm{c}}^*} = \overline{k^*} + k_a^*,
+  \overline{k_{\mathrm{c}}^*} = \overline{k^*} + \overline{k_a^*},
   \qquad
-  k_a^* \approx \int_{2\pi/\eta^*}^{\infty} E^*(\kappa^*)\, \mathrm{d}\kappa^* \ge 0 ,
+  \overline{k_a^*} \approx \int_{2\pi/\eta^*}^{\infty} E^*(\kappa^*)\, \mathrm{d}\kappa^* \ge 0 ,
 \end{equation}
-where $k_a^*$ is the energy of the tail that the simulation is missing.
+where $\overline{k_a^*}$ is the energy of the tail that the simulation is missing.
 \par
-To evaluate $k_a^*$, assume that the spectrum is self-similar,
+To evaluate these integrals, assume that the spectrum is self-similar,
 $E^*(\kappa^*, t^*) = U^2 L\, E(\kappa^* L)$, with the power law
-\begin{equation}
+\begin{equation}\label{eq:hit-E-powerlaw}
   E(\kappa) = A_E (\kappa + \alpha_E)^{\beta_E},
 \end{equation}
-so that in dimensional form
+where $\alpha_E > 0$ keeps the spectrum finite at $\kappa = 0$ and
+$\beta_E < -1$, as in the inertial range. Over a band of self-similar
+wavenumbers $\kappa_1 \le \kappa \le \kappa_2$,
+\begin{equation}\label{eq:hit-E-integral}
+  \int_{\kappa_1}^{\kappa_2} E(\kappa)\, \mathrm{d}\kappa
+  = \frac{A_E}{\beta_E + 1}
+  \Big[ (\kappa + \alpha_E)^{\beta_E + 1} \Big]_{\kappa_1}^{\kappa_2}
+  = \frac{A_E}{\beta_E + 1}
+  \left[ (\kappa_2 + \alpha_E)^{\beta_E + 1} - (\kappa_1 + \alpha_E)^{\beta_E + 1} \right] ,
+\end{equation}
+which also holds for $\kappa_2 \to \infty$, where
+$(\kappa_2 + \alpha_E)^{\beta_E + 1} \to 0$ since $\beta_E + 1 < 0$.
+\par
+To apply \eqref{eq:hit-E-integral}, we write the integrals of
+\eqref{eq:hit-k-split} in the self-similar wavenumber $\kappa = \kappa^* L$.
+With $\mathrm{d}\kappa^* = \mathrm{d}\kappa / L$, the integrand becomes
 \begin{equation}
-  E^*(\kappa^*) = A_E^*(\kappa^* + \alpha_E^*)^{\beta_E},
-  \qquad
-  A_E^* = A_E\, U^2 L^{1 + \beta_E},
-  \qquad
-  \alpha_E^* = \frac{\alpha_E}{L} .
+  E^*(\kappa^*)\, \mathrm{d}\kappa^*
+  = U^2 L\, E(\kappa)\, \frac{\mathrm{d}\kappa}{L}
+  = U^2\, E(\kappa)\, \mathrm{d}\kappa ,
 \end{equation}
-The tail integral converges for an inertial-range spectrum, $\beta_E < -1$,
-and with \eqref{eq:hit-eta}
+and by \eqref{eq:hit-eta} the cutoff $\kappa^* = 2\pi/\eta^*$ becomes
+\begin{equation}\label{eq:hit-kappa-eta}
+  \kappa_\eta = \frac{2\pi L}{\eta^*} = \frac{2\pi}{C_\eta \Delta} ,
+\end{equation}
+which depends only on the grid and is fixed in time. The energies of
+\eqref{eq:hit-k-split} are therefore $U^2$ times self-similar integrals,
+consistent with \eqref{eq:ns-pp-k-scales},
+\begin{equation}\label{eq:hit-k-split-ss}
+  \overline{k^*} = U^2\, \overline{k},
+  \quad
+  \overline{k} \approx \int_0^{\kappa_\eta} E(\kappa)\, \mathrm{d}\kappa ,
+  \qquad
+  \overline{k_a^*} = U^2\, \overline{k_a},
+  \quad
+  \overline{k_a} = \int_{\kappa_\eta}^{\infty} E(\kappa)\, \mathrm{d}\kappa .
+\end{equation}
+Evaluating them with \eqref{eq:hit-E-integral}, the tail
+($\kappa_1 = \kappa_\eta$, $\kappa_2 \to \infty$) is
 \begin{equation}\label{eq:hit-ka}
-  k_a^* = -\frac{A_E^*}{\beta_E + 1}\left(\frac{2\pi}{C_\eta \Delta L} + \alpha_E^*\right)^{\beta_E + 1}
-  = U^2 k_a,
-  \qquad
-  k_a = -\frac{A_E}{\beta_E + 1}\left(\frac{2\pi}{C_\eta \Delta} + \alpha_E\right)^{\beta_E + 1} .
+  \overline{k_a} = -\frac{A_E}{\beta_E + 1}\left(\kappa_\eta + \alpha_E\right)^{\beta_E + 1} ,
 \end{equation}
-The self-similar adjustment $k_a$ depends only on the constants of the
-spectrum and the grid, so it is fixed in time, as is $\overline{k}$ under the
-kinetic energy constraint. The adjustment is therefore a constant fraction of
-the simulated energy,
+and the resolved band ($\kappa_1 = 0$, $\kappa_2 = \kappa_\eta$) is
+\begin{equation}\label{eq:hit-k-resolved}
+  \overline{k} \approx -\frac{A_E}{\beta_E + 1}
+  \left[ \alpha_E^{\beta_E + 1} - (\kappa_\eta + \alpha_E)^{\beta_E + 1} \right] ,
+\end{equation}
+both positive since $\beta_E + 1 < 0$. The self-similar adjustment
+$\overline{k_a}$ depends only on the constants of the spectrum and the grid, so
+it is fixed in time, as is $\overline{k}$ under the kinetic energy constraint.
+The adjustment is therefore a constant fraction $r$ of the simulated energy.
+Dividing \eqref{eq:hit-ka} by \eqref{eq:hit-k-resolved}, the prefactor
+$-A_E/(\beta_E + 1)$ cancels, and dividing the numerator and denominator by
+$(\kappa_\eta + \alpha_E)^{\beta_E + 1}$,
+\begin{equation}\label{eq:hit-r-exact}
+  r = \frac{\overline{k_a^*}}{\overline{k^*}} = \frac{\overline{k_a}}{\overline{k}}
+  = \frac{(\kappa_\eta + \alpha_E)^{\beta_E + 1}}
+         {\alpha_E^{\beta_E + 1} - (\kappa_\eta + \alpha_E)^{\beta_E + 1}}
+  = \frac{1}{\left(1 + \kappa_\eta / \alpha_E\right)^{-(\beta_E + 1)} - 1} .
+\end{equation}
+The dissipative scale is far below $L$, so the cutoff lies far beyond the
+energy-containing wavenumbers, $\kappa_\eta \gg \alpha_E$. The first term of
+the denominator then dominates, and with \eqref{eq:hit-kappa-eta}
 \begin{equation}\label{eq:hit-r}
-  r = \frac{k_a^*}{\overline{k^*}} = \frac{k_a}{\overline{k}}
-  = O\!\left( (C_\eta \Delta)^{-(\beta_E + 1)} \right) \ll 1 ,
+  r \approx \left( \frac{\alpha_E}{\kappa_\eta} \right)^{-(\beta_E + 1)}
+  = \left( \frac{\alpha_E\, C_\eta \Delta}{2\pi} \right)^{-(\beta_E + 1)} \ll 1 .
 \end{equation}
-small since the dissipative scale is far below $L$. With
+With
 \eqref{eq:hit-k-rate-dim}, the two flows are related by
 \begin{equation}\label{eq:hit-true-ratio}
   \overline{k_{\mathrm{c}}^*} = (1 + r)\, \overline{k^*} = (1 + r)\, U^2\, \overline{k},
@@ -2433,13 +2475,103 @@ give the kinetic energy and dissipation of the true flow to within the factor
 $1 + r$. Second, $\overline{k_{\mathrm{c}}^*} \propto U^2$, so the true flow
 decays with the same exponent $\beta_U$ as the simulated one, and the ratio
 $\overline{\epsilon_{\mathrm{c}}^*}/\overline{k_{\mathrm{c}}^*} = \overline{\epsilon^*}/\overline{k^*}$
-is the same in both. Since $k_a^* \neq 0$ at $t^* = 0$, the two flows do not
+is the same in both. Since $\overline{k_a^*} \neq 0$ at $t^* = 0$, the two flows do not
 start from the same field: the initial field of the true flow is that of the
 simulated flow with its spectrum continued to $\kappa^* \to \infty$.
 
 \subsection{Computing \texorpdfstring{$C_{\epsilon 2}$}{C epsilon 2}}\label{ssec:hit-ceps2}
+\paragraph{The dissipation budgets.}
+We first compare the two flows in physical variables. In homogeneous
+turbulence the diffusion and the drift of \eqref{eq:ns-pp-eps-model-dim}
+vanish, and the dissipation of the simulated flow obeys
+\begin{equation}\label{eq:hit-eps-rate-sim-dim}
+  \frac{\mathrm{d} \overline{\epsilon^*}}{\mathrm{d} t^*}
+  = \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}\, \overline{\epsilon^*}
+  - C_{\epsilon 2}\, \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}} ,
+\end{equation}
+where $C_{\epsilon 2}$ closes $P_\epsilon^* - \Upsilon^*$ alone
+\eqref{eq:ns-pp-eps-model-PY}. The true flow has a constant viscosity,
+$\nu_{\mathrm{c}}^* = 0$, and hence no eddy-viscosity change. At
+$\nu_{\mathrm{c}}^* = 0$ its production and dissipation of
+$\epsilon_{\mathrm{c}}^*$ \eqref{eq:ns-pp-eps-terms} are separately
+indeterminate, so $C_{\epsilon 2,\mathrm{c}}$ is defined by closing the whole
+rate of change of $\overline{\epsilon_{\mathrm{c}}^*}$,
+\begin{equation}\label{eq:hit-eps-rate-true}
+  \frac{\mathrm{d} \overline{\epsilon_{\mathrm{c}}^*}}{\mathrm{d} t^*}
+  = -C_{\epsilon 2,\mathrm{c}}\, \frac{\left(\overline{\epsilon_{\mathrm{c}}^*}\right)^2}{\overline{k_{\mathrm{c}}^*}} .
+\end{equation}
+The closure term has the same form in both equations, but the simulated flow
+also has the eddy-viscosity change. To compare coefficients, we write this
+term in the form of the closure. With $L$ constant and
+$\nu_{\mathrm{t}} = C_\nu \Delta^{4/3}$ fixed,
+$\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$ changes at the rate of $U$,
+\begin{equation}\label{eq:hit-nut-rate-dim}
+  \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}
+  = \frac{1}{UL\, \nu_{\mathrm{t}}}\, L\, \nu_{\mathrm{t}} \frac{\mathrm{d}U}{\mathrm{d}t^*}
+  = \frac{1}{U}\frac{\mathrm{d}U}{\mathrm{d}t^*} .
+\end{equation}
+The kinetic energy constraint holds $\overline{k}$ fixed, so
+$\overline{k^*} = U^2\, \overline{k}$ changes at twice that rate, and the
+kinetic energy budget \eqref{eq:hit-k-rate-dim} gives
+\begin{equation}\label{eq:hit-eps-dim-U}
+  \overline{\epsilon^*}
+  = -\frac{\mathrm{d} \overline{k^*}}{\mathrm{d} t^*}
+  = -2U\, \overline{k}\, \frac{\mathrm{d}U}{\mathrm{d}t^*}
+  = -\frac{2}{U}\frac{\mathrm{d}U}{\mathrm{d}t^*}\, \overline{k^*} .
+\end{equation}
+Substituting \eqref{eq:hit-nut-rate-dim}, and then \eqref{eq:hit-eps-dim-U}
+in the form $(1/U)\, \mathrm{d}U/\mathrm{d}t^* = -\overline{\epsilon^*}/(2\overline{k^*})$,
+the eddy-viscosity change is
+\begin{equation}\label{eq:hit-nut-change-dim}
+  \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}\, \overline{\epsilon^*}
+  = \frac{1}{U}\frac{\mathrm{d}U}{\mathrm{d}t^*}\, \overline{\epsilon^*}
+  = -\frac{1}{2}\, \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}}
+\end{equation}
+at every instant, so the eddy-viscosity model \eqref{eq:ns-pp-eps-model-nut}
+is exact with $C_{\epsilon\nu} = \tfrac12$. Substituting into
+\eqref{eq:hit-eps-rate-sim-dim},
+\begin{equation}\label{eq:hit-eps-rate-sim-closed}
+  \frac{\mathrm{d} \overline{\epsilon^*}}{\mathrm{d} t^*}
+  = -\left( C_{\epsilon 2} + \frac{1}{2} \right) \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}} ,
+\end{equation}
+which has the form of \eqref{eq:hit-eps-rate-true}. The simulated flow decays
+with the constant $C_{\epsilon 2} + \tfrac12$: $C_{\epsilon 2}$ comes from the
+production minus the dissipation, and $\tfrac12$ from the eddy-viscosity
+change.
+
+\paragraph{The true constant.}
+By \eqref{eq:hit-true-ratio}, with $r \ll 1$, the true flow has nearly the
+kinetic energy and dissipation of the simulated flow,
+\begin{equation}
+  \overline{k_{\mathrm{c}}^*} \approx \overline{k^*} ,
+  \qquad
+  \overline{\epsilon_{\mathrm{c}}^*} \approx \overline{\epsilon^*} ,
+\end{equation}
+and, since $r$ is constant, nearly the same rate of change of dissipation,
+$\mathrm{d}\overline{\epsilon_{\mathrm{c}}^*}/\mathrm{d}t^* \approx \mathrm{d}\overline{\epsilon^*}/\mathrm{d}t^*$.
+The left-hand sides of \eqref{eq:hit-eps-rate-true} and
+\eqref{eq:hit-eps-rate-sim-closed} therefore agree, and so must the
+right-hand sides,
+\begin{equation}\label{eq:hit-Ceps2-diff}
+  C_{\epsilon 2,\mathrm{c}}\, \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}}
+  \approx \left( C_{\epsilon 2} + \frac{1}{2} \right) \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}} .
+\end{equation}
+Matching the coefficients,
+\begin{equation}\label{eq:hit-Ceps2-relation}
+  C_{\epsilon 2,\mathrm{c}} = C_{\epsilon 2} + \frac{1}{2} ,
+\end{equation}
+the homogeneous case of \eqref{eq:ns-pp-eps-model-dim-c}. The true constant
+absorbs the eddy-viscosity change, which the simulated $C_{\epsilon 2}$ leaves
+out. Within the spectral model the relation is in fact exact. Substituting
+\eqref{eq:hit-true-ratio} into \eqref{eq:hit-eps-rate-true} gives a factor
+$1 + r$ on the left and $(1 + r)^2/(1 + r) = 1 + r$ on the right, so the
+factors cancel. The relation therefore uses neither the smallness of $r$ nor
+the power law, only that the kinetic energy constraint holds $\overline{k}$
+fixed.
+
 \paragraph{The simulated constant.}
-In homogeneous turbulence with $\sigma_L = 0$, the kinetic energy budget
+It remains to compute $C_{\epsilon 2}$ from the simulation. In the
+self-similar frame with $\sigma_L = 0$, the kinetic energy budget
 \eqref{eq:ns-pp-k-rate-nondim} becomes
 \begin{equation}\label{eq:hit-k-rate}
   \frac{\mathrm{d} \overline{k}}{\mathrm{d} t}
@@ -2459,10 +2591,10 @@ in $\sigma_U$ have different origins. The first, $-3\sigma_U\,
 \overline{\epsilon}$, arises from the time-dependent velocity scale: it is the
 rescaling of $\overline{\epsilon^*} = (U^3/L)\, \overline{\epsilon}$. The
 second, $+\sigma_U\, \overline{\epsilon}$, arises from the time-dependent
-viscosity: it is the eddy-viscosity change \eqref{eq:ns-pp-eps-nut-rate},
-which is absent at constant viscosity. The constant $C_{\epsilon 2}$ is defined, as in
-\eqref{eq:ns-pp-eps-model-PY}, by closing $P_\epsilon - \Upsilon$ alone, so
-with \eqref{eq:ns-pp-eps-model-scales}
+viscosity: it is the eddy-viscosity change \eqref{eq:ns-pp-eps-nut-rate}, the
+first term on the right of \eqref{eq:hit-eps-rate-sim-dim}. Closing
+$P_\epsilon - \Upsilon$ with the $C_{\epsilon 2}$ of
+\eqref{eq:hit-eps-rate-sim-dim}, by \eqref{eq:ns-pp-eps-model-scales},
 \begin{equation}\label{eq:hit-eps-rate-model}
   \frac{\mathrm{d} \overline{\epsilon}}{\mathrm{d} t}
   = -3\sigma_U\, \overline{\epsilon} + \sigma_U\, \overline{\epsilon}
@@ -2505,86 +2637,37 @@ $\overline{k^*} = U^2\, \overline{k} \propto (t^* + \alpha_U)^{-n}$,
 \begin{equation}\label{eq:hit-Ceps2-n}
   C_{\epsilon 2} = \frac{n + 2}{2n},
 \end{equation}
-not the classical $(n + 1)/n$ \cite{pope2000turbulent}.
-
-\paragraph{The true constant.}
-The constant of the true flow is the classical one. At $\nu_{\mathrm{c}}^* = 0$
-the production and dissipation of $\epsilon_{\mathrm{c}}^*$ in
-\eqref{eq:ns-pp-eps-terms} are separately indeterminate, so
-$C_{\epsilon 2,\mathrm{c}}$ is defined by closing the whole rate of change of
-$\overline{\epsilon_{\mathrm{c}}^*}$,
-\begin{equation}\label{eq:hit-eps-rate-true}
-  \frac{\mathrm{d} \overline{\epsilon_{\mathrm{c}}^*}}{\mathrm{d} t^*}
-  = -C_{\epsilon 2,\mathrm{c}}\, \frac{\left(\overline{\epsilon_{\mathrm{c}}^*}\right)^2}{\overline{k_{\mathrm{c}}^*}} .
+not the classical $(n + 1)/n$ \cite{pope2000turbulent}. Adding the
+eddy-viscosity change, \eqref{eq:hit-Ceps2-relation} gives the true constant
+\begin{equation}\label{eq:hit-Ceps2c-n}
+  C_{\epsilon 2,\mathrm{c}} = \frac{n + 2}{2n} + \frac{1}{2} = \frac{n + 1}{n} ,
 \end{equation}
-Substituting \eqref{eq:hit-true-ratio}, the factors $1 + r$ cancel and
-\begin{equation}\label{eq:hit-Ceps2-true-sim}
-  C_{\epsilon 2,\mathrm{c}}
-  = -\frac{\overline{k^*}}{\left(\overline{\epsilon^*}\right)^2}\,
-  \frac{\mathrm{d} \overline{\epsilon^*}}{\mathrm{d} t^*} ,
-\end{equation}
-so $C_{\epsilon 2,\mathrm{c}}$ is computed from the simulated flow alone. The
-simulated flow obeys, in physical variables, the homogeneous form of
-\eqref{eq:ns-pp-eps-model-dim},
-\begin{equation}\label{eq:hit-eps-rate-sim-dim}
-  \frac{\mathrm{d} \overline{\epsilon^*}}{\mathrm{d} t^*}
-  = \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}\, \overline{\epsilon^*}
-  - C_{\epsilon 2}\, \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}} ,
-\end{equation}
-and substituting it into \eqref{eq:hit-Ceps2-true-sim},
-\begin{equation}\label{eq:hit-Ceps2-diff}
-  C_{\epsilon 2,\mathrm{c}} = C_{\epsilon 2}
-  - \frac{\overline{k^*}}{\overline{\epsilon^*}}\,
-  \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*} :
-\end{equation}
-the two constants differ by the eddy-viscosity change, which the simulated
-$C_{\epsilon 2}$ leaves out and the true $C_{\epsilon 2,\mathrm{c}}$ absorbs.
-With $L$ constant, $\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$ changes at the
-rate of $U$, and with $\mathrm{d}t^*/\mathrm{d}t = \tau = L/U$,
-\begin{equation}
-  \frac{1}{\nu_{\mathrm{t}}^*}\frac{\mathrm{d}\nu_{\mathrm{t}}^*}{\mathrm{d}t^*}
-  = \frac{1}{U}\frac{\mathrm{d}U}{\mathrm{d}t^*}
-  = \frac{U}{L}\, \sigma_U ,
-  \qquad
-  \frac{\overline{k^*}}{\overline{\epsilon^*}}
-  = \frac{L}{U}\, \frac{\overline{k}}{\overline{\epsilon}}
-  = -\frac{L}{U}\, \frac{1}{2\sigma_U} ,
-\end{equation}
-the last by \eqref{eq:hit-eps-sigmaU}. Their product is $-\tfrac12$ at every
-instant, and \eqref{eq:hit-Ceps2-diff} gives
-\begin{equation}\label{eq:hit-Ceps2-relation}
-  C_{\epsilon 2,\mathrm{c}} = C_{\epsilon 2} + \frac{1}{2} ,
-\end{equation}
-the homogeneous case of \eqref{eq:ns-pp-eps-model-dim-c} with
-$C_{\epsilon\nu} = \tfrac12$. Within the spectral model this is exact: it uses neither the power law nor
-the smallness of $r$, only that the kinetic energy constraint holds
-$\overline{k}$ fixed. With the power law, \eqref{eq:hit-Ceps2-n} gives
-$C_{\epsilon 2,\mathrm{c}} = (n + 2)/(2n) + \tfrac12 = (n + 1)/n$, the
-classical result. The same value follows directly from
+the classical result. The same value follows directly from
 \eqref{eq:hit-eps-rate-true}: with
 $\overline{k_{\mathrm{c}}^*} \propto (t^* + \alpha_U)^{-n}$,
 $\overline{\epsilon_{\mathrm{c}}^*} = n\, \overline{k_{\mathrm{c}}^*}/(t^* + \alpha_U)$
 and $\mathrm{d}\overline{\epsilon_{\mathrm{c}}^*}/\mathrm{d}t^* = -n(n+1)\,\overline{k_{\mathrm{c}}^*}/(t^* + \alpha_U)^2$,
 so $C_{\epsilon 2,\mathrm{c}} = (n+1)/n$.
 \par
-In the self-similar frame the same relation appears term by term. By
+In the self-similar frame the comparison appears term by term. By
 \eqref{eq:hit-eps-sigmaU}, the eddy-viscosity change of \eqref{eq:hit-eps-rate}
 is
 \begin{equation}\label{eq:hit-nut-change}
   \sigma_U\, \overline{\epsilon}
   = -\frac{1}{2}\, \frac{\overline{\epsilon}^{\,2}}{\overline{k}} ,
 \end{equation}
-of exactly the form of the closure: it is the homogeneous case of
-\eqref{eq:ns-pp-eps-nut-k}. Substituting it into
+the self-similar form of \eqref{eq:hit-nut-change-dim} and the homogeneous
+case of \eqref{eq:ns-pp-eps-nut-k}. Substituting it into
 \eqref{eq:hit-eps-rate-model},
 \begin{equation}\label{eq:hit-eps-rate-model-true}
   \frac{\mathrm{d} \overline{\epsilon}}{\mathrm{d} t}
   = -3\sigma_U\, \overline{\epsilon}
   - \left( C_{\epsilon 2} + \frac{1}{2} \right) \frac{\overline{\epsilon}^{\,2}}{\overline{k}} ,
 \end{equation}
-which is the self-similar form of the constant-viscosity budget
-\eqref{eq:hit-eps-rate-true}, with the constant $C_{\epsilon 2} + \tfrac12$,
-and the homogeneous case of \eqref{eq:ns-pp-eps-model-nondim}.
+the self-similar form of \eqref{eq:hit-eps-rate-sim-closed}, and so of the
+constant-viscosity budget \eqref{eq:hit-eps-rate-true} with the constant
+$C_{\epsilon 2} + \tfrac12$; it is the homogeneous case of
+\eqref{eq:ns-pp-eps-model-nondim}.
 \par
 
 \section{The turbulent puff}\label{sec:puff}
@@ -2831,8 +2914,8 @@ If the true and simulated profiles have the same shapes,
 $\psi_{\mathrm{c}} = \psi$ and
 $C_{\epsilon 2,\mathrm{c}} = C_{\epsilon 2} + C_{\epsilon\nu}$, as in
 \eqref{eq:ns-pp-eps-model-dim-c}. $C_{\epsilon 2,\mathrm{c}}$ is
-$\psi_{\mathrm{c}}$ times the classical constant $(n + 1)/n$ (below
-\eqref{eq:hit-Ceps2-relation}), with $n$ now the decay exponent of the total
+$\psi_{\mathrm{c}}$ times the classical constant $(n + 1)/n$
+\eqref{eq:hit-Ceps2c-n}, with $n$ now the decay exponent of the total
 energy: since $3\sigma_U + 2\sigma_L = -(n + 1)\, c_\tau$, the total
 dissipation decays as $(t^* + \alpha)^{-(n + 1)}$, one power faster than the
 total energy.
@@ -2863,7 +2946,7 @@ $\overline{\epsilon_{\mathrm{c}}}/\overline{k_{\mathrm{c}}}$.
 \par
 With $\beta_L = 0$ and $\psi = 1$, \eqref{eq:puff-constants} reduces to the
 homogeneous values \eqref{eq:hit-Ceps2-n} and $C_{\epsilon\nu} = \tfrac12$
-\eqref{eq:hit-Ceps2-relation}. In the puff the eddy viscosity changes with
+\eqref{eq:hit-nut-change-dim}. In the puff the eddy viscosity changes with
 $UL$ rather than with $U$, and the term $\psi \beta_L/(2n)$ moves part of the
 closure from $C_{\epsilon 2}$ to $C_{\epsilon\nu}$, leaving their sum
 unchanged. Since $n = 2 - 5\beta_L$, all the constants depend only on
