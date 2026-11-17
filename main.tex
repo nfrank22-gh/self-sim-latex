@@ -1461,6 +1461,10 @@ convection:
   = \hat{\tilde u} + \frac{\Delta t}{2} \Bigl( \hat{\mathcal{R}}(\hat{\tilde u})
   + \hat{\mathcal{R}}\bigl(\hat{\tilde u}^{(1)}\bigr) \Bigr).
 \end{equation}
+The step is taken from the masked state: the scaling step leaves content
+beyond the retained band (\S\ref{ssec:ns-interpolation}), which the $2/3$
+mask deletes before the first stage. Every stage then stays inside the band,
+since each term of $\hat{\mathcal{R}}$ is masked as it is formed.
 The method is accurate to second order, as \textsc{Evolve} must be for the
 Strang composition (\S\ref{ssec:alg-substeps}), and costs two evaluations of
 $\hat{\mathcal{R}}$ per step. A linear mode $\dot y = \lambda y$ is
@@ -1808,7 +1812,8 @@ how statistics of the self-similar fields relate to those of the physical
 flow (\S\ref{ssec:ns-postproc}), and the budgets of $\overline{k}$
 (\S\ref{ssec:ns-pp-k-budget}) and $\overline{\epsilon}$
 (\S\ref{ssec:ns-pp-eps-budget}) in their dimensional, self-similar and
-isotropic forms, exact and modeled. Decaying homogeneous turbulence
+isotropic forms, exact and modeled, and the $\epsilon$ budget under the
+Smagorinsky model (\S\ref{ssec:ns-pp-eps-smag}). Decaying homogeneous turbulence
 (\S\ref{sec:hit}), the budgets and constants of the puff as functions of $r$
 (\S\ref{sec:puff}), and
 the pointwise budgets of the puff (\S\ref{sec:ns-results}) are special cases.
@@ -1946,12 +1951,16 @@ following assumptions:
   \item $1/Re = 0$, and the subgrid model is the self-similar constant eddy
   viscosity \eqref{eq:ns-constant-viscosity}, so that
   $\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$ is uniform in space but not in
-  time; the budgets are not formed under the Smagorinsky model;
+  time; the $\epsilon$ budget under the Smagorinsky model is formed
+  separately in \S\ref{ssec:ns-pp-eps-smag};
   \item the ensemble-mean velocity vanishes, $\overline{u_i} = 0$, so $u_i$ is
   the fluctuating velocity, and all production by and advection with the mean
   flow vanish;
   \item we work inside the sphere $r \le r_0$, where $W = 0$, so the sponge
-  does not enter.
+  does not enter the continuous equations; in the discrete scheme the $2/3$
+  mask carries the sponge term into the sphere at the cutoff scale, which
+  matters only when the spectrum reaches the cutoff
+  (\S\ref{sssec:ns-pp-eps-smag-pp}).
 \end{enumerate}
 The subgrid stress term is then the Laplacian
 \eqref{eq:ns-constant-viscosity-laplacian}, the filtered momentum equation
@@ -2317,6 +2326,461 @@ with $\overline{\epsilon}'(0) = 0$ and the transport terms the measured
 divergences in the radial form \eqref{eq:ns-pp-radial-ops}. With the
 coefficients \eqref{eq:ns-pp-eps-coeffs} it reproduces the exact radial
 budget \eqref{eq:ns-pp-eps-radial} at every $r$.
+
+\subsection{\texorpdfstring{$\epsilon$}{epsilon} budget under the Smagorinsky model}\label{ssec:ns-pp-eps-smag}
+The budget of \S\ref{ssec:ns-pp-eps-budget} rests on the first assumption of
+\S\ref{sssec:ns-pp-budgets}: the eddy viscosity is uniform in space, so it
+comes out of every average and derivative. Under the Smagorinsky model
+\eqref{eq:ns-eddy-viscosity} the eddy viscosity is a field,
+\begin{equation}\label{eq:ns-pp-smag-nut}
+  \nu_{\mathrm{t}}^* = (C_s \Delta^*)^2\, |S^*| ,
+  \qquad
+  \Delta^* = L\, \Delta ,
+  \qquad
+  \nu_{\mathrm{t}} = (C_s \Delta)^2\, |S| ,
+\end{equation}
+which fluctuates with the resolved strain and is carried by the flow. Three
+things change. The eddy-viscosity change becomes a material derivative
+following the fluid; the gradients of $\nu_{\mathrm{t}}^*$ add terms that have
+no counterpart for a uniform viscosity; and in every term the viscosity moves
+inside the average. This subsection repeats \S\ref{ssec:ns-pp-eps-budget} for
+this model: the exact budget in its dimensional, self-similar and isotropic
+forms (\S\ref{sssec:ns-pp-eps-smag-exact}), the budget the post-processing
+evaluates (\S\ref{sssec:ns-pp-eps-smag-pp}), and the modeled terms
+(\S\ref{sssec:ns-pp-eps-smag-model}). Unlike under the constant eddy
+viscosity, the resolved spectrum can reach the cutoff of the retained band,
+where the discrete scheme departs from the continuous equation; the evaluated
+budget leaves that departure in its residual.
+
+\subsubsection{Exact budget}\label{sssec:ns-pp-eps-smag-exact}
+\paragraph{Notation and assumptions.}
+The notation and the second and third assumptions of
+\S\ref{sssec:ns-pp-budgets} are retained: every field is a resolved field,
+the tilde is dropped, $\overline{u_i} = 0$, and we work inside $r \le r_0$.
+The first assumption is replaced by $1/Re = 0$ with the Smagorinsky model
+\eqref{eq:ns-pp-smag-nut}. In the self-similar frame $\Delta = \Delta x$ is
+fixed, so $\nu_{\mathrm{t}}$ is a stationary random field when the velocity
+is; in physical variables it is $\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$
+as before, now with $\nu_{\mathrm{t}}$ varying in space and time. The
+filtered momentum equation \eqref{eq:ns-momentum} is
+\begin{equation}\label{eq:ns-pp-smag-momentum}
+  \frac{\partial u_i^*}{\partial t^*}
+  + u_k^* \frac{\partial u_i^*}{\partial x_k^*}
+  = -\frac{1}{\rho}\frac{\partial p^*}{\partial x_i^*}
+  + \frac{\partial}{\partial x_k^*}\left( 2 \nu_{\mathrm{t}}^* S_{ik}^* \right) ,
+\end{equation}
+and by continuity the subgrid force splits into the Laplacian of the uniform
+case and a part driven by the gradient of the viscosity,
+\begin{equation}\label{eq:ns-pp-smag-force}
+  \frac{\partial}{\partial x_k^*}\left( 2 \nu_{\mathrm{t}}^* S_{ik}^* \right)
+  = \nu_{\mathrm{t}}^* \frac{\partial^2 u_i^*}{\partial x_k^* \partial x_k^*}
+  + h_i^* ,
+  \qquad
+  h_i^* = 2 S_{ik}^* \frac{\partial \nu_{\mathrm{t}}^*}{\partial x_k^*} .
+\end{equation}
+The dissipation rate is \eqref{eq:ns-pp-diss-models} with the local
+viscosity. Writing $\Theta^*$ for the squared velocity gradient,
+\begin{equation}\label{eq:ns-pp-smag-eps-def}
+  \epsilon^* = \nu_{\mathrm{t}}^*\, \Theta^* ,
+  \qquad
+  \Theta^* = \frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_i^*}{\partial x_k^*} ,
+  \qquad
+  \epsilon^* = \frac{U^3}{L}\, \epsilon ,
+  \qquad
+  \Theta^* = \frac{U^2}{L^2}\, \Theta .
+\end{equation}
+With the local viscosity $\overline{\epsilon^*}$ is no longer exactly the
+sink of $\overline{k^*}$: multiplying \eqref{eq:ns-pp-smag-force} by $u_i^*$
+and using continuity,
+\begin{equation*}
+  u_i^* \frac{\partial}{\partial x_k^*}\left( 2 \nu_{\mathrm{t}}^* S_{ik}^* \right)
+  = \frac{\partial}{\partial x_k^*}\left( \nu_{\mathrm{t}}^* \frac{\partial k^*}{\partial x_k^*} \right)
+  - \epsilon^*
+  + u_i^* \frac{\partial u_k^*}{\partial x_i^*} \frac{\partial \nu_{\mathrm{t}}^*}{\partial x_k^*} ,
+\end{equation*}
+whose last term vanishes for a uniform viscosity and is otherwise neither a
+divergence nor of definite sign. We keep the definition
+\eqref{eq:ns-pp-smag-eps-def}, which is the one the dissipation tensor
+\eqref{eq:ns-pp-diss-tensor-les} gives, and do not pursue the $k$ budget
+under this model.
+
+\paragraph{Dimensional budget.}
+We form the budget term by term, dropping the stars until the result.
+Differentiating $\epsilon = \nu_{\mathrm{t}} \Theta$ in time,
+\begin{equation}\label{eq:ns-pp-smag-split}
+  \frac{\partial \epsilon}{\partial t}
+  = \Theta\, \frac{\partial \nu_{\mathrm{t}}}{\partial t}
+  + \nu_{\mathrm{t}}\, \frac{\partial \Theta}{\partial t} .
+\end{equation}
+The second term follows from the gradient of
+\eqref{eq:ns-pp-smag-momentum}. Writing $g_{im} = \partial u_i / \partial x_m$,
+so that $\Theta = g_{im} g_{im}$, and $f_i$ for the subgrid force
+\eqref{eq:ns-pp-smag-force},
+\begin{equation*}
+  \frac{\partial g_{im}}{\partial t}
+  + u_k \frac{\partial g_{im}}{\partial x_k}
+  + g_{ik}\, g_{km}
+  = -\frac{1}{\rho} \frac{\partial^2 p}{\partial x_i \partial x_m}
+  + \frac{\partial f_i}{\partial x_m} ,
+\end{equation*}
+and multiplying by $2 \nu_{\mathrm{t}} g_{im}$,
+\begin{equation}\label{eq:ns-pp-smag-dTheta}
+  \nu_{\mathrm{t}}\, \frac{\partial \Theta}{\partial t}
+  = - \nu_{\mathrm{t}}\, u_k \frac{\partial \Theta}{\partial x_k}
+  - 2 \nu_{\mathrm{t}}\, g_{im}\, g_{ik}\, g_{km}
+  - \frac{2 \nu_{\mathrm{t}}}{\rho}\, g_{im} \frac{\partial^2 p}{\partial x_i \partial x_m}
+  + 2 \nu_{\mathrm{t}}\, g_{im} \frac{\partial f_i}{\partial x_m} .
+\end{equation}
+Each term on the right is now rearranged into a form that is averaged below.
+\begin{itemize}
+  \item \emph{Advection.} Since $\epsilon = \nu_{\mathrm{t}} \Theta$ and the
+  flow is incompressible, the advection combines with the first term of
+  \eqref{eq:ns-pp-smag-split} into a transport of $\epsilon$ and the material
+  derivative of the viscosity,
+  \begin{equation*}
+    \Theta\, \frac{\partial \nu_{\mathrm{t}}}{\partial t}
+    - \nu_{\mathrm{t}}\, u_k \frac{\partial \Theta}{\partial x_k}
+    = - \frac{\partial}{\partial x_k}\left( u_k\, \epsilon \right)
+    + \Theta\, \frac{D \nu_{\mathrm{t}}}{D t} ,
+    \qquad
+    \frac{D}{D t} = \frac{\partial}{\partial t} + u_k \frac{\partial}{\partial x_k} .
+  \end{equation*}
+  \item \emph{Production.} The second term is the production
+  $-2\nu_{\mathrm{t}}\, g_{im} g_{ik} g_{km}$ of \eqref{eq:ns-pp-eps-terms},
+  with the local viscosity.
+  \item \emph{Pressure.} Moving $\partial/\partial x_i$ off the pressure and
+  using continuity, $\partial g_{im}/\partial x_i = 0$,
+  \begin{equation*}
+    - \frac{2 \nu_{\mathrm{t}}}{\rho}\, g_{im} \frac{\partial^2 p}{\partial x_i \partial x_m}
+    = - \frac{2}{\rho} \frac{\partial}{\partial x_i}\left( \nu_{\mathrm{t}}\, g_{im} \frac{\partial p}{\partial x_m} \right)
+    + \frac{2}{\rho}\, \frac{\partial \nu_{\mathrm{t}}}{\partial x_i}\, g_{im} \frac{\partial p}{\partial x_m} ,
+  \end{equation*}
+  the pressure transport of \eqref{eq:ns-pp-eps-terms} and a term in the
+  gradient of the viscosity.
+  \item \emph{Subgrid force.} With \eqref{eq:ns-pp-smag-force} and
+  $\partial (\nabla^2 u_i)/\partial x_m = \nabla^2 g_{im}$,
+  \begin{equation*}
+    2 \nu_{\mathrm{t}}\, g_{im} \frac{\partial f_i}{\partial x_m}
+    = 2 \nu_{\mathrm{t}}^2\, g_{im}\, \nabla^2 g_{im}
+    + 2 \nu_{\mathrm{t}}\, g_{im} \frac{\partial \nu_{\mathrm{t}}}{\partial x_m} \nabla^2 u_i
+    + 2 \nu_{\mathrm{t}}\, g_{im} \frac{\partial h_i}{\partial x_m} .
+  \end{equation*}
+  The first term is the one of the uniform case. Since
+  $2 g_{im} \nabla^2 g_{im} = \nabla^2 \Theta - 2 (\partial g_{im}/\partial x_k)(\partial g_{im}/\partial x_k)$,
+  \begin{equation*}
+    2 \nu_{\mathrm{t}}^2\, g_{im}\, \nabla^2 g_{im}
+    = \frac{\partial}{\partial x_j}\left( \nu_{\mathrm{t}}^2 \frac{\partial \Theta}{\partial x_j} \right)
+    - 2 \nu_{\mathrm{t}}\, \frac{\partial \nu_{\mathrm{t}}}{\partial x_j} \frac{\partial \Theta}{\partial x_j}
+    - 2 \nu_{\mathrm{t}}^2\, \frac{\partial g_{im}}{\partial x_k} \frac{\partial g_{im}}{\partial x_k} ,
+  \end{equation*}
+  a flux divergence, a term in the gradient of the viscosity, and the
+  dissipation of $\epsilon$. For a uniform viscosity the flux is
+  $\nu_{\mathrm{t}} \partial \epsilon / \partial x_j$; in general
+  $\nu_{\mathrm{t}}^2\, \partial \Theta / \partial x_j
+  = \nu_{\mathrm{t}}\, \partial \epsilon / \partial x_j - \epsilon\, \partial \nu_{\mathrm{t}} / \partial x_j$,
+  so the eddy viscosity diffuses $\Theta = \epsilon / \nu_{\mathrm{t}}$
+  rather than $\epsilon$.
+\end{itemize}
+Averaging, and restoring the stars, the budget is
+\begin{equation}\label{eq:ns-pp-smag-eps-rate-raw}
+  \frac{\partial \overline{\epsilon^*}}{\partial t^*}
+  = \overline{\Theta^*\, \frac{D \nu_{\mathrm{t}}^*}{D t^*}}
+  + P_\epsilon^* + T_\epsilon^* + \Pi_\epsilon^* + D_\epsilon^* - \Upsilon^*
+  + \Gamma_\epsilon^* ,
+\end{equation}
+with
+\begin{equation}\label{eq:ns-pp-smag-eps-terms}
+\begin{aligned}
+  P_\epsilon^* &= -2\, \overline{\nu_{\mathrm{t}}^*\, \frac{\partial u_i^*}{\partial x_k^*} \frac{\partial u_i^*}{\partial x_m^*} \frac{\partial u_k^*}{\partial x_m^*}}
+  && \text{turbulent production,} \\
+  T_\epsilon^* &= -\frac{\partial}{\partial x_j^*}\, \overline{u_j^* \epsilon^*}
+  && \text{turbulent transport,} \\
+  \Pi_\epsilon^* &= -\frac{2}{\rho}\, \frac{\partial}{\partial x_j^*}\, \overline{\nu_{\mathrm{t}}^*\, \frac{\partial p^*}{\partial x_m^*} \frac{\partial u_j^*}{\partial x_m^*}}
+  && \text{pressure transport,} \\
+  D_\epsilon^* &= \frac{\partial}{\partial x_j^*}\, \overline{\left(\nu_{\mathrm{t}}^*\right)^2 \frac{\partial \Theta^*}{\partial x_j^*}}
+  && \text{viscous diffusion,} \\
+  \Upsilon^* &= 2\, \overline{\left(\nu_{\mathrm{t}}^*\right)^2 \frac{\partial^2 u_i^*}{\partial x_k^* \partial x_m^*} \frac{\partial^2 u_i^*}{\partial x_k^* \partial x_m^*}}
+  && \text{dissipation of } \epsilon^* ,
+\end{aligned}
+\end{equation}
+the terms of \eqref{eq:ns-pp-eps-terms} with the viscosity inside the
+averages and the diffusion in the flux form derived above, and
+\begin{equation}\label{eq:ns-pp-smag-Gamma}
+\begin{aligned}
+  \Gamma_\epsilon^*
+  ={}& \frac{2}{\rho}\, \overline{\frac{\partial \nu_{\mathrm{t}}^*}{\partial x_i^*} \frac{\partial u_i^*}{\partial x_m^*} \frac{\partial p^*}{\partial x_m^*}}
+  - 2\, \overline{\nu_{\mathrm{t}}^*\, \frac{\partial \nu_{\mathrm{t}}^*}{\partial x_j^*} \frac{\partial \Theta^*}{\partial x_j^*}} \\
+  &+ 2\, \overline{\nu_{\mathrm{t}}^*\, \frac{\partial u_i^*}{\partial x_m^*} \frac{\partial \nu_{\mathrm{t}}^*}{\partial x_m^*} \frac{\partial^2 u_i^*}{\partial x_k^* \partial x_k^*}}
+  + 2\, \overline{\nu_{\mathrm{t}}^*\, \frac{\partial u_i^*}{\partial x_m^*} \frac{\partial h_i^*}{\partial x_m^*}}
+\end{aligned}
+\end{equation}
+the viscosity-gradient terms, each proportional to a derivative of
+$\nu_{\mathrm{t}}^*$: the one from the pressure, the one from the diffusion,
+and the two from the subgrid force, the last through $h_i^*$
+\eqref{eq:ns-pp-smag-force}. Since $\nu_{\mathrm{t}}^* \ge 0$,
+$\Upsilon^*$ remains positive, and $D_\epsilon^*$, $T_\epsilon^*$ and
+$\Pi_\epsilon^*$ remain divergences; $\Gamma_\epsilon^*$ has no definite
+sign. For a uniform viscosity $\Gamma_\epsilon^* = 0$, the
+viscosity comes out of \eqref{eq:ns-pp-smag-eps-terms}, and
+\eqref{eq:ns-pp-smag-eps-rate-raw} is \eqref{eq:ns-pp-eps-rate}.
+\par
+The first term of \eqref{eq:ns-pp-smag-eps-rate-raw} is the eddy-viscosity
+change. By \eqref{eq:ns-pp-smag-nut} the viscosity changes for two reasons:
+the filter width $\Delta^* = L\Delta$ grows with the flow, and the strain
+changes following a fluid particle,
+\begin{equation}\label{eq:ns-pp-smag-nut-rate}
+  \frac{1}{\nu_{\mathrm{t}}^*} \frac{D \nu_{\mathrm{t}}^*}{D t^*}
+  = \frac{2}{L}\frac{\mathrm{d} L}{\mathrm{d} t^*}
+  + \frac{D \ln |S^*|}{D t^*} ,
+\end{equation}
+so that, with $\Theta^* \nu_{\mathrm{t}}^* = \epsilon^*$,
+\begin{equation}\label{eq:ns-pp-smag-eps-rate}
+  \frac{\partial \overline{\epsilon^*}}{\partial t^*}
+  = \frac{2}{L}\frac{\mathrm{d} L}{\mathrm{d} t^*}\, \overline{\epsilon^*}
+  + \Lambda_\epsilon^*
+  + P_\epsilon^* + T_\epsilon^* + \Pi_\epsilon^* + D_\epsilon^* - \Upsilon^*
+  + \Gamma_\epsilon^* ,
+  \qquad
+  \Lambda_\epsilon^* = \overline{\epsilon^*\, \frac{D \ln |S^*|}{D t^*}} .
+\end{equation}
+The filter-width growth is the only term the self-similar LES adds: a
+Smagorinsky LES at fixed filter width has the same budget without it. The
+strain change $\Lambda_\epsilon^*$ and the viscosity-gradient terms
+$\Gamma_\epsilon^*$ belong to the Smagorinsky model itself and are present
+in either case. In the uniform case the eddy-viscosity change was the sum of
+the two rates $\sigma_U + \sigma_L$; here the $\sigma_U$ part sits inside
+$\Lambda_\epsilon^*$, through the decay of $|S^*| \propto U/L$, as the
+self-similar form makes explicit.
+
+\paragraph{Self-similar frame.}
+Here $m_U = 3$, $m_L = -1$ as before. Under $u_i^* = U u_i$,
+$x_j^* = L x_j$, $p^* = \rho U^2 p$ and
+$\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$, each of $P_\epsilon^*$,
+$T_\epsilon^*$, $\Pi_\epsilon^*$, $D_\epsilon^*$, $\Upsilon^*$ and
+$\Gamma_\epsilon^*$ is $U^4/L^2$ times the same expression without stars and
+with $\rho = 1$, in which $\nu_{\mathrm{t}} = (C_s\Delta)^2 |S|$ and
+$h_i = 2 S_{ik}\, \partial \nu_{\mathrm{t}} / \partial x_k$. The filter-width
+growth is $(2/L)(\mathrm{d}L/\mathrm{d}t^*) = 2\sigma_L / \tau$ by
+\eqref{eq:fw-rates}, so it contributes $(U^4/L^2)\, 2\sigma_L\, \overline{\epsilon}$.
+For $\Lambda_\epsilon^*$ we need the material derivative in the frame. A
+fluid particle at $x_j^* = L x_j$ moves at
+$\mathrm{d}x_j / \mathrm{d}t = u_j - \sigma_L x_j$ in the frame, since the
+frame dilates under it, so
+\begin{equation}\label{eq:ns-pp-smag-frame-material}
+  \frac{D}{D t^*} = \frac{1}{\tau}\, \frac{\mathcal{D}}{\mathcal{D} t} ,
+  \qquad
+  \frac{\mathcal{D}}{\mathcal{D} t}
+  = \frac{\partial}{\partial t} + \left( u_k - \sigma_L x_k \right) \frac{\partial}{\partial x_k} .
+\end{equation}
+With $|S^*| = (U/L)\, |S|$, where $U/L$ depends on time alone,
+\begin{equation*}
+  \frac{D \ln |S^*|}{D t^*}
+  = \frac{1}{\tau}\left( \sigma_U - \sigma_L + \frac{\mathcal{D} \ln |S|}{\mathcal{D} t} \right) ,
+\end{equation*}
+and therefore $\Lambda_\epsilon^* = (U^4/L^2)\, \Lambda_\epsilon$ with
+\begin{equation}\label{eq:ns-pp-smag-Lambda}
+  \Lambda_\epsilon
+  = \overline{\epsilon\, \frac{\mathcal{D} \ln |S|}{\mathcal{D} t}}
+  + \left( \sigma_U - \sigma_L \right) \overline{\epsilon} .
+\end{equation}
+The first part is the change of the strain following the fluid in the
+stationary frame; the second is the systematic decay of the dimensional
+strain, $|S^*| \propto U/L$, which the frame removes from the field but not
+from the viscosity's rate of change. The time derivative in
+\eqref{eq:ns-pp-smag-Lambda} needs no differencing in time: since
+$|S|^2 = 2 S_{ij} S_{ij}$,
+\begin{equation}\label{eq:ns-pp-smag-dS-dt}
+  \frac{\partial \ln |S|}{\partial t}
+  = \frac{2 S_{ij}}{|S|^2}\, \frac{\partial}{\partial x_j}\! \left( \frac{\partial u_i}{\partial t} \right) ,
+\end{equation}
+with $\partial u_i / \partial t$ the right-hand side of
+\eqref{eq:ns-nondim-momentum}, evaluated on each snapshot. The scaling
+terms of that right-hand side can be left out. Since
+$(2S_{ij}/|S|^2)\, \partial_k S_{ij} = \partial_k \ln |S|$, they contribute
+$(2S_{ij}/|S|^2)\, \partial_j(\sigma_L x_k \partial_k u_i - \sigma_U u_i)
+= \sigma_L (1 + x_k \partial_k \ln |S|) - \sigma_U$ to
+\eqref{eq:ns-pp-smag-dS-dt}; the dilation $-\sigma_L x_k \partial_k \ln|S|$
+of \eqref{eq:ns-pp-smag-frame-material} cancels the second part, and the
+remainder $\sigma_L - \sigma_U$ cancels the second term of
+\eqref{eq:ns-pp-smag-Lambda}. With $R_i$ the physical terms of
+\eqref{eq:ns-nondim-momentum}, the convective, pressure and subgrid terms,
+\begin{equation}\label{eq:ns-pp-smag-Lambda-phys}
+  \Lambda_\epsilon
+  = \overline{\epsilon \left( \frac{2 S_{ij}}{|S|^2}\, \frac{\partial R_i}{\partial x_j}
+  + u_k \frac{\partial \ln |S|}{\partial x_k} \right)} ,
+\end{equation}
+the form in which it is evaluated: the scales enter $\Lambda_\epsilon$
+only through the field, as they must, since \eqref{eq:ns-pp-smag-eps-rate}
+defines it without reference to the frame. By
+\eqref{eq:ns-pp-budget-nondim},
+\begin{equation}\label{eq:ns-pp-smag-eps-rate-nondim}
+  \frac{\partial \overline{\epsilon}}{\partial t}
+  = \sigma_L\, x_j \frac{\partial \overline{\epsilon}}{\partial x_j}
+  - \left( 3\sigma_U - \sigma_L \right) \overline{\epsilon}
+  + 2 \sigma_L\, \overline{\epsilon}
+  + \Lambda_\epsilon
+  + P_\epsilon + T_\epsilon + \Pi_\epsilon + D_\epsilon - \Upsilon
+  + \Gamma_\epsilon .
+\end{equation}
+By \eqref{eq:ns-pp-smag-Lambda} the third and fourth terms sum to
+$(\sigma_U + \sigma_L)\, \overline{\epsilon}
++ \overline{\epsilon\, \mathcal{D} \ln |S| / \mathcal{D} t}$: the
+eddy-viscosity change of the uniform case
+\eqref{eq:ns-pp-eps-rate-constant}, plus the change of the strain along a
+particle path. We keep the split \eqref{eq:ns-pp-smag-eps-rate-nondim},
+which shows where each part comes from. In the stationary state the profiles satisfy
+\begin{equation}\label{eq:ns-pp-smag-eps-radial}
+  0 = \underbrace{\sigma_L\, r \frac{\mathrm{d} \overline{\epsilon}}{\mathrm{d} r}
+  - \left( 3\sigma_U - \sigma_L \right) \overline{\epsilon}}_{\text{time-dependent scales}}
+  + \underbrace{2 \sigma_L\, \overline{\epsilon}
+  + \Lambda_\epsilon}_{\text{time-dependent viscosity}}
+  + P_\epsilon + T_\epsilon + \Pi_\epsilon + D_\epsilon - \Upsilon
+  + \Gamma_\epsilon ,
+\end{equation}
+each term a function of $r$ alone. The first brace holds the terms every
+statistic acquires from the time dependence of $U$ and $L$; the second holds
+the two parts of the eddy-viscosity change.
+
+\paragraph{Isotropic form.}
+$P_\epsilon$, $\Upsilon$, $\Lambda_\epsilon$ and $\Gamma_\epsilon$ are mean
+scalars. The three transport terms are divergences of mean vectors, which
+under isotropy are radial, so by \eqref{eq:ns-pp-radial-ops}
+\begin{equation}\label{eq:ns-pp-smag-radial-terms}
+  T_\epsilon = -\frac{1}{r^2} \frac{\mathrm{d}}{\mathrm{d} r}\left( r^2\, \overline{u_r \epsilon} \right),
+  \qquad
+  \Pi_\epsilon = -\frac{2}{r^2} \frac{\mathrm{d}}{\mathrm{d} r}\left( r^2\, n_j\, \overline{\nu_{\mathrm{t}}\, \frac{\partial p}{\partial x_m} \frac{\partial u_j}{\partial x_m}} \right),
+  \qquad
+  D_\epsilon = \frac{1}{r^2} \frac{\mathrm{d}}{\mathrm{d} r}\left( r^2\, \overline{\nu_{\mathrm{t}}^2 \frac{\partial \Theta}{\partial r}} \right),
+\end{equation}
+with the limits \eqref{eq:ns-pp-origin-limits} at $r = 0$. Compared with the
+uniform case, $D_\epsilon$ is a measured flux divergence rather than
+$\nu_{\mathrm{t}}\, \nabla_r^2 \overline{\epsilon}$.
+
+\subsubsection{Evaluated budget}\label{sssec:ns-pp-eps-smag-pp}
+The post-processing evaluates the budget \eqref{eq:ns-pp-smag-eps-radial} of
+the continuous equation \eqref{eq:ns-pp-smag-momentum} inside $r \le r_0$,
+each term estimated independently from the snapshots, and the residual
+$R_\epsilon$ is what balances them: added to the right-hand side of
+\eqref{eq:ns-pp-smag-eps-radial} as evaluated, it makes the sum vanish. The
+terms are those of \S\ref{sssec:ns-pp-eps-smag-exact}, formed pointwise on
+the refined grid of \S\ref{ssec:radial-integrands}, so that they sum at
+every grid point to the rate of change of $\epsilon$ under the physical
+terms $R_i$ of \eqref{eq:ns-pp-smag-Lambda-phys}, whatever the aliases of
+the products with $\nu_{\mathrm{t}}$.
+
+\paragraph{The residual.}
+The solver advances the band-limited field of \S\ref{ssec:ns-fourier}, and it
+departs from the continuous equation at the cutoff of the retained band in
+three ways. \textsc{Evolve} forms the convective, subgrid and sponge terms
+pseudo-spectrally and keeps them only in the band, by the $2/3$ mask $M$; it
+starts from the masked state, so whatever \textsc{Scale} has pushed past the
+band (\S\ref{ssec:ns-interpolation}) is deleted at every step; and the sponge
+term is the masked product $M \widehat{W u_i}$, which does not vanish inside
+$r_0$. These departures are not formed, so $R_\epsilon$ holds them, besides
+the statistical error of the profiles and the error of the time
+discretization. Since $\epsilon = \nu_{\mathrm{t}} \Theta$ is weighted toward
+the largest resolved wavenumbers, they matter only when the spectrum reaches
+the cutoff. Under the self-similar constant eddy viscosity it has decayed
+well before, and $R_\epsilon$ checks the profiles alone. Under the
+Smagorinsky model $\nu_{\mathrm{t}}$ depends on $C_s$ and $\Delta$ only through
+$C_s \Delta$, so raising $C_s$ at fixed $\Delta x$ is the same as raising
+$\Delta/\Delta x$, and it moves the spectrum off the cutoff. In the runs with
+$C_s = 0.14$ and $\Delta = \Delta x$, $R_\epsilon$ is comparable with
+$\Upsilon$ near the centre of the puff. It falls to about $0.6\,\Upsilon$ at
+$C_s = 0.20$ and to about $0.35\,\Upsilon$ at $C_s = 0.28$, about Lilly's
+value for this cutoff ($\pi/\kappa_{\max} = 3\Delta x/2$), and only at
+$C_s = 0.56$, an effective filter of $4\Delta x$, does it fall to the size of
+the statistical error, a few per cent of $\Upsilon$. A budget that closes
+under this model therefore needs $C_s \Delta \gtrsim \Delta x/2$.
+
+\subsubsection{Modeling terms}\label{sssec:ns-pp-eps-smag-model}
+As in \S\ref{sssec:ns-pp-eps-model} we close the production minus
+dissipation with $C_{\epsilon 2}$, so that the constant has the same
+definition under both subgrid models and can be compared between them, and
+we keep the transport $T_\epsilon^* + \Pi_\epsilon^*$ as measured. The
+diffusion $D_\epsilon^*$ is no longer closed, since it is a correlation with
+the fluctuating viscosity, but it is a flux divergence and we also keep it as
+measured, as we do the viscosity-gradient term $\Gamma_\epsilon^*$. The
+eddy-viscosity change is given the closure form of the uniform case.
+
+\paragraph{Production and dissipation.}
+As in \eqref{eq:ns-pp-eps-model-PY},
+\begin{equation}\label{eq:ns-pp-smag-model-PY}
+  P_\epsilon^* - \Upsilon^*
+  \approx -C_{\epsilon 2}\, \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}} .
+\end{equation}
+
+\paragraph{Eddy-viscosity change.}
+As \eqref{eq:ns-pp-eps-model-nut} in the uniform case, the eddy-viscosity
+change of \eqref{eq:ns-pp-smag-eps-rate} is closed as
+\begin{equation}\label{eq:ns-pp-smag-model-nut}
+  \frac{2}{L}\frac{\mathrm{d} L}{\mathrm{d} t^*}\, \overline{\epsilon^*} + \Lambda_\epsilon^*
+  \approx -C_{\epsilon\nu}\, \frac{\left(\overline{\epsilon^*}\right)^2}{\overline{k^*}} ,
+\end{equation}
+with the difference that it is measured here rather than given by the rates.
+Its two parts, the filter-width growth and the strain change, have opposite
+signs.
+
+\paragraph{Self-similar frame.}
+Every term of \eqref{eq:ns-pp-smag-model-PY} and
+\eqref{eq:ns-pp-smag-model-nut} carries the factor $U^4/L^2$, by
+\eqref{eq:ns-pp-eps-model-scales} and \S\ref{sssec:ns-pp-eps-smag-exact}, so
+the factor cancels and the coefficients are ratios of self-similar
+quantities,
+\begin{equation}\label{eq:ns-pp-smag-coeffs}
+  C_{\epsilon 2} = -\left( P_\epsilon - \Upsilon \right) \frac{\overline{k}}{\overline{\epsilon}^{\,2}} ,
+  \qquad
+  C_{\epsilon\nu} = -\left( 2\sigma_L\, \overline{\epsilon} + \Lambda_\epsilon \right) \frac{\overline{k}}{\overline{\epsilon}^{\,2}} ,
+\end{equation}
+functions of $r$ alone in the stationary state. Taken pointwise with these
+coefficients the closures are exact, and as in
+\S\ref{sssec:ns-pp-eps-model} their content lies in how far the coefficients
+are constant.
+
+\paragraph{Isotropic form.}
+Substituting the closures into the evaluated budget
+\eqref{eq:ns-pp-smag-eps-radial}, with its residual $R_\epsilon$
+(\S\ref{sssec:ns-pp-eps-smag-pp}),
+\begin{equation}\label{eq:ns-pp-smag-model-stationary}
+  0 = \sigma_L\, r \frac{\mathrm{d} \overline{\epsilon}}{\mathrm{d} r}
+  - \left( 3\sigma_U - \sigma_L \right) \overline{\epsilon}
+  + T_\epsilon + \Pi_\epsilon + D_\epsilon + \Gamma_\epsilon
+  - \left( C_{\epsilon 2} + C_{\epsilon\nu} \right) \frac{\overline{\epsilon}^{\,2}}{\overline{k}}
+  + R_\epsilon ,
+\end{equation}
+with the transport and diffusion terms the measured divergences
+\eqref{eq:ns-pp-smag-radial-terms}. Solved for $C_{\epsilon 2}$ with
+$R_\epsilon = 0$, it gives the budget evaluation
+\begin{equation}\label{eq:ns-pp-smag-Ceps2-budget}
+  C_{\epsilon 2,\mathrm{b}}
+  = \left[ \sigma_L\, r \frac{\mathrm{d} \overline{\epsilon}}{\mathrm{d} r}
+  - \left( 3\sigma_U - \sigma_L \right) \overline{\epsilon}
+  + T_\epsilon + \Pi_\epsilon + D_\epsilon + \Gamma_\epsilon \right]
+  \frac{\overline{k}}{\overline{\epsilon}^{\,2}}
+  - C_{\epsilon\nu} ,
+\end{equation}
+so that
+$C_{\epsilon 2,\mathrm{b}} = C_{\epsilon 2} - R_\epsilon\, \overline{k}/\overline{\epsilon}^{\,2}$,
+and the two evaluations check the budget, as under the constant eddy
+viscosity (\S\ref{ssec:puff-constants}).
+
+\paragraph{The true constant.}
+As in the uniform case, the eddy-viscosity change is absorbed into
+\begin{equation}\label{eq:ns-pp-smag-Cnu}
+  C_{\epsilon 2,\mathrm{c}} = C_{\epsilon 2} + C_{\epsilon\nu} ,
+\end{equation}
+the counterpart of the pair $C_{\epsilon\nu}$, $C_{\epsilon 2,\mathrm{c}}$ of
+\eqref{eq:ns-pp-eps-coeffs} and \eqref{eq:puff-Ceps2c-relation}, and it is
+$C_{\epsilon 2,\mathrm{c}}$ that compares with the standard constant. The
+comparison carries two caveats under this model. The residual $R_\epsilon$
+holds the departure of the discrete scheme at the cutoff
+(\S\ref{sssec:ns-pp-eps-smag-pp}), which belongs to neither the model nor the
+physical flow, so the coefficients are those of the model only as far as
+$R_\epsilon$ is small, which needs a spectrum that has decayed before the
+cutoff; the gap $C_{\epsilon 2,\mathrm{b}} - C_{\epsilon 2}$ shows how far that
+holds. And since $\overline{\epsilon^*}$ is not exactly the sink of
+$\overline{k^*}$ under this model, it also carries the caveat of
+\eqref{eq:ns-pp-smag-eps-def}.
 
 \section{Decaying homogeneous turbulence: a post-processing thought experiment}\label{sec:hit}
 This section applies the framework to decaying homogeneous turbulence and asks
@@ -3450,7 +3914,11 @@ the top retained mode sits at $N/3$ and moves to $\lambda_{L,k+1} N/3$, which
 stays below $N/2$ for every $\lambda_{L,k+1} < 3/2$. Runs in the self-similar
 frame hold $\lambda_{L,k+1}$ within a few percent of unity, so the margin is
 not approached, but it is the condition under which the interpolation stays
-free of aliasing. Finally, \eqref{eq:ns-interp-contractions} is applied to
+free of aliasing. What the dilation pushes past $N/3$ is deleted by the mask
+at the start of the next \textsc{Evolve} (\S\ref{ssec:ns-physics-step}); when
+the spectrum reaches the cutoff this deletion changes $\epsilon$, and the
+change stays in the residual of the budget of
+\S\ref{sssec:ns-pp-eps-smag-pp}. Finally, \eqref{eq:ns-interp-contractions} is applied to
 each velocity component independently and mixes neither components nor the
 wavenumbers within an axis; at the exceptional value $\lambda_{L,k+1} = 1$ it
 reduces to the plain inverse transform, which is taken instead at
@@ -3596,7 +4064,9 @@ $\hat N_l = \mathrm{i} \kappa_j \widehat{\tilde u_l \tilde u_j}$, which equals
 \end{equation}
 without the sponge term $\mathrm{i} \kappa_l \hat F_l / \kappa^2$ of
 \eqref{eq:ns-fourier-poisson}, since the sponge is not part of the budget
-(\S\ref{ssec:ns-pp-eps-budget}). The products $\tilde u_l \tilde u_j$ are
+(\S\ref{ssec:ns-pp-eps-budget}); what the masked sponge term does inside
+$r_0$ stays in the residual of the budget (\S\ref{sssec:ns-pp-eps-smag-pp}).
+The products $\tilde u_l \tilde u_j$ are
 formed on the refined grid of \S\ref{ssec:radial-integrands} and dealiased by
 its $2/3$ mask. For a padding factor $a \ge 2$ they are exact and the mask
 removes nothing from them; at $a = 1$ the mask truncates them to the band of
@@ -3637,8 +4107,9 @@ $a > 2$. The eddy viscosity keeps the filter width of the run,
 $\Delta = H/N$, whatever $N_p$ is, and $a = 1$ recovers evaluation on the
 solver's grid.
 
-The runs use $a = 1$, so their products are formed on the solver's grid and
-alias. The integrands formed pointwise from the velocity and its derivatives
+The runs under the self-similar constant eddy viscosity use $a = 1$, so their
+products are formed on the solver's grid and alias; the Smagorinsky runs use
+$a = 2$. The integrands formed pointwise from the velocity and its derivatives
 ($\epsilon$, $\tilde k$, $P_\epsilon$, $\Upsilon$) keep their exact value at
 $r = 0$, where the interpolant is the grid value, but not their spherical
 means at $r > 0$. $T_\epsilon$ and $D_\epsilon$, which differentiate a product
@@ -3647,10 +4118,10 @@ pressure of \S\ref{ssec:radial-pressure}.
 
 On the refined grid every derivative is taken spectrally,
 $\widehat{\partial Q/\partial x_j} = \mathrm{i} \kappa_j \hat Q$, and every product
-is formed pointwise in physical space. The divergence terms $T_\epsilon$ and
-$D_\epsilon$ are formed as products first and differentiated spectrally
-afterwards, so that each is the divergence of the grid flux and not a sum of
-separately interpolated terms. $\Pi_\epsilon$ is instead formed pointwise, as
+is formed pointwise in physical space. Under the constant eddy viscosity the
+divergence terms $T_\epsilon$ and $D_\epsilon$ are formed as products first and
+differentiated spectrally afterwards, so that each is the divergence of the
+grid flux and not a sum of separately interpolated terms. $\Pi_\epsilon$ is instead formed pointwise, as
 $-2\nu_{\mathrm{t}}\, (\partial \tilde u_j / \partial x_m)
 (\partial^2 \tilde p / \partial x_j \partial x_m)$ from the spectral Hessian of
 the pressure \eqref{eq:radial-pressure}; this equals the divergence of
@@ -3659,11 +4130,45 @@ formed as the divergence of a grid flux. Each integrand is then reduced to its
 profile by \eqref{eq:radial-group} on the refined grid, which is exact there
 as on the solver's grid.
 
+Under the Smagorinsky model $\nu_{\mathrm{t}} = (C_s \Delta)^2 |\tilde S|$ is not a
+polynomial in $\tilde u_i$, and no refined grid makes the integrands exact.
+A spectral derivative of a product then differs from the derivative of the
+product at the grid points, and the terms would not sum to the rate of
+change of $\epsilon$ there. The divergence terms are therefore formed
+pointwise from their expanded forms,
+\begin{equation}\label{eq:radial-smag-pointwise}
+  T_\epsilon = -\tilde u_k \left( \Theta\, \frac{\partial \nu_{\mathrm{t}}}{\partial x_k}
+  + \nu_{\mathrm{t}} \frac{\partial \Theta}{\partial x_k} \right) ,
+  \qquad
+  D_\epsilon = 2 \nu_{\mathrm{t}}\, \frac{\partial \nu_{\mathrm{t}}}{\partial x_j} \frac{\partial \Theta}{\partial x_j}
+  + \nu_{\mathrm{t}}^2\, \nabla^2 \Theta ,
+\end{equation}
+with
+\begin{equation*}
+  \frac{\partial \nu_{\mathrm{t}}}{\partial x_k}
+  = (C_s \Delta)^2\, \frac{2 \tilde S_{ij}}{|\tilde S|}\, \frac{\partial^2 \tilde u_i}{\partial x_k \partial x_j} ,
+  \qquad
+  \frac{\partial \Theta}{\partial x_k}
+  = 2\, \frac{\partial \tilde u_i}{\partial x_m} \frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m} ,
+  \qquad
+  \nabla^2 \Theta
+  = 2 \left( \frac{\partial^2 \tilde u_i}{\partial x_k \partial x_m} \right)^2
+  + 2\, \frac{\partial \tilde u_i}{\partial x_m} \frac{\partial \nabla^2 \tilde u_i}{\partial x_m} ,
+\end{equation*}
+all from derivatives of the band-limited velocity, which are exact at the
+grid points. The same gradient of $\nu_{\mathrm{t}}$ enters $\Lambda_\epsilon$ and
+$\Gamma_\epsilon$. The integrands of
+\eqref{eq:ns-pp-smag-eps-rate-nondim} then sum at every grid point to the
+rate of change \eqref{eq:ns-pp-smag-split} of $\epsilon$ under the physical
+terms $R_i$ of \eqref{eq:ns-pp-smag-Lambda-phys}, and their spherical means
+to its mean, whatever the interpolant does between the points.
+
 \subsection{Sampling in time}\label{ssec:radial-sampling}
 The profiles cost of order a hundred transforms per snapshot on the refined
 grid, against the handful of a physics step on the solver's grid, so they are
 not evaluated every step. They are evaluated on
-the stored field $u_k$ every $n_s$ steps, $n_s = \mathrm{round}(\Delta t_s /
+the stored field $u_k$, masked as at the start of \textsc{Evolve}
+(\S\ref{ssec:ns-physics-step}), every $n_s$ steps, $n_s = \mathrm{round}(\Delta t_s /
 \Delta t)$, so that the samples are equally spaced in $t$ at the interval
 $\Delta t_s$. The interval need only be short against the integral time scale
 of the profiles, which the batch means of Appendix~\ref{app:stat-error}
