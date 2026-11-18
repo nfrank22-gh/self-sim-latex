@@ -262,9 +262,13 @@ other, and is solved in closed form. Once $F_m^{\mathrm{in}}$ is evaluated, no
 further evaluation of the scaled field is needed to find the ratios.
 \par
 In both cases the second functional is a second moment, and we normalize it
-by the target value of the zeroth moment $F_1$. As the normalization is a
-constant, it changes neither the exponents nor the ratios the constraints
-produce; it gives $F_2$ the units of a squared length, a mean-square width.
+by the zeroth moment $F_1[u]$ of the same field. This gives $F_2$ the units of
+a squared length, a mean-square width that is independent of the amplitude:
+$(p_2, q_2) = (0, 2)$ in both cases. Relative to the raw second moment, the
+normalization subtracts the first row of \eqref{eq:fw-constraint-system} from
+the second, so it leaves the ratios the constraints produce unchanged, while
+making the system triangular: $\lambda_L$ is set by $F_2$ alone, and
+$\lambda_U$ by $F_1$ given $\lambda_L$.
 The functionals themselves are equation-specific
 (\S\ref{ssec:1d-moments}, \S\ref{ssec:ns-constraints}); the substep that
 applies \eqref{eq:fw-constraint-system} is \textsc{ConstrainedScale}
@@ -973,11 +977,10 @@ zeroth and the normalized second moment of the field,
 \begin{equation}\label{eq:1d-functionals}
   F_1[u] = \int u\, \mathrm{d}x \equiv M_0,
   \qquad
-  F_2[u] = \frac{1}{M_0} \int x^2 u\, \mathrm{d}x \equiv M_2,
+  F_2[u] = \frac{\int x^2 u\, \mathrm{d}x}{\int u\, \mathrm{d}x} \equiv M_2,
 \end{equation}
-where the $M_0$ in $F_2$ is the target value \eqref{eq:alg-targets}, a
-constant, not the zeroth moment of the field the functional is applied to. Thus
-$M_0$ measures the amount of the conserved quantity and $M_2$, a mean-square
+where the denominator of $F_2$ is the zeroth moment of the field the
+functional is applied to. Thus $M_0$ measures the amount of the conserved quantity and $M_2$, a mean-square
 width, its spread. Writing $M_0^{\mathrm{in}}, M_2^{\mathrm{in}}$ for the moments of the field being scaled, and
 substituting $y = x\, \lambda_L$ in each integral, the scaled field carries
 \begin{equation}\label{eq:1d-m0-homogeneity}
@@ -985,27 +988,30 @@ substituting $y = x\, \lambda_L$ in each integral, the scaled field carries
   = \frac{1}{\lambda_U \lambda_L}\, M_0^{\mathrm{in}},
 \end{equation}
 \begin{equation}\label{eq:1d-m2-homogeneity}
-  \frac{1}{M_0} \int x^2\, \frac{1}{\lambda_U} u\!\left( x\, \lambda_L \right) \mathrm{d}x
-  = \frac{1}{\lambda_U \lambda_L^{3}}\, M_2^{\mathrm{in}},
+  \frac{\int x^2\, \lambda_U^{-1} u\!\left( x\, \lambda_L \right) \mathrm{d}x}
+       {\int \lambda_U^{-1} u\!\left( x\, \lambda_L \right) \mathrm{d}x}
+  = \frac{\lambda_U^{-1} \lambda_L^{-3}}{\lambda_U^{-1} \lambda_L^{-1}}\, M_2^{\mathrm{in}}
+  = \frac{1}{\lambda_L^{2}}\, M_2^{\mathrm{in}},
 \end{equation}
 so the homogeneity exponents of \eqref{eq:fw-homogeneity} are
 \begin{equation}\label{eq:1d-exponents}
-  (p_1, q_1) = (1, 1), \qquad (p_2, q_2) = (1, 3),
+  (p_1, q_1) = (1, 1), \qquad (p_2, q_2) = (0, 2),
 \end{equation}
 with $p_1 q_2 - p_2 q_1 = 2 \neq 0$, so the constraint system
 \eqref{eq:fw-constraint-system} is uniquely solvable: the two moments do
 respond independently to amplitude and to length rescaling. Solving it,
 \begin{equation}\label{eq:1d-length-ratio}
-  \lambda_L = \sqrt{\frac{M_0\, M_2^{\mathrm{in}}}{M_0^{\mathrm{in}}\, M_2}},
+  \lambda_L = \sqrt{\frac{M_2^{\mathrm{in}}}{M_2}},
 \end{equation}
 \begin{equation}\label{eq:1d-velocity-ratio}
   \lambda_U = \frac{M_0^{\mathrm{in}}}{M_0\, \lambda_L}
-  = \left(\frac{M_0^{\mathrm{in}}}{M_0}\right)^{3/2} \sqrt{\frac{M_2}{M_2^{\mathrm{in}}}} .
+  = \frac{M_0^{\mathrm{in}}}{M_0} \sqrt{\frac{M_2}{M_2^{\mathrm{in}}}} .
 \end{equation}
 
-Because the normalization of $F_2$ is a constant, these ratios are the same
-as for the raw second moment $\int x^2 u\, \mathrm{d}x$; written in terms of the
-raw moments, $M_0$ cancels from $M_2^{\mathrm{in}}/M_2$.
+These ratios are the same as for the raw second moment
+$\int x^2 u\, \mathrm{d}x$, whose exponents $(1, 3)$ are the sum of the two
+rows of \eqref{eq:1d-exponents}; the normalization only decouples the length
+ratio from the zeroth moment.
 
 \subsection{Spectral interpolation on the real transform}\label{ssec:1d-interpolation}
 
@@ -1604,11 +1610,11 @@ these moments are defined as
 \begin{equation}\label{eq:ns-functionals}
   F_1[\tilde u] = \int \tilde u_i \tilde u_i\, \mathrm{d}\mathbf{x} \equiv E_0,
   \qquad
-  F_2[\tilde u] = \frac{1}{E_0} \int r^2\, \tilde u_i \tilde u_i\, \mathrm{d}\mathbf{x} \equiv E_2,
+  F_2[\tilde u] = \frac{\int r^2\, \tilde u_i \tilde u_i\, \mathrm{d}\mathbf{x}}{\int \tilde u_i \tilde u_i\, \mathrm{d}\mathbf{x}} \equiv E_2,
 \end{equation}
 where $r^2 = x_j x_j$ is the squared distance from the centre of the domain
-\eqref{eq:alg-grid}, and the $E_0$ in $F_2$ is the target value
-\eqref{eq:alg-targets}, a constant. As in the 1D case, $E_0$ measures the
+\eqref{eq:alg-grid}, and the denominator of $F_2$ is the energy of the field
+the functional is applied to. As in the 1D case, $E_0$ measures the
 amplitude of the field and $E_2$ its spread.
 \par
 The functionals are built from the resolved field alone: the subgrid kinetic
@@ -1632,17 +1638,19 @@ integral, with $d = 3$, the scaled field carries
   = \frac{1}{\lambda_U^2 \lambda_L^{3}}\, E_0^{\mathrm{in}},
 \end{equation}
 \begin{equation}\label{eq:ns-e2-homogeneity}
-  \frac{1}{E_0} \int r^2\, \frac{1}{\lambda_U^2}\, \tilde u_i \tilde u_i\!\left( \mathbf{x}\, \lambda_L \right) \mathrm{d}\mathbf{x}
-  = \frac{1}{\lambda_U^2 \lambda_L^{5}}\, E_2^{\mathrm{in}},
+  \frac{\int r^2\, \lambda_U^{-2}\, \tilde u_i \tilde u_i\!\left( \mathbf{x}\, \lambda_L \right) \mathrm{d}\mathbf{x}}
+       {\int \lambda_U^{-2}\, \tilde u_i \tilde u_i\!\left( \mathbf{x}\, \lambda_L \right) \mathrm{d}\mathbf{x}}
+  = \frac{\lambda_U^{-2} \lambda_L^{-5}}{\lambda_U^{-2} \lambda_L^{-3}}\, E_2^{\mathrm{in}}
+  = \frac{1}{\lambda_L^{2}}\, E_2^{\mathrm{in}},
 \end{equation}
 so the homogeneity exponents of \eqref{eq:fw-homogeneity} are
 \begin{equation}\label{eq:ns-exponents}
-  (p_1, q_1) = (2, 3), \qquad (p_2, q_2) = (2, 5),
+  (p_1, q_1) = (2, 3), \qquad (p_2, q_2) = (0, 2),
 \end{equation}
 with $p_1 q_2 - p_2 q_1 = 4 \neq 0$, so the constraint system
 \eqref{eq:fw-constraint-system} is uniquely solvable. Solving it,
 \begin{equation}\label{eq:ns-length-ratio}
-  \lambda_L = \sqrt{\frac{E_0\, E_2^{\mathrm{in}}}{E_0^{\mathrm{in}}\, E_2}},
+  \lambda_L = \sqrt{\frac{E_2^{\mathrm{in}}}{E_2}},
 \end{equation}
 \begin{equation}\label{eq:ns-velocity-ratio}
   \lambda_U = \sqrt{\frac{E_0^{\mathrm{in}}}{E_0\, \lambda_L^{3}}} ,
@@ -1694,7 +1702,7 @@ the moments of $\tilde u$ miss their targets by
 \begin{equation}\label{eq:ns-sr-moments}
   \ln \frac{E_0[\tilde u]}{E_0} = 2 \mu_U + 3 \mu_L,
   \qquad
-  \ln \frac{E_2[\tilde u]}{E_2} = 2 \mu_U + 5 \mu_L,
+  \ln \frac{E_2[\tilde u]}{E_2} = 2 \mu_L,
 \end{equation}
 so both are met if and only if $\mu_U = \mu_L = 0$.\par
 The \emph{constrained log-scale}
