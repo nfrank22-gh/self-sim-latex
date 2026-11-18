@@ -1108,6 +1108,43 @@ and the continuity equation is unchanged by the rescaling,
 \begin{equation}\label{eq:ns-nondim-continuity}
   \frac{\partial \tilde u_i}{\partial x_i} = 0.
 \end{equation}
+With $\mathrm{d}t^*/\mathrm{d}t = \tau = L/U$, the scaling rates
+\eqref{eq:fw-rates} in terms of physical time are
+\begin{equation}\label{eq:ns-rates}
+  \sigma_U = \frac{L}{U^2}\frac{\mathrm{d} U}{\mathrm{d} t^*},
+  \qquad
+  \sigma_L = \frac{1}{U}\frac{\mathrm{d} L}{\mathrm{d} t^*},
+\end{equation}
+so each is the relative change of its scale over one advection time $L/U$.
+Under the power-law ansatz \eqref{eq:fw-powerlaw},
+$\mathrm{d}X/\mathrm{d}t^* = \beta_X X/(t^* + \alpha_X)$, and
+\eqref{eq:ns-rates} becomes
+\begin{equation}\label{eq:ns-rates-powerlaw}
+  \sigma_U = \frac{A_L}{A_U}\, \beta_U\,
+    \frac{(t^* + \alpha_L)^{\beta_L}}{(t^* + \alpha_U)^{\beta_U + 1}},
+  \qquad
+  \sigma_L = \frac{A_L}{A_U}\, \beta_L\,
+    \frac{(t^* + \alpha_L)^{\beta_L - 1}}{(t^* + \alpha_U)^{\beta_U}} .
+\end{equation}
+With $\beta_L - \beta_U = 1$, both reduce to powers of a single ratio,
+\begin{equation}\label{eq:ns-rates-powerlaw-beta}
+  \sigma_U = \frac{A_L}{A_U}\, \beta_U
+    \left( \frac{t^* + \alpha_L}{t^* + \alpha_U} \right)^{\beta_L},
+  \qquad
+  \sigma_L = \frac{A_L}{A_U}\, \beta_L
+    \left( \frac{t^* + \alpha_L}{t^* + \alpha_U} \right)^{\beta_U} .
+\end{equation}
+With a shared offset $\alpha_U = \alpha_L$ the ratio is one for all $t^*$, and
+the rates are constant,
+\begin{equation}\label{eq:ns-rates-powerlaw-const}
+  \sigma_U = c_\tau\, \beta_U,
+  \qquad
+  \sigma_L = c_\tau\, \beta_L,
+  \qquad
+  c_\tau = \frac{A_L}{A_U},
+\end{equation}
+so that $\sigma_L - \sigma_U = c_\tau$. For unequal offsets the ratio still
+tends to one as $t^* \to \infty$, and the rates approach these constants.
 
 \subsection{Subgrid stress model}\label{ssec:ns-viscosity}
 The subgrid-scale stress $\tau_{ij}^*$ of \eqref{eq:ns-momentum} is closed with
@@ -2220,6 +2257,79 @@ close to one; in \S\ref{ssec:hit-ceps2} we use this to relate the
 $C_{\epsilon 2}$ computed from the simulation to the $C_{\epsilon 2,\mathrm{c}}$
 of the true flow.
 
+\paragraph{The decay law.}
+Before applying the framework we fix the form of the velocity scale $U(t^*)$.
+In the true flow the viscosity vanishes \eqref{eq:hit-nu-true} and the
+length scale $L$ is held constant, so the decay can depend only on the current
+scales $U$ and $L$. The only time scale that they form is the turnover time
+$\tau = L/U$ \eqref{eq:ns-clock}, so the relative rate of decay must be a
+dimensionless constant times $1/\tau$,
+\begin{equation}\label{eq:hit-decay-dim}
+  \frac{1}{U}\frac{\mathrm{d} U}{\mathrm{d} t^*} = -\frac{c_\tau}{\tau}
+  = -c_\tau\, \frac{U}{L} ,
+\end{equation}
+with $c_\tau > 0$ constant in a self-similar state. With
+$\overline{k_{\mathrm{c}}^*} \propto U^2$ this is
+$\overline{\epsilon_{\mathrm{c}}^*} = -\mathrm{d}\overline{k_{\mathrm{c}}^*}/\mathrm{d}t^*
+\propto (\overline{k_{\mathrm{c}}^*})^{3/2}/L$, the classical estimate of the
+dissipation from the energy-containing scales \cite{pope2000turbulent}.
+Integrating \eqref{eq:hit-decay-dim},
+\begin{equation}\label{eq:hit-decay-powerlaw}
+  U = \frac{L}{c_\tau\, (t^* + \alpha_U)} ,
+\end{equation}
+which is the power law \eqref{eq:fw-powerlaw} with $\beta_U = -1$,
+$A_U = L/c_\tau$, and the virtual origin $\alpha_U$ set by the initial
+velocity scale. It is the case $\beta_L = 0$ of
+\S\ref{sssec:ns-pp-rates}, and $c_\tau$ is the clock rate there,
+$\tau = c_\tau (t^* + \alpha_U)$. More generally, a power law is the only
+decay that carries no time scale of its own. Stretching the age about the
+virtual origin, $t^* + \alpha_U \to \lambda (t^* + \alpha_U)$, multiplies $U$
+by $\lambda^{\beta_U}$, so the decay looks the same at every age, as
+self-similarity requires. The offset $\alpha_U$ only places the origin; it is
+not a rate.
+\par
+An exponential decay,
+\begin{equation}\label{eq:hit-decay-exp}
+  U = A_U\, e^{-t^*/T_U} ,
+\end{equation}
+is excluded because it violates this dimensional argument: it carries a fixed
+decay time $T_U$ that the flow cannot supply. The only time scale available
+is $\tau = L/U$, which grows without bound as $U$ decays, and the ratio
+\begin{equation}
+  \frac{\tau}{T_U} = \frac{L}{A_U T_U}\, e^{t^*/T_U}
+\end{equation}
+grows exponentially, so the flow would decay ever faster relative to its own
+turnover time. Equivalently,
+$\overline{\epsilon_{\mathrm{c}}^*} = 2\overline{k_{\mathrm{c}}^*}/T_U$, so
+$\overline{\epsilon_{\mathrm{c}}^*} L / (\overline{k_{\mathrm{c}}^*})^{3/2}
+\propto 1/U \to \infty$, contradicting the estimate above. A constant $T_U$
+needs a further dimensional parameter, such as a molecular viscosity
+$\nu^*$ through $T_U \sim L^2/\nu^*$. This is the exponential final period of
+decay \cite{pope2000turbulent}, which $\nu_{\mathrm{c}}^* = 0$ excludes.
+\par
+The exponential law fails in the self-similar frame as well. Its scaling
+rate \eqref{eq:ns-rates},
+\begin{equation}
+  \sigma_U = \frac{L}{U^2}\frac{\mathrm{d} U}{\mathrm{d} t^*}
+  = -\frac{\tau}{T_U} ,
+\end{equation}
+diverges as $t^* \to \infty$, and with the clock
+$\mathrm{d}t = (U/L)\, \mathrm{d}t^*$,
+\begin{equation}
+  t = \frac{A_U T_U}{L}\left( 1 - e^{-t^*/T_U} \right) ,
+\end{equation}
+so all of physical time maps onto the finite interval
+$0 \le t < A_U T_U / L$, at the end of which $\sigma_U \to -\infty$. Under
+the kinetic energy constraint the self-similar dissipation
+$\overline{\epsilon} = -2\sigma_U\, \overline{k}$ \eqref{eq:hit-eps-sigmaU}
+then diverges in finite time, and no stationary self-similar state exists.
+Appendix~\ref{app:hit-exp} carries the calculation of this section through
+for the exponential law.
+\par
+Below we keep the exponent $\beta_U$ of the power law general, so that the
+results can be compared with the classical decay exponents; the constant
+length scale selects $\beta_U = -1$.
+
 \subsection{Governing equation and the scaling rate}\label{ssec:hit-sigma}
 For decaying homogeneous turbulence we hold the length scale $L$ constant, so
 $\sigma_L = 0$ and the scaling term $\sigma_L x_j\, \partial u_i/\partial x_j$
@@ -2233,13 +2343,8 @@ momentum equation is
   - \frac{\partial p}{\partial x_i}
   + C_\nu\Delta^{4/3}\frac{\partial^2 u_i}{\partial x_j \partial x_j}.
 \end{equation}
-The only coefficient that can depend on time is $\sigma_U$. With the clock
-$\tau = L/U$ \eqref{eq:ns-clock} and $\mathrm{d}t^*/\mathrm{d}t = \tau$,
-\begin{equation}
-  \sigma_U = \frac{1}{U} \frac{\mathrm{d} U}{\mathrm{d} t}
-  = \frac{L}{U^2} \frac{\mathrm{d} U}{\mathrm{d} t^*} .
-\end{equation}
-Under the power-law ansatz $U = A_U (t^* + \alpha_U)^{\beta_U}$
+The only coefficient that can depend on time is $\sigma_U$, given in physical
+time by \eqref{eq:ns-rates}. Under the power-law ansatz $U = A_U (t^* + \alpha_U)^{\beta_U}$
 (\S\ref{ssec:fw-powerlaw}),
 \begin{equation}\label{eq:hit-sigmaU-tstar}
   \sigma_U = \frac{\beta_U}{t^* + \alpha_U}\, \frac{L}{A_U(t^* + \alpha_U)^{\beta_U}}
@@ -2247,7 +2352,8 @@ Under the power-law ansatz $U = A_U (t^* + \alpha_U)^{\beta_U}$
 \end{equation}
 This is constant only for $\beta_U = -1$, the value that
 $\beta_L - \beta_U = 1$ (\S\ref{sssec:ns-pp-rates}) requires with
-$\beta_L = 0$; for any other decay exponent $\sigma_U$ drifts in time and
+$\beta_L = 0$ and that the dimensional argument \eqref{eq:hit-decay-dim}
+selects; for any other decay exponent $\sigma_U$ drifts in time and
 the self-similar state is not stationary.
 \par
 To write $\sigma_U$ as a function of $t$, we integrate the clock,
@@ -3664,6 +3770,197 @@ constants $C_{\epsilon 2}(r)$, $C_{\epsilon\nu}(r)$ and
 $C_{\epsilon 2,\mathrm{c}}(r)$ (\S\ref{sec:puff}), which are
 formed from the pooled time averages and, for their confidence intervals, from
 the pooled windows.
+
+\section{Exponential decay of homogeneous turbulence}\label{app:hit-exp}
+This appendix repeats the calculation of \S\ref{sec:hit} with the exponential
+law \eqref{eq:hit-decay-exp},
+\begin{equation}\label{eq:exp-ansatz}
+  U = A_U\, e^{-t^*/T_U}, \qquad T_U > 0 ,
+\end{equation}
+in place of the power law, to see what the mathematics gives. Every other
+assumption of \S\ref{sec:hit} is kept: the length scale $L$ is constant, so
+$\sigma_L = 0$; the molecular viscosity is zero and the subgrid model is the
+self-similar constant eddy viscosity $\nu_{\mathrm{t}} = C_\nu \Delta^{4/3}$;
+and the kinetic energy constraint holds $\overline{k}$ fixed. By the
+dimensional argument of \S\ref{sec:hit} the law \eqref{eq:exp-ansatz} cannot
+describe the inviscid true flow, so the results are formal. They show how the
+missing time scale appears in the self-similar frame.
+
+\subsection{The scaling rate and the clock}\label{ssec:exp-sigma}
+The scaling rate in physical time is
+\begin{equation}\label{eq:exp-sigmaU-tstar}
+  \sigma_U = \frac{L}{U^2}\frac{\mathrm{d} U}{\mathrm{d} t^*}
+  = -\frac{L}{T_U\, U}
+  = -\frac{L}{A_U T_U}\, e^{t^*/T_U} ,
+\end{equation}
+which grows in magnitude without bound. To write it in the self-similar time,
+integrate the clock $\mathrm{d}t^*/\mathrm{d}t = L/U$,
+\begin{equation}
+  \mathrm{d}t = \frac{U}{L}\, \mathrm{d}t^* = \frac{A_U}{L}\, e^{-t^*/T_U}\, \mathrm{d}t^* ,
+\end{equation}
+from $t^* = 0$ at $t = 0$:
+\begin{equation}\label{eq:exp-t-of-tstar}
+  t = t_\infty \left( 1 - e^{-t^*/T_U} \right),
+  \qquad
+  t_\infty = \frac{A_U T_U}{L} .
+\end{equation}
+All of physical time, $0 \le t^* < \infty$, maps onto the finite interval
+$0 \le t < t_\infty$. Inverting,
+$e^{-t^*/T_U} = 1 - t/t_\infty$, so in the self-similar time the velocity scale
+decays linearly,
+\begin{equation}\label{eq:exp-U-of-t}
+  U = A_U \left( 1 - \frac{t}{t_\infty} \right),
+\end{equation}
+and vanishes at $t_\infty$. Substituting into \eqref{eq:exp-sigmaU-tstar},
+\begin{equation}\label{eq:exp-sigmaU-t}
+  \sigma_U(t) = -\frac{1}{t_\infty - t},
+  \qquad
+  \frac{1}{\sigma_U(t)} = \frac{1}{\sigma_{U,0}} + t,
+  \qquad
+  \sigma_{U,0} = -\frac{1}{t_\infty} = -\frac{L}{A_U T_U} .
+\end{equation}
+This is the power-law result \eqref{eq:hit-inv-sigmaU-t} with the slope
+$(\beta_U + 1)/\beta_U$ replaced by its limit $1$ as $\beta_U \to -\infty$.
+Indeed, the exponential is the limit of infinitely steep power laws. The power
+law $U = U(0)\, (1 + t^*/\alpha_U)^{\beta_U}$ with $\alpha_U = -\beta_U T_U$ has
+the same initial rate as \eqref{eq:exp-ansatz} and tends to it as
+$\beta_U \to -\infty$.
+\par
+The finite range of $t$ is not peculiar to the exponential. By
+\eqref{eq:hit-tstar-of-t}, every power law with $\beta_U < -1$ ($n > 2$) also
+maps physical time onto a finite interval of $t$, at the end of which
+$\sigma_U \to -\infty$. Only $-1 \le \beta_U < 0$ gives an infinite
+self-similar time, and only $\beta_U = -1$ a constant $\sigma_U$. The
+exponential is the extreme member of this family. What sets it apart is the
+dimensional argument of \S\ref{sec:hit}: it alone imposes a fixed physical
+time scale $T_U$.
+
+\subsection{Dissipation and resolution}\label{ssec:exp-eps}
+With $\overline{k}$ held fixed, the kinetic energy budget
+\eqref{eq:hit-k-rate} gives, as in \eqref{eq:hit-eps-sigmaU},
+\begin{equation}\label{eq:exp-eps}
+  \overline{\epsilon} = -2\sigma_U\, \overline{k}
+  = \frac{2\overline{k}}{t_\infty - t} ,
+\end{equation}
+which diverges at $t_\infty$. In physical variables, by
+\eqref{eq:ns-pp-k-scales} and $t_\infty - t = U T_U / L$,
+\begin{equation}\label{eq:exp-eps-dim}
+  \overline{k^*} = U^2\, \overline{k} = A_U^2\, \overline{k}\, e^{-2t^*/T_U},
+  \qquad
+  \overline{\epsilon^*} = \frac{U^3}{L}\, \overline{\epsilon}
+  = \frac{2\, \overline{k^*}}{T_U} ,
+\end{equation}
+so the physical decay rate $\overline{\epsilon^*}/\overline{k^*} = 2/T_U$ is
+constant while the turnover rate $U/L$ decays to zero.
+\par
+The divergence of $\overline{\epsilon}$ is incompatible with the resolution
+requirement of the subgrid model. By \eqref{eq:ns-kolmogorov-scale} with
+$\nu_{\mathrm{t}}^* = UL\, \nu_{\mathrm{t}}$ and
+$\overline{\epsilon^*} = (U^3/L)\, \overline{\epsilon}$, the Kolmogorov scale
+in units of $L$ is
+\begin{equation}\label{eq:exp-eta}
+  \frac{\eta^*}{L} = \left( \frac{\nu_{\mathrm{t}}^3}{\overline{\epsilon}} \right)^{1/4}
+  = C_\nu^{3/4}\, \Delta \left( \frac{t_\infty - t}{2\overline{k}} \right)^{1/4} ,
+\end{equation}
+using $\nu_{\mathrm{t}}^3 = C_\nu^3 \Delta^4$. The requirement
+$\eta^* = C_\eta \Delta L$ \eqref{eq:ns-kolmogorov-mesh} holds only if
+$\overline{\epsilon}$ is constant, that is, only for $\beta_U = -1$. Under the
+exponential law, $\eta^*$ falls below the filter width and tends to zero at
+$t_\infty$. Because $\nu_{\mathrm{t}}$ is fixed, the growing dissipation must
+come from growing gradients, so the energy at fixed $\overline{k}$ moves to
+ever smaller self-similar scales. On a grid with maximum wavenumber
+$\kappa_{\max}$ the gradients are bounded,
+$\overline{\partial u_i/\partial x_m\, \partial u_i/\partial x_m}
+= 2\int \kappa^2 E\, \mathrm{d}\kappa \le 2\kappa_{\max}^2\, \overline{k}$,
+so $\overline{\epsilon} \le 2\nu_{\mathrm{t}} \kappa_{\max}^2\, \overline{k}$.
+By \eqref{eq:exp-eps}, the simulation can then hold the kinetic energy
+constraint only while
+\begin{equation}\label{eq:exp-breakdown}
+  t_\infty - t \ge \frac{1}{\nu_{\mathrm{t}}\, \kappa_{\max}^2} ,
+\end{equation}
+the viscous time of the grid scale. It fails before $t_\infty$.
+\par
+For the same reason, the spectral model of \S\ref{ssec:hit-viscosity} does not
+apply. It assumes a self-similar spectrum $E(\kappa)$ fixed in time, with a
+fixed cutoff $\kappa_\eta$ \eqref{eq:hit-kappa-eta}. Here $\kappa_\eta = 2\pi
+L/\eta^*$ grows without bound and the spectrum is not stationary, so the
+missing fraction $r_E$ is not constant.
+
+\subsection{The constants}\label{ssec:exp-constants}
+The simulated constants do not depend on the spectral model. The
+eddy-viscosity change \eqref{eq:hit-nut-change-dim} uses only that $L$ is
+constant and $\overline{k}$ is fixed, so $C_{\epsilon\nu} = \tfrac12$ again.
+The local relation \eqref{eq:hit-Ceps2-local} holds for any $\sigma_U(t)$, and
+by \eqref{eq:exp-sigmaU-t} $\mathrm{d}(1/\sigma_U)/\mathrm{d}t = 1$, so
+\begin{equation}\label{eq:exp-Ceps2}
+  C_{\epsilon 2} = 1 - \frac{1}{2} = \frac{1}{2} ,
+  \qquad
+  C_{\epsilon 2} + C_{\epsilon\nu} = 1 .
+\end{equation}
+The same follows in physical variables from \eqref{eq:exp-eps-dim}:
+$\mathrm{d}\overline{\epsilon^*}/\mathrm{d}t^* = -2\overline{\epsilon^*}/T_U
+= -(\overline{\epsilon^*})^2/\overline{k^*}$, which is
+\eqref{eq:hit-eps-rate-sim-closed} with $C_{\epsilon 2} + \tfrac12 = 1$. In the
+self-similar frame, substituting \eqref{eq:exp-sigmaU-t} and \eqref{eq:exp-eps}
+into \eqref{eq:hit-eps-rate-model} gives
+$\mathrm{d}\overline{\epsilon}/\mathrm{d}t
+= (1 - C_{\epsilon 2})\, 4\overline{k}/(t_\infty - t)^2$, which matches
+$\mathrm{d}\overline{\epsilon}/\mathrm{d}t = 2\overline{k}/(t_\infty - t)^2$
+from \eqref{eq:exp-eps} for $C_{\epsilon 2} = \tfrac12$. This is the limit
+$n \to \infty$ of the power-law value $(n + 2)/(2n)$ \eqref{eq:hit-Ceps2-n}.
+Conversely, $C_{\epsilon 2} = \tfrac12$ makes the decay exponent
+\eqref{eq:hit-betaU-Ceps2} infinite.
+\par
+For the true flow, the relation $C_{\epsilon 2,\mathrm{c}} = C_{\epsilon 2} +
+\tfrac12$ \eqref{eq:hit-Ceps2-relation} was derived with a constant $r_E$,
+which \S\ref{ssec:exp-eps} rules out. If $r_E$ is nevertheless taken constant,
+then $\overline{k_{\mathrm{c}}^*} = (1 + r_E)\, \overline{k^*} \propto
+e^{-2t^*/T_U}$, and \eqref{eq:hit-eps-rate-true} gives
+\begin{equation}\label{eq:exp-Ceps2c}
+  C_{\epsilon 2,\mathrm{c}} = 1 ,
+\end{equation}
+the limit $n \to \infty$ of the classical $(n + 1)/n$ \eqref{eq:hit-Ceps2c-n}.
+This is the familiar result that the $k$--$\epsilon$ model decays
+exponentially when $C_{\epsilon 2} = 1$ \cite{pope2000turbulent}. Since an
+inviscid flow at constant $L$ cannot decay exponentially (\S\ref{sec:hit}),
+\eqref{eq:exp-Ceps2c} is a property of the closure, not of a realizable flow.
+
+\subsection{Comparison}\label{ssec:exp-summary}
+Table~\ref{tab:exp-vs-power} sets the two laws side by side.
+\begin{table}[h]
+  \centering
+  \caption{Homogeneous decay at constant $L$ under the power law and the exponential law.}
+  \label{tab:exp-vs-power}
+  \renewcommand{\arraystretch}{1.4}
+  \begin{tabular}{lcc}
+    \hline
+    & power law, $\overline{k^*} \propto (t^* + \alpha_U)^{-n}$
+    & exponential, $\overline{k^*} \propto e^{-2t^*/T_U}$ \\
+    \hline
+    $1/\sigma_U(t)$
+      & $1/\sigma_{U,0} + \frac{n-2}{n}\, t$
+      & $1/\sigma_{U,0} + t$ \\
+    range of $t$
+      & infinite for $n \le 2$, finite for $n > 2$
+      & finite, $t < t_\infty$ \\
+    $\overline{\epsilon}$
+      & constant only for $n = 2$
+      & $2\overline{k}/(t_\infty - t) \to \infty$ \\
+    $\eta^*/(\Delta L)$
+      & constant only for $n = 2$
+      & $\to 0$ \\
+    $C_{\epsilon 2}$
+      & $(n + 2)/(2n)$
+      & $1/2$ \\
+    $C_{\epsilon\nu}$
+      & $1/2$
+      & $1/2$ \\
+    $C_{\epsilon 2,\mathrm{c}}$
+      & $(n + 1)/n$
+      & $1$ (with $r_E$ constant) \\
+    \hline
+  \end{tabular}
+\end{table}
 
 \bibliographystyle{osajnl2}
 \bibliography{references}
