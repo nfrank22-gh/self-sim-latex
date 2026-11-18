@@ -1407,7 +1407,12 @@ and transformed,
 with $W$ tabulated once on the grid \eqref{eq:alg-grid}. Because $W$ is smooth
 but not band-limited, $\hat{F}_i$ also carries content beyond the retained
 band, which the $2/3$ mask removes along with that of $\hat{N}_i$ and,
-under the Smagorinsky model, $\hat{G}_i$. The scaling terms transform as in
+under the Smagorinsky model, $\hat{G}_i$. In the solver the product
+$W \tilde u_i$ is added to the physical-space convective product before that
+product is transformed, so the sponge shares its transform, its mask and the
+projection of \S\ref{ssec:ns-projection} with the convective term; since the
+transform, the mask and the projection are linear, this is
+\eqref{eq:ns-fourier-sponge} exactly, at the cost of one pointwise product. The scaling terms transform as in
 \eqref{eq:fw-scaling-pde-fourier} with $d = 3$, so the transform of
 \eqref{eq:ns-nondim-momentum-sponge} is
 \begin{equation}\label{eq:ns-nondim-momentum-fourier}
@@ -3937,8 +3942,9 @@ contractions
   \;\xrightarrow{\ W^{(1)} \text{ on axis } 1\ }\;
   \operatorname{Re}(\cdot),
 \end{equation}
-each of which is a matrix--matrix product once the contracted axis is brought
-to the front. The cost falls to $O(d\, N^{d+1})$, i.e.\ $8 \times 10^{8}$
+each of which is a single matrix--matrix product: each product contracts the
+trailing axis and writes the new axis first, so after the three the axes are
+back in their original order without any transposition. The cost falls to $O(d\, N^{d+1})$, i.e.\ $8 \times 10^{8}$
 multiply--adds at $N = 128$, a factor of $5 \times 10^{3}$ below the direct
 sum, and the work is expressed as three dense $\mathrm{GEMM}$ calls. The
 factorization is exact --- it is a regrouping of the same finite sum, not an
@@ -4007,7 +4013,10 @@ scaled field back onto the solenoidal subspace, using the projection tensor
 followed by the transform back to physical space. The mean mode
 $\boldsymbol{\kappa} = \mathbf{0}$ is left unchanged. The projection is orthogonal, so
 it can only remove energy, and the cost is one forward and one inverse
-transform per scaling step. Under \textsc{Strang} it is applied after each of
+transform per scaling step. The projected transform is kept: it is the
+transform of the field the scaling step returns, so the next operation that
+needs that transform --- \textsc{Evolve}, or the next step --- does not
+recompute it. Under \textsc{Strang} it is applied after each of
 the two scaling half steps, so the field entering \textsc{Evolve} is
 solenoidal as well as the field the step returns.
 
